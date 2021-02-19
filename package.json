@@ -1,0 +1,19 @@
+{
+  "name": "netcode",
+  "version": "1.0.0",
+  "description": "A js game framework for state-synchronization.",
+  "main": "dist/netcode.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/netcodejs/netcode",
+  "author": "moruiyi",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "rollup": "^2.39.0",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "tslib": "^2.1.0",
+    "typescript": "^4.1.5"
+  },
+  "scripts": {
+    "build": "yarn run rollup -c"
+  }
+}
