@@ -4,7 +4,7 @@ import {
     Param,
     ParamType,
     ComponentClassType,
-} from "../src/component";
+} from "../src";
 
 @Component
 export class ViewComponent implements IComponent {
