@@ -3,6 +3,4 @@ export interface Serializable<T extends String | ArrayBuffer> {
     deser(buffer: DataBuffer<T>): void;
 }
 
-export interface DataBuffer<T extends String | ArrayBuffer> {
-
-}
+export interface DataBuffer<T extends String | ArrayBuffer> {}

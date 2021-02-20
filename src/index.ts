@@ -1,4 +1,2 @@
-export * from './component';
-export * from './entity';
-
-import './test'
+export * from "./component";
+export * from "./entity";
