@@ -1,10 +1,37 @@
 import { NULL_NUM } from "./macro";
 import { fastRemove } from "./misc";
 
-export class Entity {
+/**
+ * The unit in a network.It can manager some component.
+ * It include id and version, plz don't modify then if you are not undersanding!
+ * It is sealed, PLZ NOT implement!!!
+ * @example
+ ```js
+ // Must do decoration
+ @Component
+ class ViewComponent {
+     @Param(DataType.bool)
+     active = false
+ }
+ const ent = new Entity();
+ ent.add(ViewComponent);
+ ent.has(ViewComponent);
+ ent.get(ViewComponent);
+ Domain.ref(ent);
+ ent.rm(ViewComponent);
+ ```
+ */
+export class Entity<T extends object = any> {
+    static QUICK_ACCESS_MAP: Record<string, { new (): any }> = {};
     id = NULL_NUM;
     version = NULL_NUM;
     compMap: Map<number, Object | Object[]> = new Map();
+
+    $comps = new Proxy<T>(this as any, {
+        get(target: any, p, receiver) {
+            return target.get(Entity.QUICK_ACCESS_MAP[String(p)]);
+        },
+    });
     constructor() {
         Object.seal(this);
     }
