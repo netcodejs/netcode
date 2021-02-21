@@ -13,7 +13,7 @@ export class Entity {
         return `Entity: id=${this.id},version=${this.version}`;
     }
 
-    addComp<T>(ctr: { new (): T }): T | null {
+    add<T>(ctr: { new (): T }): T | null {
         const clsId = ctr.prototype.__classId__;
         if (!(clsId >= 0 && ctr.prototype.__schema__)) {
             console.error("Componrnt must use @Component");
@@ -33,11 +33,11 @@ export class Entity {
         return ins;
     }
 
-    rmComp(comp: any) {
+    rm(comp: any): boolean {
         const clsId = comp.__classId__;
         if (!(clsId >= 0 && comp.__schema__)) {
             console.error("Componrnt must use @Component");
-            return;
+            return false;
         }
         if (this.compMap.has(clsId)) {
             const comps = this.compMap.get(clsId);
@@ -45,16 +45,28 @@ export class Entity {
                 const index = comps.lastIndexOf(comp);
                 if (index > -1) {
                     fastRemove(comps, index);
+                    return true;
                 } else {
                     console.warn("Cannot find the comp: ", comp);
+                    return false;
                 }
             } else if (comp === comps) {
-                this.compMap.delete(clsId);
+                return this.compMap.delete(clsId);
             }
         }
+        return false;
     }
 
-    getComp<T>(ctr: { new (): T }): T | null {
+    mrm<T>(ctr: { new (): T }): boolean {
+        const clsId = ctr.prototype.__classId__;
+        if (!(clsId >= 0 && ctr.prototype.__schema__)) {
+            console.error("Componrnt must use @Component");
+            return false;
+        }
+        return this.compMap.delete(clsId);
+    }
+
+    get<T>(ctr: { new (): T }): T | null {
         const clsId = ctr.prototype.__classId__;
         if (!(clsId >= 0 && ctr.prototype.__schema__)) {
             console.error("Componrnt must use @Component");
@@ -67,7 +79,17 @@ export class Entity {
         return insOrArr[insOrArr.length - 1] as T;
     }
 
-    hasComp(ctr: { new (): any }): boolean {
+    mget<T>(ctr: { new (): T }): T[] {
+        const clsId = ctr.prototype.__classId__;
+        if (!(clsId >= 0 && ctr.prototype.__schema__)) {
+            console.error("Componrnt must use @Component");
+            return [];
+        }
+
+        return (this.compMap.get(clsId) as T[]) ?? [];
+    }
+
+    has(ctr: { new (): any }): boolean {
         const clsId = ctr.prototype.__classId__;
         if (!(clsId >= 0 && ctr.prototype.__schema__)) {
             console.error("Componrnt must use @Component");
