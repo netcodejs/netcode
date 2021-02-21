@@ -6,6 +6,7 @@ import {
     ComponentClassType,
     Domain,
     Entity,
+    Schema,
 } from "../src";
 
 @Component
@@ -16,6 +17,14 @@ export class ViewComponent /* implements IComponent */ {
     height: number = 0;
 
     // onLoad() {}
+}
+
+@Component
+export class ReverseViewComponent {
+    @Param(ParamType.int)
+    height: number = 0;
+    @Param(ParamType.int)
+    width: number = 0;
 }
 
 //@Component
@@ -34,25 +43,45 @@ export class LogicComponent {
     alive: boolean = false;
 }
 
-type SchemaClass<T> = T & { __schema__: any };
+type SchemaClass<T> = T & { __schema__: Schema };
 
-test("basic", () => {
-    let v1 = new ViewComponent() as SchemaClass<ViewComponent>;
-    let v2 = new ViewComponent() as SchemaClass<ViewComponent>;
+describe("SchemaAndClassId", () => {
+    test("basic", () => {
+        let v1 = new ViewComponent() as SchemaClass<ViewComponent>;
+        let v2 = new ViewComponent() as SchemaClass<ViewComponent>;
 
-    let l1 = new LogicComponent() as SchemaClass<LogicComponent>;
-    expect(v1.__schema__).toStrictEqual(v2.__schema__);
-    expect(ComponentClassType.length).toEqual(2);
-    expect(l1.__schema__).toMatchObject({
-        count: 1,
-        props: {
-            0: { type: ParamType.bool, paramIndex: 0, propertyKey: "alive" },
-            alive: {
-                type: ParamType.bool,
-                paramIndex: 0,
-                propertyKey: "alive",
+        let l1 = new LogicComponent() as SchemaClass<LogicComponent>;
+        expect(v1.__schema__).toStrictEqual(v2.__schema__);
+        expect(ComponentClassType.length).toEqual(3);
+        expect(l1.__schema__).toMatchObject({
+            count: 1,
+            props: {
+                0: {
+                    type: ParamType.bool,
+                    paramIndex: 0,
+                    propertyKey: "alive",
+                },
+                alive: {
+                    type: ParamType.bool,
+                    paramIndex: 0,
+                    propertyKey: "alive",
+                },
             },
-        },
+        });
+    });
+
+    test("PropertyKeySort", () => {
+        const viewProto = ViewComponent.prototype as any;
+        const reverseViewProtp = ReverseViewComponent.prototype as any;
+        const fakeSchema = {
+            count: 2,
+            props: {
+                0: { propertyKey: "height" },
+                1: { propertyKey: "width" },
+            },
+        };
+        expect(viewProto.__schema__).toMatchObject(fakeSchema);
+        expect(reverseViewProtp.__schema__).toMatchObject(fakeSchema);
     });
 });
 
