@@ -1,9 +1,9 @@
-import { Macro } from "./macro";
+import { NULL_NUM } from "./macro";
 import { fastRemove } from "./misc";
 
 export class Entity {
-    id = Macro.NULL_NUM;
-    version = Macro.NULL_NUM;
+    id = NULL_NUM;
+    version = NULL_NUM;
     compMap: Map<number, Object | Object[]> = new Map();
     constructor() {
         Object.seal(this);
