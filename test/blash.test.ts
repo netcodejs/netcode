@@ -59,22 +59,22 @@ test("basic", () => {
 describe("entity-componrnt", () => {
     test("addComp-black", () => {
         const ent = new Entity();
-        const view = ent.addComp(ViewComponent)!;
-        const logic = ent.addComp(LogicComponent)!;
+        const view = ent.add(ViewComponent)!;
+        const logic = ent.add(LogicComponent)!;
 
         expect(view).toBeTruthy();
         expect(logic).toBeTruthy();
     });
     test("rmComp/hasComp/getComp-black", () => {
         const ent = new Entity();
-        const view = ent.addComp(ViewComponent)!;
-        const logic = ent.addComp(LogicComponent)!;
+        const view = ent.add(ViewComponent)!;
+        const logic = ent.add(LogicComponent)!;
 
-        ent.rmComp(view);
-        ent.rmComp(logic);
-        const newLogic = ent.addComp(LogicComponent);
-        const hasView = ent.hasComp(ViewComponent);
-        const getView = ent.getComp(ViewComponent);
+        ent.rm(view);
+        ent.rm(logic);
+        const newLogic = ent.add(LogicComponent);
+        const hasView = ent.has(ViewComponent);
+        const getView = ent.get(ViewComponent);
 
         expect(newLogic).toBeTruthy();
         expect(newLogic === logic).not.toBeTruthy();
@@ -83,7 +83,7 @@ describe("entity-componrnt", () => {
     });
     test("addComp-white-no-decoration", () => {
         const entity = new Entity();
-        const view = entity.addComp(ViewComponentNoDecoration);
+        const view = entity.add(ViewComponentNoDecoration);
         expect(view).not.toBeTruthy();
     });
 });
