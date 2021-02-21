@@ -1,5 +1,5 @@
 import { Entity } from "./entity";
-import { Macro } from "./macro";
+import { NULL_NUM } from "./macro";
 
 class EntityNotValidError extends Error {}
 class EntityRepeatRegisteredError extends Error {}
@@ -49,8 +49,8 @@ class DomainDefinition {
 
     isValid(entity: Entity) {
         return (
-            entity.id != Macro.NULL_NUM &&
-            entity.version != Macro.NULL_NUM &&
+            entity.id != NULL_NUM &&
+            entity.version != NULL_NUM &&
             entity.version == this._entityVersion[entity.id]
         );
     }
