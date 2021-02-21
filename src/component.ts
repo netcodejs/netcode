@@ -1,3 +1,6 @@
+import { Entity } from "./entity";
+import { DataType } from "./misc";
+
 export let ComponentClassType: any[] = [];
 
 class WhyPropertyKeyHasTheSameError extends Error {}
@@ -10,7 +13,7 @@ function sortComponentPropertyKey(a: SchemaProp, b: SchemaProp): number {
     return akey > bkey ? 1 : -1;
 }
 
-export function Component<T>(target: { new (): T }) {
+export function Comp<T>(target: { new (): T }) {
     target.prototype.__classId__ = ComponentClassType.push(target) - 1;
 
     const s = target.prototype.__schema__ as Schema;
@@ -25,7 +28,7 @@ export function Component<T>(target: { new (): T }) {
     }
 }
 
-export function Param(type: ParamType): PropertyDecorator {
+export function CompProp(type: DataType): PropertyDecorator {
     return function (t: any, propertyKey: string | symbol) {
         const target = t as ComponentConstructor;
         if (!target.__schema__)
@@ -39,16 +42,10 @@ export function Param(type: ParamType): PropertyDecorator {
     };
 }
 
-// prettier-ignore
-export enum ParamType {
-    i8, u8, i16, u16, i32, u32, i64, u64, f32, f64,
-    int, long, float, double, string, bool,
-}
-
 export interface SchemaProp {
     paramIndex: number;
     propertyKey: string;
-    type: ParamType;
+    type: DataType;
 }
 
 export interface Schema {
@@ -61,8 +58,9 @@ export type ComponentConstructor<T = any> = { new (): T } & {
     __schema__: Schema;
     __classId__: number;
 };
+
 export interface IComponent {
-    owner?: number;
+    entity?: Entity;
 
     onLoad?(): void;
     onStart?(): void;

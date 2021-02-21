@@ -1,45 +1,46 @@
 import {
-    Component,
+    Comp,
     IComponent,
-    Param,
-    ParamType,
+    CompProp,
+    DataType,
     ComponentClassType,
     Domain,
     Entity,
     Schema,
 } from "../src";
 
-@Component
-export class ViewComponent /* implements IComponent */ {
-    @Param(ParamType.int)
+@Comp
+export class ViewComponent implements IComponent {
+    @CompProp(DataType.int)
     width: number = 0;
-    @Param(ParamType.int)
+    @CompProp(DataType.int)
     height: number = 0;
 
+    entity!: Entity;
     // onLoad() {}
 }
 
-@Component
+@Comp
 export class ReverseViewComponent {
-    @Param(ParamType.int)
+    @CompProp(DataType.int)
     height: number = 0;
-    @Param(ParamType.int)
+    @CompProp(DataType.int)
     width: number = 0;
 }
 
 //@Component
 export class ViewComponentNoDecoration /* implements IComponent */ {
-    @Param(ParamType.int)
+    @CompProp(DataType.int)
     width: number = 0;
-    @Param(ParamType.int)
+    @CompProp(DataType.int)
     height: number = 0;
 
     // onLoad() {}
 }
 
-@Component
+@Comp
 export class LogicComponent {
-    @Param(ParamType.bool)
+    @CompProp(DataType.bool)
     alive: boolean = false;
 }
 
@@ -57,12 +58,12 @@ describe("SchemaAndClassId", () => {
             count: 1,
             props: {
                 0: {
-                    type: ParamType.bool,
+                    type: DataType.bool,
                     paramIndex: 0,
                     propertyKey: "alive",
                 },
                 alive: {
-                    type: ParamType.bool,
+                    type: DataType.bool,
                     paramIndex: 0,
                     propertyKey: "alive",
                 },
@@ -114,5 +115,24 @@ describe("entity-componrnt", () => {
         const entity = new Entity();
         const view = entity.add(ViewComponentNoDecoration);
         expect(view).not.toBeTruthy();
+    });
+});
+
+describe("Quick-Access", () => {
+    Entity.QUICK_ACCESS_MAP = {
+        logic: LogicComponent,
+        view: ViewComponent,
+    };
+
+    interface QuickAccess {
+        logic: LogicComponent;
+        view: ViewComponent;
+    }
+    test("basic", () => {
+        const ent = new Entity<QuickAccess>();
+        expect(ent.$comps.logic).not.toBeTruthy();
+        const logic = ent.add(LogicComponent);
+        expect(ent.$comps.logic).toBeTruthy();
+        expect(logic === ent.$comps.logic).toBeTruthy();
     });
 });
