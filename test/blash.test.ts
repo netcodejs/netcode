@@ -39,10 +39,20 @@ export class ViewComponentNoDecoration /* implements IComponent */ {
     // onLoad() {}
 }
 
+@Comp("vec")
+export class VectorComponent {
+    @CompProp(DataType.float)
+    x: number = 0;
+    @CompProp(DataType.float)
+    y: number = 0;
+}
+
 @Comp("logic")
 export class LogicComponent {
     @CompProp(DataType.bool)
     alive: boolean = false;
+    @CompProp(VectorComponent)
+    pos: VectorComponent = new VectorComponent();
 }
 
 type SchemaClass<T> = T & { __schema__: Schema };
@@ -56,10 +66,10 @@ describe("SchemaAndClassId", () => {
         expect((ReverseViewComponent.prototype as any).__schema__.name).toEqual(
             "reverseView"
         );
-        expect(Object.keys(hash2compName).length).toEqual(3);
-        expect(Object.keys(compName2ctr).length).toEqual(3);
+        expect(Object.keys(hash2compName).length).toEqual(4);
+        expect(Object.keys(compName2ctr).length).toEqual(4);
         expect(l1.__schema__).toMatchObject({
-            count: 1,
+            count: 2,
             props: {
                 0: {
                     type: DataType.bool,
@@ -70,6 +80,14 @@ describe("SchemaAndClassId", () => {
                     type: DataType.bool,
                     paramIndex: 0,
                     propertyKey: "alive",
+                },
+                1: {
+                    type: VectorComponent,
+                    paramIndex: 1,
+                    propertyKey: "pos",
+                },
+                pos: {
+                    type: VectorComponent,
                 },
             },
         });
