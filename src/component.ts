@@ -1,7 +1,7 @@
 import { Entity } from "./entity";
 import { NULL_NUM, NULL_STR } from "./macro";
 import { DataType } from "./misc";
-import { str as hash } from "crc-32";
+import { str as hash } from "./lib/crc-32";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
 function sortComponentPropertyKey(a: SchemaProp, b: SchemaProp): number {
