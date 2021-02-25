@@ -1,17 +1,18 @@
 {
-  "name": "netcode",
-  "version": "1.0.0",
+  "name": "netcodejs",
+  "version": "0.0.1",
   "description": "A js game framework for state-synchronization.",
   "main": "dist/netcode.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/netcodejs/netcode",
-  "author": "moruiyi",
+  "author": "littlemoi",
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@babel/core": "^7.12.17",
     "@babel/plugin-proposal-decorators": "^7.12.13",
     "@babel/preset-env": "^7.12.17",
     "@babel/preset-typescript": "^7.12.17",
+    "@babel/plugin-proposal-class-properties": "^7.12.13",
     "@types/jest": "^26.0.20",
     "babel-jest": "^26.6.3",
     "husky": "=4",
@@ -37,6 +38,9 @@
     "*.{ts,js,css,md}": "prettier --write"
   },
   "dependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.12.13"
-  }
+    "crc-32": "^1.2.0"
+  },
+  "files": [
+    "dist", "README.md"
+  ]
 }
