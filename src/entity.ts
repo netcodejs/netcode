@@ -1,3 +1,4 @@
+import { compName2ctr } from "./component";
 import { NULL_NUM } from "./macro";
 import { fastRemove } from "./misc";
 
@@ -22,14 +23,13 @@ import { fastRemove } from "./misc";
  ```
  */
 export class Entity<T extends object = any> {
-    static QUICK_ACCESS_MAP: Record<string, { new (): any }> = {};
     id = NULL_NUM;
     version = NULL_NUM;
     compMap: Map<number, Object | Object[]> = new Map();
 
     $comps = new Proxy<T>(this as any, {
         get(target: any, p, receiver) {
-            return target.get(Entity.QUICK_ACCESS_MAP[String(p)]);
+            return target.get(compName2ctr[String(p)]);
         },
     });
     constructor() {
@@ -41,33 +41,33 @@ export class Entity<T extends object = any> {
     }
 
     add<T>(ctr: { new (): T }): T | null {
-        const clsId = ctr.prototype.__classId__;
-        if (!(clsId >= 0 && ctr.prototype.__schema__)) {
+        const schema = ctr.prototype.__schema__;
+        if (!(schema && schema.name)) {
             console.error("Componrnt must use @Component");
             return null;
         }
         const ins = new ctr();
-        if (this.compMap.has(clsId)) {
-            const insOrArr = this.compMap.get(clsId);
+        if (this.compMap.has(schema.hash)) {
+            const insOrArr = this.compMap.get(schema.hash);
             if (Array.isArray(insOrArr)) {
                 insOrArr.push(ins);
             } else {
-                this.compMap.set(clsId, [insOrArr, ins]);
+                this.compMap.set(schema.hash, [insOrArr, ins]);
             }
         } else {
-            this.compMap.set(clsId, ins);
+            this.compMap.set(schema.hash, ins);
         }
         return ins;
     }
 
     rm(comp: any): boolean {
-        const clsId = comp.__classId__;
-        if (!(clsId >= 0 && comp.__schema__)) {
+        const schema = comp.__schema__;
+        if (!(schema && schema.name)) {
             console.error("Componrnt must use @Component");
             return false;
         }
-        if (this.compMap.has(clsId)) {
-            const comps = this.compMap.get(clsId);
+        if (this.compMap.has(schema.hash)) {
+            const comps = this.compMap.get(schema.hash);
             if (Array.isArray(comps)) {
                 const index = comps.lastIndexOf(comp);
                 if (index > -1) {
@@ -78,50 +78,50 @@ export class Entity<T extends object = any> {
                     return false;
                 }
             } else if (comp === comps) {
-                return this.compMap.delete(clsId);
+                return this.compMap.delete(schema.hash);
             }
         }
         return false;
     }
 
     mrm<T>(ctr: { new (): T }): boolean {
-        const clsId = ctr.prototype.__classId__;
-        if (!(clsId >= 0 && ctr.prototype.__schema__)) {
+        const schema = ctr.prototype.__schema__;
+        if (!(schema && schema.name)) {
             console.error("Componrnt must use @Component");
             return false;
         }
-        return this.compMap.delete(clsId);
+        return this.compMap.delete(schema.hash);
     }
 
     get<T>(ctr: { new (): T }): T | null {
-        const clsId = ctr.prototype.__classId__;
-        if (!(clsId >= 0 && ctr.prototype.__schema__)) {
+        const schema = ctr.prototype.__schema__;
+        if (!(schema && schema.name)) {
             console.error("Componrnt must use @Component");
             return null;
         }
 
-        if (!this.compMap.has(clsId)) return null;
-        const insOrArr = this.compMap.get(clsId)!;
+        if (!this.compMap.has(schema.hash)) return null;
+        const insOrArr = this.compMap.get(schema.hash)!;
         if (!Array.isArray(insOrArr)) return insOrArr as T;
         return insOrArr[insOrArr.length - 1] as T;
     }
 
     mget<T>(ctr: { new (): T }): T[] {
-        const clsId = ctr.prototype.__classId__;
-        if (!(clsId >= 0 && ctr.prototype.__schema__)) {
+        const schema = ctr.prototype.__schema__;
+        if (!(schema && schema.name)) {
             console.error("Componrnt must use @Component");
             return [];
         }
 
-        return (this.compMap.get(clsId) as T[]) ?? [];
+        return (this.compMap.get(schema.hash) as T[]) ?? [];
     }
 
     has(ctr: { new (): any }): boolean {
-        const clsId = ctr.prototype.__classId__;
-        if (!(clsId >= 0 && ctr.prototype.__schema__)) {
+        const schema = ctr.prototype.__schema__;
+        if (!(schema && schema.name)) {
             console.error("Componrnt must use @Component");
             return false;
         }
-        return this.compMap.has(clsId);
+        return this.compMap.has(schema.hash);
     }
 }

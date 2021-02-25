@@ -3,13 +3,14 @@ import {
     IComponent,
     CompProp,
     DataType,
-    ComponentClassType,
     Domain,
     Entity,
     Schema,
+    hash2compName,
+    compName2ctr,
 } from "../src";
 
-@Comp
+@Comp("view")
 export class ViewComponent implements IComponent {
     @CompProp(DataType.int)
     width: number = 0;
@@ -20,7 +21,7 @@ export class ViewComponent implements IComponent {
     // onLoad() {}
 }
 
-@Comp
+@Comp("reverseView")
 export class ReverseViewComponent {
     @CompProp(DataType.int)
     height: number = 0;
@@ -38,14 +39,13 @@ export class ViewComponentNoDecoration /* implements IComponent */ {
     // onLoad() {}
 }
 
-@Comp
+@Comp("logic")
 export class LogicComponent {
     @CompProp(DataType.bool)
     alive: boolean = false;
 }
 
 type SchemaClass<T> = T & { __schema__: Schema };
-
 describe("SchemaAndClassId", () => {
     test("basic", () => {
         let v1 = new ViewComponent() as SchemaClass<ViewComponent>;
@@ -53,7 +53,11 @@ describe("SchemaAndClassId", () => {
 
         let l1 = new LogicComponent() as SchemaClass<LogicComponent>;
         expect(v1.__schema__).toStrictEqual(v2.__schema__);
-        expect(ComponentClassType.length).toEqual(3);
+        expect((ReverseViewComponent.prototype as any).__schema__.name).toEqual(
+            "reverseView"
+        );
+        expect(Object.keys(hash2compName).length).toEqual(3);
+        expect(Object.keys(compName2ctr).length).toEqual(3);
         expect(l1.__schema__).toMatchObject({
             count: 1,
             props: {
@@ -119,11 +123,6 @@ describe("entity-componrnt", () => {
 });
 
 describe("Quick-Access", () => {
-    Entity.QUICK_ACCESS_MAP = {
-        logic: LogicComponent,
-        view: ViewComponent,
-    };
-
     interface QuickAccess {
         logic: LogicComponent;
         view: ViewComponent;
