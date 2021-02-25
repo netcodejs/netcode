@@ -49,7 +49,7 @@ export function Comp(name: string) {
     };
 }
 
-export function CompProp(type: DataType): PropertyDecorator {
+export function CompProp(type: DataType | { new (): any }): PropertyDecorator {
     return function (t: any, propertyKey: string | symbol) {
         const target = t as ComponentConstructor;
         if (!target.__schema__) target.__schema__ = genSchema();
@@ -65,7 +65,7 @@ export function CompProp(type: DataType): PropertyDecorator {
 export interface SchemaProp {
     paramIndex: number;
     propertyKey: string;
-    type: DataType;
+    type: DataType | { new (): any };
 }
 
 export interface Schema {
