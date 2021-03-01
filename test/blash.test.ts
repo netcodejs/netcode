@@ -1,57 +1,58 @@
 import {
-    Comp,
+    NetComp,
     IComponent,
-    CompProp,
+    NetCompProp,
     DataType,
-    Domain,
     Entity,
     Schema,
     hash2compName,
     compName2ctr,
+    composeVersion,
+    decomposeVersion,
 } from "../src";
 
-@Comp("view")
+@NetComp("view")
 export class ViewComponent implements IComponent {
-    @CompProp(DataType.int)
+    @NetCompProp(DataType.int)
     width: number = 0;
-    @CompProp(DataType.int)
+    @NetCompProp(DataType.int)
     height: number = 0;
 
     entity!: Entity;
     // onLoad() {}
 }
 
-@Comp("reverseView")
+@NetComp("reverseView")
 export class ReverseViewComponent {
-    @CompProp(DataType.int)
+    @NetCompProp(DataType.int)
     height: number = 0;
-    @CompProp(DataType.int)
+    @NetCompProp(DataType.int)
     width: number = 0;
 }
 
 //@Component
 export class ViewComponentNoDecoration /* implements IComponent */ {
-    @CompProp(DataType.int)
+    @NetCompProp(DataType.int)
     width: number = 0;
-    @CompProp(DataType.int)
+    @NetCompProp(DataType.int)
     height: number = 0;
 
     // onLoad() {}
 }
 
-@Comp("vec")
+@NetComp("vec")
 export class VectorComponent {
-    @CompProp(DataType.float)
+    @NetCompProp(DataType.float)
     x: number = 0;
-    @CompProp(DataType.float)
+    @NetCompProp(DataType.float)
     y: number = 0;
 }
 
-@Comp("logic")
+@NetComp("logic")
 export class LogicComponent {
-    @CompProp(DataType.bool)
+    @NetCompProp(DataType.bool)
     alive: boolean = false;
-    @CompProp(VectorComponent)
+    @NetCompProp(VectorComponent)
     pos: VectorComponent = new VectorComponent();
 }
 
@@ -122,16 +123,18 @@ describe("entity-componrnt", () => {
         const view = ent.add(ViewComponent)!;
         const logic = ent.add(LogicComponent)!;
 
-        ent.rm(view);
-        ent.rm(logic);
+        // ent.rm(view);
+        // ent.rm(logic);
         const newLogic = ent.add(LogicComponent);
         const hasView = ent.has(ViewComponent);
         const getView = ent.get(ViewComponent);
 
         expect(newLogic).toBeTruthy();
         expect(newLogic === logic).not.toBeTruthy();
-        expect(hasView).not.toBeTruthy();
-        expect(getView).not.toBeTruthy();
+        // expect(hasView).not.toBeTruthy();
+        expect(hasView).toBeTruthy();
+        // expect(getView).not.toBeTruthy();
+        expect(getView).toBeTruthy();
     });
     test("addComp-white-no-decoration", () => {
         const entity = new Entity();
@@ -151,5 +154,43 @@ describe("Quick-Access", () => {
         const logic = ent.add(LogicComponent);
         expect(ent.$comps.logic).toBeTruthy();
         expect(logic === ent.$comps.logic).toBeTruthy();
+    });
+});
+
+describe("Version-Check", () => {
+    test("compose-and-decompose", () => {
+        const version = 12345;
+        const destroyed = true;
+        const Version = composeVersion(version, destroyed);
+        const [outVersion, outDestroyed] = decomposeVersion(Version);
+        expect(version).toEqual(outVersion);
+        expect(destroyed).toEqual(outDestroyed);
+    });
+
+    test("compose-and-decompose-1", () => {
+        const version = 12345;
+        const destroyed = false;
+        const Version = composeVersion(version, destroyed);
+        const [outVersion, outDestroyed] = decomposeVersion(Version);
+        expect(version).toEqual(outVersion);
+        expect(destroyed).toEqual(outDestroyed);
+    });
+
+    test("compose-and-decompose-overfull", () => {
+        const version = 1 << 30;
+        const destroyed = false;
+        const Version = composeVersion(version, destroyed);
+        const [outVersion, outDestroyed] = decomposeVersion(Version);
+        expect(1).toEqual(outVersion);
+        expect(destroyed).toEqual(outDestroyed);
+    });
+
+    test("compose-and-decompose-overfull-2", () => {
+        const version = (1 << 30) + 1;
+        const destroyed = false;
+        const Version = composeVersion(version, destroyed);
+        const [outVersion, outDestroyed] = decomposeVersion(Version);
+        expect(2).toEqual(outVersion);
+        expect(destroyed).toEqual(outDestroyed);
     });
 });
