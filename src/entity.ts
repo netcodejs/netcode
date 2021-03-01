@@ -32,6 +32,19 @@ export class Entity<T extends object = any> {
             return target.get(compName2ctr[String(p)]);
         },
     });
+
+    private _comps?: Object[];
+    get comps() {
+        if (!this._comps) {
+            this._comps = [];
+            this.compMap.forEach((v) =>
+                Array.isArray(v)
+                    ? this._comps!.push.apply(this._comps, v)
+                    : this._comps!.push(v)
+            );
+        }
+        return this._comps;
+    }
     constructor() {
         Object.seal(this);
     }
@@ -56,6 +69,9 @@ export class Entity<T extends object = any> {
             }
         } else {
             this.compMap.set(schema.hash, ins);
+        }
+        if (this._comps) {
+            this._comps.push(ins);
         }
         return ins;
     }
