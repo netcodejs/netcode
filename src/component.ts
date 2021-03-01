@@ -25,7 +25,7 @@ export const hash2compName: Record<number, string> = Object.create(null);
 export const compName2ctr: Record<string, { new (): any }> = Object.create(
     null
 );
-export function Comp(name: string) {
+export function NetComp(name: string) {
     return function <T>(target: { new (): T }) {
         let s = target.prototype.__schema__ as Schema;
         if (!s) {
@@ -49,7 +49,9 @@ export function Comp(name: string) {
     };
 }
 
-export function CompProp(type: DataType | { new (): any }): PropertyDecorator {
+export function NetCompProp(
+    type: DataType | { new (): any }
+): PropertyDecorator {
     return function (t: any, propertyKey: string | symbol) {
         const target = t as ComponentConstructor;
         if (!target.__schema__) target.__schema__ = genSchema();

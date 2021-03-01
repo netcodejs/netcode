@@ -1,6 +1,6 @@
 import { compName2ctr } from "./component";
 import { NULL_NUM } from "./macro";
-import { fastRemove } from "./misc";
+// import { fastRemove } from "./misc";
 
 /**
  * The unit in a network.It can manager some component.
@@ -60,38 +60,57 @@ export class Entity<T extends object = any> {
         return ins;
     }
 
-    rm(comp: any): boolean {
-        const schema = comp.__schema__;
-        if (!(schema && schema.name)) {
-            console.error("Componrnt must use @Component");
-            return false;
-        }
-        if (this.compMap.has(schema.hash)) {
-            const comps = this.compMap.get(schema.hash);
-            if (Array.isArray(comps)) {
-                const index = comps.lastIndexOf(comp);
-                if (index > -1) {
-                    fastRemove(comps, index);
-                    return true;
-                } else {
-                    console.warn("Cannot find the comp: ", comp);
-                    return false;
-                }
-            } else if (comp === comps) {
-                return this.compMap.delete(schema.hash);
-            }
-        }
-        return false;
-    }
-
-    mrm<T>(ctr: { new (): T }): boolean {
+    addIns(ctr: { new (): T }, ins: T): T | null {
         const schema = ctr.prototype.__schema__;
         if (!(schema && schema.name)) {
             console.error("Componrnt must use @Component");
-            return false;
+            return null;
         }
-        return this.compMap.delete(schema.hash);
+        if (this.compMap.has(schema.hash)) {
+            const insOrArr = this.compMap.get(schema.hash);
+            if (Array.isArray(insOrArr)) {
+                insOrArr.push(ins);
+            } else {
+                this.compMap.set(schema.hash, [insOrArr, ins]);
+            }
+        } else {
+            this.compMap.set(schema.hash, ins);
+        }
+        return ins;
     }
+
+    // rm(comp: any): boolean {
+    //     const schema = comp.__schema__;
+    //     if (!(schema && schema.name)) {
+    //         console.error("Componrnt must use @Component");
+    //         return false;
+    //     }
+    //     if (this.compMap.has(schema.hash)) {
+    //         const comps = this.compMap.get(schema.hash);
+    //         if (Array.isArray(comps)) {
+    //             const index = comps.lastIndexOf(comp);
+    //             if (index > -1) {
+    //                 fastRemove(comps, index);
+    //                 return true;
+    //             } else {
+    //                 console.warn("Cannot find the comp: ", comp);
+    //                 return false;
+    //             }
+    //         } else if (comp === comps) {
+    //             return this.compMap.delete(schema.hash);
+    //         }
+    //     }
+    //     return false;
+    // }
+
+    // mrm<T>(ctr: { new (): T }): boolean {
+    //     const schema = ctr.prototype.__schema__;
+    //     if (!(schema && schema.name)) {
+    //         console.error("Componrnt must use @Component");
+    //         return false;
+    //     }
+    //     return this.compMap.delete(schema.hash);
+    // }
 
     get<T>(ctr: { new (): T }): T | null {
         const schema = ctr.prototype.__schema__;

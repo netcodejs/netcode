@@ -20,12 +20,14 @@ class DomainDefinition {
     reg(entity: Entity) {
         if (this.isValid(entity))
             throw new EntityRepeatRegisteredError(entity.toString());
-        if (this._entityIdCursor == this.capacity && this.autoResize)
-            this.resize(Math.ceil(this.capacity * 1.5));
-        else
-            throw new EntityGroupOutOfRangeYouCanOpenAutoResize(
-                `Domain: capacity: ${this.capacity}; ` + entity.toString()
-            );
+        if (this._entityIdCursor == this.capacity) {
+            if (this.autoResize) {
+                this.resize(Math.ceil(this.capacity * 1.5));
+            } else
+                throw new EntityGroupOutOfRangeYouCanOpenAutoResize(
+                    `Domain: capacity: ${this.capacity}; ` + entity.toString()
+                );
+        }
         entity.id = this._getEntityId();
         entity.version = this._entityVersion[entity.id];
         this._entities[entity.id] = entity;
