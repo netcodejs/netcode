@@ -117,6 +117,14 @@ describe("entity-componrnt", () => {
 
         expect(view).toBeTruthy();
         expect(logic).toBeTruthy();
+
+        expect(ent.comps.length).toEqual(2);
+        expect(ent.comps.indexOf(view)).toBeGreaterThan(-1);
+        expect(ent.comps.indexOf(logic)).toBeGreaterThan(-1);
+
+        const view2 = ent.add(ViewComponent)!;
+        expect(view2).toBeTruthy();
+        expect(ent.comps.indexOf(view2)).toBeGreaterThan(-1);
     });
     test("rmComp/hasComp/getComp-black", () => {
         const ent = new Entity();
