@@ -181,7 +181,7 @@ describe("Version-Check", () => {
         const destroyed = false;
         const Version = composeVersion(version, destroyed);
         const [outVersion, outDestroyed] = decomposeVersion(Version);
-        expect(1).toEqual(outVersion);
+        expect(version % ((1 << 30) - 1)).toEqual(outVersion);
         expect(destroyed).toEqual(outDestroyed);
     });
 
@@ -190,7 +190,7 @@ describe("Version-Check", () => {
         const destroyed = false;
         const Version = composeVersion(version, destroyed);
         const [outVersion, outDestroyed] = decomposeVersion(Version);
-        expect(2).toEqual(outVersion);
+        expect(version % ((1 << 30) - 1)).toEqual(outVersion);
         expect(destroyed).toEqual(outDestroyed);
     });
 });

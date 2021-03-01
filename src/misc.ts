@@ -40,19 +40,12 @@ export function getDataTypeByteLength<
     return 0;
 }
 
-const tempUint32 = new Int32Array(1);
-const MAX_VERSION = new Int32Array(1);
-MAX_VERSION[0] = (1 << 30) - 1;
+const MAX_VERSION = (1 << 30) - 1;
 export function composeVersion(num: number, destoryed: boolean | 0 | 1) {
-    tempUint32[0] = num % MAX_VERSION[0];
-    if (destoryed) {
-        tempUint32[0] |= 1 << 30;
-    }
-    return tempUint32[0];
+    num = num % MAX_VERSION;
+    return destoryed ? -num : num;
 }
 
 export function decomposeVersion(version: number) {
-    const num = version & MAX_VERSION[0];
-    const destroyed = (version & (1 << 30)) > 0;
-    return [num, destroyed];
+    return [version > 0 ? version : -version, version < 0];
 }
