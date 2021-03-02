@@ -1,7 +1,7 @@
 import {
     NetComp,
     IComponent,
-    NetCompProp,
+    NetVar,
     DataType,
     Entity,
     Schema,
@@ -9,13 +9,16 @@ import {
     compName2ctr,
     composeVersion,
     decomposeVersion,
+    NetArr,
+    ARR_CONTAINER,
+    NONE_CONTAINER,
 } from "../src";
 
 @NetComp("view")
 export class ViewComponent implements IComponent {
-    @NetCompProp(DataType.int)
+    @NetVar(DataType.int)
     width: number = 0;
-    @NetCompProp(DataType.int)
+    @NetVar(DataType.int)
     height: number = 0;
 
     entity!: Entity;
@@ -24,17 +27,17 @@ export class ViewComponent implements IComponent {
 
 @NetComp("reverseView")
 export class ReverseViewComponent {
-    @NetCompProp(DataType.int)
+    @NetVar(DataType.int)
     height: number = 0;
-    @NetCompProp(DataType.int)
+    @NetVar(DataType.int)
     width: number = 0;
 }
 
 //@Component
 export class ViewComponentNoDecoration /* implements IComponent */ {
-    @NetCompProp(DataType.int)
+    @NetVar(DataType.int)
     width: number = 0;
-    @NetCompProp(DataType.int)
+    @NetVar(DataType.int)
     height: number = 0;
 
     // onLoad() {}
@@ -42,18 +45,20 @@ export class ViewComponentNoDecoration /* implements IComponent */ {
 
 @NetComp("vec")
 export class VectorComponent {
-    @NetCompProp(DataType.float)
+    @NetVar(DataType.float)
     x: number = 0;
-    @NetCompProp(DataType.float)
+    @NetVar(DataType.float)
     y: number = 0;
 }
 
 @NetComp("logic")
 export class LogicComponent {
-    @NetCompProp(DataType.bool)
+    @NetVar(DataType.bool)
     alive: boolean = false;
-    @NetCompProp(VectorComponent)
+    @NetVar(VectorComponent)
     pos: VectorComponent = new VectorComponent();
+    @NetArr(DataType.string)
+    ze: string[] = [];
 }
 
 type SchemaClass<T> = T & { __schema__: Schema };
@@ -70,25 +75,34 @@ describe("SchemaAndClassId", () => {
         expect(Object.keys(hash2compName).length).toEqual(4);
         expect(Object.keys(compName2ctr).length).toEqual(4);
         expect(l1.__schema__).toMatchObject({
-            count: 2,
+            count: 3,
             props: {
                 0: {
-                    type: DataType.bool,
+                    type: { dataType: DataType.bool },
                     paramIndex: 0,
                     propertyKey: "alive",
                 },
                 alive: {
-                    type: DataType.bool,
+                    type: { dataType: DataType.bool },
                     paramIndex: 0,
                     propertyKey: "alive",
                 },
                 1: {
-                    type: VectorComponent,
+                    type: {
+                        dataType: VectorComponent,
+                        container: NONE_CONTAINER,
+                    },
                     paramIndex: 1,
                     propertyKey: "pos",
                 },
                 pos: {
-                    type: VectorComponent,
+                    type: { dataType: VectorComponent },
+                },
+                2: {
+                    type: {
+                        dataType: DataType.string,
+                        container: ARR_CONTAINER,
+                    },
                 },
             },
         });

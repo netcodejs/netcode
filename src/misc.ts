@@ -49,3 +49,7 @@ export function composeVersion(num: number, destoryed: boolean | 0 | 1) {
 export function decomposeVersion(version: number) {
     return [version > 0 ? version : -version, version < 0];
 }
+
+export function isPrimitive(test: any) {
+    return test !== Object(test);
+}

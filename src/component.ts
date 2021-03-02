@@ -49,17 +49,64 @@ export function NetComp(name: string) {
     };
 }
 
-export function NetCompProp(
-    type: DataType | { new (): any }
-): PropertyDecorator {
-    return function (t: any, propertyKey: string | symbol) {
-        const target = t as ComponentConstructor;
+export const NONE_CONTAINER = 0;
+export const ARR_CONTAINER = 1;
+
+export interface NetFiledType {
+    container: number;
+    dataType: DataType | { new (): any };
+}
+
+type protoOf<T> = Pick<T, keyof T>;
+
+type DataTypeMappingPrimitive = {
+    [DataType.int]: number;
+    [DataType.long]: number;
+    [DataType.float]: number;
+    [DataType.double]: number;
+    [DataType.short]: number;
+    [DataType.i8]: number;
+    [DataType.u8]: number;
+    [DataType.i16]: number;
+    [DataType.u16]: number;
+    [DataType.i32]: number;
+    [DataType.u32]: number;
+    [DataType.f32]: number;
+    [DataType.f64]: number;
+    [DataType.string]: string;
+};
+
+export function NetVar<DT extends number, R>(type: DT | { new (): R }) {
+    return function <PK extends string | symbol>(
+        t: protoOf<Record<PK, DataTypeMappingPrimitive[DT] & R>>,
+        propertyKey: PK
+    ) {
+        const target: ComponentConstructor = t as any;
         if (!target.__schema__) target.__schema__ = genSchema();
         const s = target.__schema__;
         s.raw.push({
             paramIndex: -1,
             propertyKey: String(propertyKey),
-            type: type,
+            type: {
+                container: NONE_CONTAINER,
+                dataType: type,
+            },
+        });
+    };
+}
+
+export function NetArr<DT extends number, R>(type: DT | { new (): R }) {
+    return function <PK extends string | symbol>(
+        t: protoOf<Record<PK, Array<DataTypeMappingPrimitive[DT] & R>>>,
+        propertyKey: PK
+    ) {
+        const target = (t as any) as ComponentConstructor;
+        if (!target.__schema__) target.__schema__ = genSchema();
+        const s = target.__schema__;
+        s.raw.push({
+            paramIndex: -1,
+            propertyKey: String(propertyKey),
+            type: { container: ARR_CONTAINER, dataType: type },
         });
     };
 }
@@ -67,7 +114,7 @@ export function NetCompProp(
 export interface SchemaProp {
     paramIndex: number;
     propertyKey: string;
-    type: DataType | { new (): any };
+    type: NetFiledType | { new (): any };
 }
 
 export interface Schema {
