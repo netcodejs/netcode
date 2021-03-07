@@ -1,27 +1,30 @@
 import {
-    NetComp,
-    IComponent,
-    NetVar,
-    DataType,
-    Entity,
-    Schema,
-    hash2compName,
+    ARR_CONTAINER,
     compName2ctr,
     composeVersion,
+    DataType,
     decomposeVersion,
+    Domain,
+    Entity,
+    hash2compName,
     NetArr,
-    ARR_CONTAINER,
+    NetComp,
+    NetVar,
     NONE_CONTAINER,
+    SchemaClass,
 } from "../src";
+import { StringDataBuffer } from "../src/data/string-databuffer";
 
 @NetComp("view")
-export class ViewComponent implements IComponent {
+export class ViewComponent /*  implements IComponent */ {
+    // __schema__!: Readonly<Schema>;
+    // entity!: Entity;
+
     @NetVar(DataType.int)
     width: number = 0;
     @NetVar(DataType.int)
     height: number = 0;
 
-    entity!: Entity;
     // onLoad() {}
 }
 
@@ -61,7 +64,10 @@ export class LogicComponent {
     ze: string[] = [];
 }
 
-type SchemaClass<T> = T & { __schema__: Schema };
+beforeEach(() => {
+    Domain.Clear();
+});
+
 describe("SchemaAndClassId", () => {
     test("basic", () => {
         let v1 = new ViewComponent() as SchemaClass<ViewComponent>;
@@ -160,8 +166,9 @@ describe("entity-componrnt", () => {
     });
     test("addComp-white-no-decoration", () => {
         const entity = new Entity();
-        const view = entity.add(ViewComponentNoDecoration);
-        expect(view).not.toBeTruthy();
+        expect(() => {
+            entity.add(ViewComponentNoDecoration);
+        }).toThrowError();
     });
 });
 
@@ -214,5 +221,55 @@ describe("Version-Check", () => {
         const [outVersion, outDestroyed] = decomposeVersion(Version);
         expect(version % ((1 << 30) - 1)).toEqual(outVersion);
         expect(destroyed).toEqual(outDestroyed);
+    });
+});
+
+describe("Domain-instance", () => {
+    test("Domain-main", () => {
+        Domain.Create("main", StringDataBuffer, 50);
+
+        // expect(Domain.main).toBeTruthy();
+    });
+
+    test("Domain-create/get", () => {
+        const domain1 = Domain.Create("other", StringDataBuffer);
+        const domain2 = Domain.Get("other");
+        expect(domain1 === domain2).toBeTruthy();
+    });
+
+    test("Domain-create-duplicate", () => {
+        const domainName = "Domain-create-duplicate-other";
+        const domain1 = Domain.Create(domainName, StringDataBuffer);
+        expect(domain1).toBeTruthy();
+        expect(() => {
+            const domain2 = Domain.Create(domainName, StringDataBuffer);
+        }).toThrow();
+    });
+});
+
+describe("Serable", () => {
+    test("ser-deser", () => {
+        // ser
+        const ent = new Entity();
+        const view = ent.add(ViewComponent)!;
+        const domain = Domain.Create("main", StringDataBuffer);
+        view.width = 123;
+        view.height = 456;
+        domain.reg(ent);
+        expect(domain.asData()).toEqual(
+            JSON.stringify([0, 0, 0, -16929906, 456, 123])
+        );
+
+        // deser
+        const otherDomain = Domain.Create<string>(
+            "other-main",
+            StringDataBuffer
+        );
+        otherDomain.setData(JSON.stringify([0, 0, 0, -16929906, 456, 123]));
+        const otherEnt = otherDomain.get(0)!!;
+        expect(otherEnt).toBeTruthy();
+        const otherView = otherEnt.get(ViewComponent);
+        expect(otherView).toBeTruthy();
+        expect(otherView).toMatchObject(view);
     });
 });

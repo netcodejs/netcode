@@ -2,6 +2,8 @@ import { compName2ctr } from "./component";
 import { NULL_NUM } from "./macro";
 // import { fastRemove } from "./misc";
 
+class ComponentHasNotDecorated extends Error {}
+class ComponentNotMatchedWhenSetIndex extends Error {}
 /**
  * The unit in a network.It can manager some component.
  * It include id and version, plz don't modify then if you are not undersanding!
@@ -9,7 +11,7 @@ import { NULL_NUM } from "./macro";
  * @example
  ```js
  // Must do decoration
- @Component
+ @NetComp
  class ViewComponent {
      @Param(DataType.bool)
      active = false
@@ -22,27 +24,19 @@ import { NULL_NUM } from "./macro";
  ent.rm(ViewComponent);
  ```
  */
-export class Entity<T extends object = any> {
+export class Entity<ProxyObj extends Object = any> {
     id = NULL_NUM;
     version = NULL_NUM;
     compMap: Map<number, Object | Object[]> = new Map();
 
-    $comps = new Proxy<T>(this as any, {
+    $comps = new Proxy<ProxyObj>(this as any, {
         get(target: any, p, receiver) {
             return target.get(compName2ctr[String(p)]);
         },
     });
 
-    private _comps?: Object[];
+    private _comps: Object[] = [];
     get comps() {
-        if (!this._comps) {
-            this._comps = [];
-            this.compMap.forEach((v) =>
-                Array.isArray(v)
-                    ? this._comps!.push.apply(this._comps, v)
-                    : this._comps!.push(v)
-            );
-        }
         return this._comps;
     }
     constructor() {
@@ -53,11 +47,13 @@ export class Entity<T extends object = any> {
         return `Entity: id=${this.id},version=${this.version}`;
     }
 
-    add<T>(ctr: { new (): T }): T | null {
+    add<T>(ctr: { new (): T }, index = -1): T {
         const schema = ctr.prototype.__schema__;
         if (!(schema && schema.name)) {
-            console.error("Componrnt must use @Component");
-            return null;
+            throw new ComponentHasNotDecorated("Component must use @NetComp");
+        }
+        if (index >= 0 && this._comps[index]) {
+            throw new ComponentNotMatchedWhenSetIndex();
         }
         const ins = new ctr();
         if (this.compMap.has(schema.hash)) {
@@ -70,17 +66,24 @@ export class Entity<T extends object = any> {
         } else {
             this.compMap.set(schema.hash, ins);
         }
-        if (this._comps) {
+        if (index < 0) {
             this._comps.push(ins);
+        } else {
+            this._comps[index] = ins;
         }
         return ins;
     }
 
-    addIns(ctr: { new (): T }, ins: T): T | null {
+    setCompIndex(ctr: { new (): any }) {}
+
+    addIns<T>(ctr: { new (): T }, ins: T, index = -1): T | null {
         const schema = ctr.prototype.__schema__;
         if (!(schema && schema.name)) {
-            console.error("Componrnt must use @Component");
+            console.error("Componrnt must use @NetComp");
             return null;
+        }
+        if (index >= 0 && this._comps[index]) {
+            throw new ComponentNotMatchedWhenSetIndex();
         }
         if (this.compMap.has(schema.hash)) {
             const insOrArr = this.compMap.get(schema.hash);
@@ -92,13 +95,18 @@ export class Entity<T extends object = any> {
         } else {
             this.compMap.set(schema.hash, ins);
         }
+        if (index < 0) {
+            this._comps.push(ins);
+        } else {
+            this._comps[index] = ins;
+        }
         return ins;
     }
 
     // rm(comp: any): boolean {
     //     const schema = comp.__schema__;
     //     if (!(schema && schema.name)) {
-    //         console.error("Componrnt must use @Component");
+    //         console.error("Componrnt must use @NetComp");
     //         return false;
     //     }
     //     if (this.compMap.has(schema.hash)) {
@@ -122,7 +130,7 @@ export class Entity<T extends object = any> {
     // mrm<T>(ctr: { new (): T }): boolean {
     //     const schema = ctr.prototype.__schema__;
     //     if (!(schema && schema.name)) {
-    //         console.error("Componrnt must use @Component");
+    //         console.error("Componrnt must use @NetComp");
     //         return false;
     //     }
     //     return this.compMap.delete(schema.hash);
@@ -131,7 +139,7 @@ export class Entity<T extends object = any> {
     get<T>(ctr: { new (): T }): T | null {
         const schema = ctr.prototype.__schema__;
         if (!(schema && schema.name)) {
-            console.error("Componrnt must use @Component");
+            console.error("Componrnt must use @NetComp");
             return null;
         }
 
@@ -144,7 +152,7 @@ export class Entity<T extends object = any> {
     mget<T>(ctr: { new (): T }): T[] {
         const schema = ctr.prototype.__schema__;
         if (!(schema && schema.name)) {
-            console.error("Componrnt must use @Component");
+            console.error("Componrnt must use @NetComp");
             return [];
         }
 
@@ -154,7 +162,7 @@ export class Entity<T extends object = any> {
     has(ctr: { new (): any }): boolean {
         const schema = ctr.prototype.__schema__;
         if (!(schema && schema.name)) {
-            console.error("Componrnt must use @Component");
+            console.error("Componrnt must use @NetComp");
             return false;
         }
         return this.compMap.has(schema.hash);
