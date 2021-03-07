@@ -1,7 +1,9 @@
 import { Entity } from "./entity";
 import { NULL_NUM, NULL_STR } from "./macro";
-import { DataType } from "./misc";
+import { DataType, fixupSerable, ProtoOf } from "./misc";
 import { str as hash } from "./lib/crc-32";
+import { MethodSchema } from "./component-rpc";
+import { IDataBufferReader, IDatabufferWriter } from "./data/serializable";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
 function sortComponentPropertyKey(a: SchemaProp, b: SchemaProp): number {
@@ -17,6 +19,7 @@ function genSchema(): Schema {
         name: NULL_STR,
         count: 0,
         props: {},
+        methods: {},
         raw: [],
     };
 }
@@ -25,7 +28,7 @@ export const hash2compName: Record<number, string> = Object.create(null);
 export const compName2ctr: Record<string, { new (): any }> = Object.create(
     null
 );
-export function NetComp(name: string) {
+export function NetComp(name: string, genSerable = true) {
     return function <T>(target: { new (): T }) {
         let s = target.prototype.__schema__ as Schema;
         if (!s) {
@@ -46,6 +49,10 @@ export function NetComp(name: string) {
                 s.props[v.propertyKey as string] = v;
             }
         }
+
+        if (genSerable) {
+            fixupSerable(target);
+        }
     };
 }
 
@@ -57,9 +64,8 @@ export interface NetFiledType {
     dataType: DataType | { new (): any };
 }
 
-type protoOf<T> = Pick<T, keyof T>;
-
 type DataTypeMappingPrimitive = {
+    [DataType.none]: never;
     [DataType.int]: number;
     [DataType.long]: number;
     [DataType.float]: number;
@@ -76,9 +82,14 @@ type DataTypeMappingPrimitive = {
     [DataType.string]: string;
 };
 
-export function NetVar<DT extends number, R>(type: DT | { new (): R }) {
+export type SchemaClass<T> = T & { __schema__: Schema };
+
+export function NetVar<DT extends number, R>(
+    type: DT | { new (): R },
+    checkDirty = false
+) {
     return function <PK extends string | symbol>(
-        t: protoOf<Record<PK, DataTypeMappingPrimitive[DT] & R>>,
+        t: ProtoOf<Record<PK, DataTypeMappingPrimitive[DT] & R>>,
         propertyKey: PK
     ) {
         const target: ComponentConstructor = t as any;
@@ -97,7 +108,7 @@ export function NetVar<DT extends number, R>(type: DT | { new (): R }) {
 
 export function NetArr<DT extends number, R>(type: DT | { new (): R }) {
     return function <PK extends string | symbol>(
-        t: protoOf<Record<PK, Array<DataTypeMappingPrimitive[DT] & R>>>,
+        t: ProtoOf<Record<PK, Array<DataTypeMappingPrimitive[DT] & R>>>,
         propertyKey: PK
     ) {
         const target = (t as any) as ComponentConstructor;
@@ -114,7 +125,7 @@ export function NetArr<DT extends number, R>(type: DT | { new (): R }) {
 export interface SchemaProp {
     paramIndex: number;
     propertyKey: string;
-    type: NetFiledType | { new (): any };
+    type: NetFiledType;
 }
 
 export interface Schema {
@@ -122,6 +133,7 @@ export interface Schema {
     hash: number;
     count: number;
     props: Record<string | symbol, SchemaProp>;
+    methods: Record<string | number, MethodSchema>;
     raw: SchemaProp[];
 }
 
@@ -129,14 +141,9 @@ export type ComponentConstructor<T = any> = { new (): T } & {
     __schema__: Schema;
 };
 
+// export type ComponentType
+
 export interface IComponent {
-    entity?: Entity;
-
-    onLoad?(): void;
-    onStart?(): void;
-    onDestroy?(): void;
-
-    update?(): void;
-    fixedUpdate?(): void;
-    lateUpdate?(): void;
+    entity: Entity;
+    __schema__: Readonly<Schema>;
 }
