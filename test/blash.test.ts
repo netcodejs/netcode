@@ -13,6 +13,11 @@ import {
     NONE_CONTAINER,
     SchemaClass,
 } from "../src";
+import {
+    IDataBufferReader,
+    IDatabufferWriter,
+    ISerable,
+} from "../src/data/serializable";
 import { StringDataBuffer } from "../src/data/string-databuffer";
 
 @NetComp("view")
@@ -256,6 +261,7 @@ describe("Serable", () => {
         view.width = 123;
         view.height = 456;
         domain.reg(ent);
+
         expect(domain.asData()).toEqual(
             JSON.stringify([0, 0, 0, -16929906, 456, 123])
         );

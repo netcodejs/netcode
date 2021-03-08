@@ -24,10 +24,19 @@ class ComponentNotMatchedWhenSetIndex extends Error {}
  ent.rm(ViewComponent);
  ```
  */
+export class EntityEvent extends Event {
+    comp: any;
+}
+
 export class Entity<ProxyObj extends Object = any> {
     id = NULL_NUM;
     version = NULL_NUM;
     compMap: Map<number, Object | Object[]> = new Map();
+    static Event = {
+        ADD_COMP: "add-comp",
+        REG_ENTITY: "reg-entity",
+        UNREG_ENTITY: "unreg-entity",
+    };
 
     $comps = new Proxy<ProxyObj>(this as any, {
         get(target: any, p, receiver) {
@@ -73,9 +82,6 @@ export class Entity<ProxyObj extends Object = any> {
         }
         return ins;
     }
-
-    setCompIndex(ctr: { new (): any }) {}
-
     addIns<T>(ctr: { new (): T }, ins: T, index = -1): T | null {
         const schema = ctr.prototype.__schema__;
         if (!(schema && schema.name)) {
