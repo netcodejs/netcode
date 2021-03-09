@@ -278,4 +278,32 @@ describe("Serable", () => {
         expect(otherView).toBeTruthy();
         expect(otherView).toMatchObject(view);
     });
+
+    test("ser-deser-array", () => {
+        @NetComp("arr")
+        class ArrComp {
+            @NetArr(DataType.float)
+            arr: number[] = [];
+        }
+
+        const serDomain = Domain.Create("ser-domain", StringDataBuffer);
+        const serEnt0 = new Entity();
+        serDomain.reg(serEnt0);
+        const serEnt1 = new Entity();
+        serDomain.reg(serEnt1);
+        const serArr = serEnt1.add(ArrComp);
+        serArr.arr.push(1, 2, 3, 4);
+        const data = serDomain.asData();
+
+        const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
+        deserDomain.setData(data);
+        const deserEnt1 = deserDomain.get(serEnt1.id)!;
+        expect(deserEnt1.$comps.arr).toMatchObject(serArr);
+        expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4]);
+
+        serArr.arr.push(5, 9);
+        deserDomain.setData(serDomain.asData());
+        expect(deserEnt1.$comps.arr).toMatchObject(serArr);
+        expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4, 5, 9]);
+    });
 });

@@ -175,6 +175,24 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                         buffer.writeDouble(value);
                         break;
                 }
+            } else {
+                buffer.writeInt(value.length);
+                for (let i = 0, j = value.length; i < j; i++) {
+                    switch (type.dataType) {
+                        case DataType.int:
+                        case DataType.i32:
+                            buffer.writeInt(value[i]);
+                            break;
+                        case DataType.float:
+                        case DataType.f32:
+                            buffer.writeFloat(value[i]);
+                            break;
+                        case DataType.double:
+                        case DataType.f64:
+                            buffer.writeDouble(value[i]);
+                            break;
+                    }
+                }
             }
         }
     };
@@ -200,6 +218,28 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                     case DataType.f64:
                         (this as any)[key] = buffer.readDouble();
                         break;
+                }
+            } else {
+                if (!(this as any)[key]) {
+                    (this as any)[key] = [];
+                }
+                const arr = (this as any)[key] as any[];
+                arr.length = buffer.readInt();
+                for (let i = 0, j = arr.length; i < j; i++) {
+                    switch (type.dataType) {
+                        case DataType.int:
+                        case DataType.i32:
+                            arr[i] = buffer.readInt();
+                            break;
+                        case DataType.float:
+                        case DataType.f32:
+                            arr[i] = buffer.readFloat();
+                            break;
+                        case DataType.double:
+                        case DataType.f64:
+                            arr[i] = buffer.readDouble();
+                            break;
+                    }
                 }
             }
         }
