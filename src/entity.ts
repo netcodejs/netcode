@@ -24,9 +24,6 @@ class ComponentNotMatchedWhenSetIndex extends Error {}
  ent.rm(ViewComponent);
  ```
  */
-export class EntityEvent extends Event {
-    comp: any;
-}
 
 export class Entity<ProxyObj extends Object = any> {
     id = NULL_NUM;
