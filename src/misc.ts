@@ -8,8 +8,9 @@ export function fastRemove(arr: any[], index: number) {
 // prettier-ignore
 export enum DataType {
     none, i8 = 1, u8, i16, u16, i32, u32, f32, f64,
-    short, ushort, int, uint, long, ulong, float, double, string, bool,
+    short, ushort, int, uint, long, ulong, float, double, string, bool
 }
+export const DataTypeObect = 99;
 
 export function getDataTypeByteLength<
     T extends Exclude<DataType, DataType.string>
@@ -56,7 +57,7 @@ export function isPrimitive(test: any) {
     return test !== Object(test);
 }
 
-export function asSerable<T>(obj: T): (ISerable & T) | null {
+export function asSerable<T extends {}>(obj: T): (ISerable & T) | null {
     if (!obj) return null;
     // @ts-ignore
     return typeof obj.ser === "function" && typeof obj.deser === "function"

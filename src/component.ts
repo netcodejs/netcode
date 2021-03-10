@@ -1,9 +1,10 @@
 import { Entity } from "./entity";
 import { NULL_NUM, NULL_STR } from "./macro";
-import { DataType, ProtoOf } from "./misc";
+import { asSerable, DataType, DataTypeObect, ProtoOf } from "./misc";
 import { str as hash } from "./lib/crc-32";
 import { MethodSchema } from "./component-rpc";
 import { IDataBufferReader, IDatabufferWriter } from "./data/serializable";
+import { Config } from "./config";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
 function sortComponentPropertyKey(a: SchemaProp, b: SchemaProp): number {
@@ -51,7 +52,11 @@ export function NetComp(name: string, genSerable = true) {
         }
 
         if (genSerable) {
-            fixupSerable(target);
+            if (Config.JIT) {
+                fixupSerableJIT(target);
+            } else {
+                fixupSerable(target);
+            }
         }
     };
 }
@@ -61,7 +66,8 @@ export const ARR_CONTAINER = 1;
 
 export interface NetFiledType {
     container: number;
-    dataType: DataType | { new (): any };
+    dataType: DataType;
+    refCtr?: { new (): any };
 }
 
 type DataTypeMappingPrimitive = {
@@ -84,10 +90,7 @@ type DataTypeMappingPrimitive = {
 
 export type SchemaClass<T> = T & { __schema__: Schema };
 
-export function NetVar<DT extends number, R>(
-    type: DT | { new (): R },
-    checkDirty = false
-) {
+export function NetVar<DT extends number, R>(type: DT | { new (): R }) {
     return function <PK extends string | symbol>(
         t: ProtoOf<Record<PK, DataTypeMappingPrimitive[DT] & R>>,
         propertyKey: PK
@@ -100,7 +103,8 @@ export function NetVar<DT extends number, R>(
             propertyKey: String(propertyKey),
             type: {
                 container: NONE_CONTAINER,
-                dataType: type,
+                dataType: typeof type === "number" ? type : DataTypeObect,
+                refCtr: typeof type === "number" ? undefined : type,
             },
         });
     };
@@ -117,7 +121,11 @@ export function NetArr<DT extends number, R>(type: DT | { new (): R }) {
         s.raw.push({
             paramIndex: -1,
             propertyKey: String(propertyKey),
-            type: { container: ARR_CONTAINER, dataType: type },
+            type: {
+                container: ARR_CONTAINER,
+                dataType: typeof type === "number" ? type : DataTypeObect,
+                refCtr: typeof type === "number" ? undefined : type,
+            },
         });
     };
 }
@@ -157,8 +165,9 @@ export function fixupSerable<T extends Record<string, any>>(target: {
     ) {
         const schema = this.__schema__;
         for (let i = 0, count = schema.count; i < count; i++) {
-            const type = schema.props[i].type;
-            const key = schema.props[i].propertyKey;
+            const prop = schema.props[i];
+            const type = prop.type;
+            const key = prop.propertyKey;
             const value = this[key];
             if (type.container === NONE_CONTAINER) {
                 switch (type.dataType) {
@@ -173,6 +182,9 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                     case DataType.double:
                     case DataType.f64:
                         buffer.writeDouble(value);
+                        break;
+                    case DataTypeObect:
+                        value.ser(buffer);
                         break;
                 }
             } else {
@@ -191,6 +203,9 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                         case DataType.f64:
                             buffer.writeDouble(value[i]);
                             break;
+                        case DataTypeObect:
+                            value.ser(buffer);
+                            break;
                     }
                 }
             }
@@ -202,8 +217,9 @@ export function fixupSerable<T extends Record<string, any>>(target: {
     ) {
         const schema = this.__schema__;
         for (let i = 0, count = schema.count; i < count; i++) {
-            const type = schema.props[i].type;
-            const key = schema.props[i].propertyKey;
+            const prop = schema.props[i];
+            const type = prop.type;
+            const key = prop.propertyKey;
             if (type.container === NONE_CONTAINER) {
                 switch (type.dataType) {
                     case DataType.int:
@@ -217,6 +233,11 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                     case DataType.double:
                     case DataType.f64:
                         (this as any)[key] = buffer.readDouble();
+                        break;
+                    case DataTypeObect:
+                        if (!(this as any)[key])
+                            (this as any)[key] = new prop.type.refCtr!();
+                        (this as any)[key].deser(buffer);
                         break;
                 }
             } else {
@@ -239,9 +260,126 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                         case DataType.f64:
                             arr[i] = buffer.readDouble();
                             break;
+                        case DataTypeObect:
+                            if (!(this as any)[key])
+                                (this as any)[key] = new prop.type.refCtr!();
+                            (this as any)[key].deser(buffer);
+                            break;
                     }
                 }
             }
         }
     };
+}
+
+export function fixupSerableJIT<T extends Record<string, any>>(target: {
+    new (): T;
+}) {
+    let serJitStr = "";
+    const schema = target.prototype.__schema__ as Schema;
+    for (let i = 0, count = schema.count; i < count; i++) {
+        const prop = schema.props[i];
+        const type = prop.type;
+        const key = prop.propertyKey;
+        if (type.container === NONE_CONTAINER) {
+            switch (type.dataType) {
+                case DataType.int:
+                case DataType.i32:
+                    serJitStr += `buffer.writeInt(this.${key});`;
+                    break;
+                case DataType.float:
+                case DataType.f32:
+                    serJitStr += `buffer.writeFloat(this.${key});`;
+                    break;
+                case DataType.double:
+                case DataType.f64:
+                    serJitStr += `buffer.writeDouble(this.${key});`;
+                    break;
+                case DataTypeObect:
+                    serJitStr += `this.${key}.ser(buffer);`;
+                    break;
+            }
+        } else {
+            serJitStr += `buffer.writeInt(this.${key}.length);`;
+            let itemSerFuncStr = "";
+            switch (type.dataType) {
+                case DataType.int:
+                case DataType.i32:
+                    itemSerFuncStr = `buffer.writeInt(arr[i]);`;
+                    break;
+                case DataType.float:
+                case DataType.f32:
+                    itemSerFuncStr = `buffer.writeFloat(arr[i]);`;
+                    break;
+                case DataType.double:
+                case DataType.f64:
+                    itemSerFuncStr = `buffer.writeDouble(arr[i]);`;
+                    break;
+                case DataTypeObect:
+                    itemSerFuncStr = `arr[i].ser(buffer);`;
+                    break;
+            }
+            serJitStr += `
+            var arr = this.${key}
+            for (let i = 0, j = arr.length; i < j; i++) {
+                ${itemSerFuncStr}
+            }
+            `;
+        }
+    }
+    target.prototype.ser = Function("buffer", serJitStr);
+    let deserJitStr = "";
+    for (let i = 0, count = schema.count; i < count; i++) {
+        const prop = schema.props[i];
+        const type = prop.type;
+        const key = prop.propertyKey;
+        if (type.container === NONE_CONTAINER) {
+            switch (type.dataType) {
+                case DataType.int:
+                case DataType.i32:
+                    deserJitStr += `this.${key}=buffer.readInt();`;
+                    break;
+                case DataType.float:
+                case DataType.f32:
+                    deserJitStr += `this.${key}=buffer.readFloat();`;
+                    break;
+                case DataType.double:
+                case DataType.f64:
+                    deserJitStr += `this.${key}=buffer.readDouble();`;
+                    break;
+                case DataTypeObect:
+                    deserJitStr += `this.${key}.deser(buffer);`;
+                    break;
+            }
+        } else {
+            deserJitStr += `
+            if(!this.${key})this.${key}=[];
+            var arr=this.${key};
+            arr.length=buffer.readInt();`;
+            let itemSerFuncStr = "";
+            switch (type.dataType) {
+                case DataType.int:
+                case DataType.i32:
+                    itemSerFuncStr = `arr[i]=buffer.readInt();`;
+                    break;
+                case DataType.float:
+                case DataType.f32:
+                    itemSerFuncStr = `arr[i]=buffer.readFloat();`;
+                    break;
+                case DataType.double:
+                case DataType.f64:
+                    itemSerFuncStr = `arr[i]=buffer.readDouble();`;
+                    break;
+                case DataTypeObect:
+                    itemSerFuncStr = `arr[i].deser(buffer);`;
+                    break;
+            }
+            deserJitStr += `
+            for (let i = 0, j = arr.length; i < j; i++) {
+                ${itemSerFuncStr}
+            }
+            `;
+        }
+    }
+    target.prototype.deser = Function("buffer", deserJitStr);
 }

@@ -3,6 +3,7 @@ import {
     compName2ctr,
     composeVersion,
     DataType,
+    DataTypeObect,
     decomposeVersion,
     Domain,
     Entity,
@@ -69,6 +70,12 @@ export class LogicComponent {
     ze: string[] = [];
 }
 
+@NetComp("arr")
+class ArrComp {
+    @NetArr(DataType.float)
+    arr: number[] = [];
+}
+
 beforeEach(() => {
     Domain.Clear();
 });
@@ -83,8 +90,8 @@ describe("SchemaAndClassId", () => {
         expect((ReverseViewComponent.prototype as any).__schema__.name).toEqual(
             "reverseView"
         );
-        expect(Object.keys(hash2compName).length).toEqual(4);
-        expect(Object.keys(compName2ctr).length).toEqual(4);
+        expect(Object.keys(hash2compName).length).toEqual(5);
+        expect(Object.keys(compName2ctr).length).toEqual(5);
         expect(l1.__schema__).toMatchObject({
             count: 3,
             props: {
@@ -100,14 +107,15 @@ describe("SchemaAndClassId", () => {
                 },
                 1: {
                     type: {
-                        dataType: VectorComponent,
+                        dataType: DataTypeObect,
+                        refCtr: VectorComponent,
                         container: NONE_CONTAINER,
                     },
                     paramIndex: 1,
                     propertyKey: "pos",
                 },
                 pos: {
-                    type: { dataType: VectorComponent },
+                    type: { refCtr: VectorComponent },
                 },
                 2: {
                     type: {
@@ -280,12 +288,6 @@ describe("Serable", () => {
     });
 
     test("ser-deser-array", () => {
-        @NetComp("arr")
-        class ArrComp {
-            @NetArr(DataType.float)
-            arr: number[] = [];
-        }
-
         const serDomain = Domain.Create("ser-domain", StringDataBuffer);
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
@@ -306,4 +308,21 @@ describe("Serable", () => {
         expect(deserEnt1.$comps.arr).toMatchObject(serArr);
         expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4, 5, 9]);
     });
+});
+
+describe("benchmark", () => {
+    const serDomain = Domain.Create("ser-domain", StringDataBuffer);
+    const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
+    const serEnt0 = new Entity();
+    serDomain.reg(serEnt0);
+    const serEnt1 = new Entity();
+    serDomain.reg(serEnt1);
+    const serArr = serEnt1.add(ArrComp);
+    serArr.arr.push(1, 2, 3, 4);
+
+    const start = Date.now();
+    for (let i = 0; i < 1000000; i++) {
+        deserDomain.setData(serDomain.asData());
+    }
+    expect(Date.now() - start).toBeLessThan(2000);
 });
