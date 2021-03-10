@@ -308,6 +308,30 @@ describe("Serable", () => {
         expect(deserEnt1.$comps.arr).toMatchObject(serArr);
         expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4, 5, 9]);
     });
+
+    test("ser-deser-obj", () => {
+        const serDomain = Domain.Create("ser-domain", StringDataBuffer);
+        const serEnt0 = new Entity();
+        serDomain.reg(serEnt0);
+        const serEnt1 = new Entity();
+        serDomain.reg(serEnt1);
+        const serLogic = serEnt1.add(LogicComponent);
+        serLogic.pos.x = 123;
+        serLogic.pos.y = 456;
+
+        const data = serDomain.asData();
+
+        const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
+        deserDomain.setData(data);
+        const deserEnt1 = deserDomain.get(serEnt1.id)!;
+        expect(deserEnt1.$comps.logic).toMatchObject(serLogic);
+        expect(deserEnt1.$comps.logic).toMatchObject({
+            pos: {
+                x: 123,
+                y: 456,
+            },
+        });
+    });
 });
 
 describe("benchmark", () => {
