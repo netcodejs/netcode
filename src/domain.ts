@@ -39,6 +39,9 @@ export class Domain<T extends SupportNetDataType = any> {
     }
 
     private _entities: (Entity | null)[];
+    public get entities() {
+        return this._entities;
+    }
     private _entityVersion: number[];
     private _destroyEntityId: number[];
     private _entityIdCursor = 0;

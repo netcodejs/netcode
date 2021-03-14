@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>netcodejs</title>
+</head>
+<script src="./bundle.js"></script>
+<body>
+    <div style="width: 1000px; margin: auto;">
+        <div>
+            Client1
+        </div>
+        <canvas id="client1"></canvas>
+        <div>
+            Client2
+        </div>
+        <canvas id="client2"></canvas>
+        <div>
+            Server
+        </div>
+        <canvas id="server"></canvas>
+    </div>
+</body>
+<script>
+    const client1 = new StateSync.Client(document.getElementById("client1"))
+    const client2 = new StateSync.Client(document.getElementById("client2"))
+    const server = new StateSync.Server(document.getElementById("server"))
+
+    setInterval(() => {
+        const data = server.domain.asData();
+        client1.domain.setData(data);
+        client2.domain.setData(data);
+        console.log(client1, client2, server)
+    }, 500)
+</script>
+</html>

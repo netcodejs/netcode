@@ -30,7 +30,8 @@
   },
   "scripts": {
     "build": "yarn run rollup -c",
-    "test": "jest"
+    "test": "jest",
+    "example": "yarn run rollup -c rollup.config.example.js --watch"
   },
   "husky": {
     "hooks": {

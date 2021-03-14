@@ -33,7 +33,7 @@ export class MessageManager<T extends SupportNetDataType> {
         // comp index
         buf.writeInt(compIdx);
         // comp hash
-        buf.writeInt(comp.__schema__.hash);
+        buf.writeLong(comp.__schema__.hash);
         // ser comp
         comp.ser(buf);
 
@@ -58,7 +58,7 @@ export class MessageManager<T extends SupportNetDataType> {
         // comp index
         const compIdx = buf.readInt();
         // comp hash
-        const hash = buf.readInt();
+        const hash = buf.readLong();
         // deser comp
         return {
             entityId,
