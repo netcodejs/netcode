@@ -1,4 +1,4 @@
-import { compName2ctr } from "./component";
+import { compName2ctr } from "./component-variable";
 import { NULL_NUM } from "./macro";
 // import { fastRemove } from "./misc";
 

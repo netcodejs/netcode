@@ -1,10 +1,10 @@
-import { NetComp, NetVar } from "./component";
+import { DataType } from "./component-schema";
+import { NetComp, NetVar } from "./component-variable";
 import {
     IDataBufferReader,
     IDatabufferWriter,
     ISerable,
 } from "./data/serializable";
-import { DataType } from "./misc";
 
 export abstract class ADirty<T> {
     abstract value: T;

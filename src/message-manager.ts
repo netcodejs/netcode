@@ -2,7 +2,7 @@ import { Entity } from "./entity";
 import { asSerable, composeVersion, decomposeVersion } from "./misc";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
 import { StringDataBuffer } from "./data/string-databuffer";
-import { Schema, SchemaClass } from "./component";
+import { Schema, SchemaClass } from "./component-variable";
 
 export enum MessageType {
     UPDATE_COMPONENT,

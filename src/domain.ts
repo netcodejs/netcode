@@ -1,4 +1,4 @@
-import { compName2ctr, hash2compName, SchemaClass } from "./component";
+import { compName2ctr, hash2compName, SchemaClass } from "./component-variable";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
 import { Entity } from "./entity";
 import { NULL_NUM } from "./macro";

@@ -1,35 +1,88 @@
-import { DataType } from "./misc";
+import {
+    ComponentConstructor,
+    DataType,
+    DataTypeVoid,
+    genMethodSchema,
+    genSchema,
+} from "./component-schema";
+import { str as hash } from "./lib/crc-32";
 
 export enum RpcType {
     SERVER,
     CLIENT,
 }
 
-export interface MethodSchema {
-    name: string;
-    hash: number;
-    paramTypes: DataType[];
-    paramCount: number;
-}
+export const hash2RpcName = {} as Record<number, string>;
+export class Crc32PropertyKeyHashConflict extends Error {}
+export function Rpc<RpcReturnType extends void | DataType = void>(
+    type: RpcType,
+    returnType?: RpcReturnType
+) {
+    return function (t: any, propertyKey: string): void {
+        // gen schema
+        const target: ComponentConstructor = t as any;
+        if (!target.__schema__) target.__schema__ = genSchema();
+        const s = target.__schema__;
+        if (!s.methods[propertyKey]) {
+            s.methods[propertyKey] = genMethodSchema();
+        }
+        const ms = s.methods[propertyKey];
+        ms.hash = hash(propertyKey);
+        ms.name = propertyKey;
+        if (hash2RpcName[ms.hash] && hash2RpcName[ms.hash] != ms.name) {
+            throw new Crc32PropertyKeyHashConflict();
+        }
+        hash2RpcName[ms.hash] = ms.name;
+        if (typeof returnType === "undefined") {
+            ms.returnType = DataTypeVoid;
+        } else {
+            ms.returnType = returnType as DataType;
+        }
 
-export function Rpc(type: RpcType): PropertyDecorator {
-    return function (target: Object, propertyKey: string | symbol): void {
-        console.log(type);
+        ms.paramCount = ms.paramTypes.length;
+        for (let i = 0, len = ms.paramCount; i < len; i++) {
+            if (!ms.paramTypes[i]) {
+                console.warn(
+                    `[Netcode]Rpc function ${propertyKey} at paramIndex(${i}) set the default type DataType.double`
+                );
+                ms.paramTypes[i] = DataType.double;
+            }
+        }
     };
 }
 
-export function RpcVar(type: DataType): ParameterDecorator {
+export function RpcVar(type: DataType) {
     return function (
-        target: Object,
-        propertyKey: string | symbol,
+        t: any,
+        propertyKey: string,
         parameterIndex: number
-    ): void {};
+    ): void {
+        // gen schema
+        const target: ComponentConstructor = t as any;
+        if (!target.__schema__) target.__schema__ = genSchema();
+        const s = target.__schema__;
+        if (!s.methods[propertyKey]) {
+            s.methods[propertyKey] = genMethodSchema();
+        }
+        const ms = s.methods[propertyKey];
+        ms.paramTypes[parameterIndex] = type;
+    };
 }
 
-export function RpcArr(type: DataType): ParameterDecorator {
-    return function (
-        target: Object,
-        propertyKey: string | symbol,
-        parameterIndex: number
-    ): void {};
-}
+// export function RpcArr(type: DataType) {
+//     return function (
+//         t: any,
+//         propertyKey: string,
+//         parameterIndex: number
+//     ): void {
+//         // gen schema
+//         const target: ComponentConstructor = t as any;
+//         if (!target.__schema__) target.__schema__ = genSchema();
+//         const s = target.__schema__;
+//         if (!s.methods[propertyKey]) {
+//             s.methods[propertyKey] = genMethodSchema();
+//         }
+//         const ms = s.methods[propertyKey];
+
+//     };
+// }
