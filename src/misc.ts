@@ -1,16 +1,10 @@
+import { DataType } from "./component-schema";
 import { ISerable } from "./data/serializable";
 
 export function fastRemove(arr: any[], index: number) {
     arr[index] = arr[arr.length - 1];
     arr.length--;
 }
-
-// prettier-ignore
-export enum DataType {
-    none, i8 = 1, u8, i16, u16, i32, u32, f32, f64,
-    short, ushort, int, uint, long, ulong, float, double, string, bool
-}
-export const DataTypeObect = 99;
 
 export function getDataTypeByteLength<
     T extends Exclude<DataType, DataType.string>

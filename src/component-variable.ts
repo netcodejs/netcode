@@ -1,28 +1,24 @@
 import { Entity } from "./entity";
 import { NULL_NUM, NULL_STR } from "./macro";
-import { asSerable, DataType, DataTypeObect, ProtoOf } from "./misc";
+import { ProtoOf } from "./misc";
 import { str as hash } from "./lib/crc-32";
-import { MethodSchema } from "./component-rpc";
 import { IDataBufferReader, IDatabufferWriter } from "./data/serializable";
 import { Config } from "./config";
+import {
+    PropSchema,
+    Schema,
+    DataType,
+    DataTypeObect,
+    ComponentConstructor,
+    genSchema,
+} from "./component-schema";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
-function sortComponentPropertyKey(a: SchemaProp, b: SchemaProp): number {
+function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
     const akey = a.propertyKey;
     const bkey = b.propertyKey;
     if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
     return akey > bkey ? 1 : -1;
-}
-
-function genSchema(): Schema {
-    return {
-        hash: NULL_NUM,
-        name: NULL_STR,
-        count: 0,
-        props: {},
-        methods: {},
-        raw: [],
-    };
 }
 
 export const hash2compName: Record<number, string> = Object.create(null);
@@ -63,12 +59,6 @@ export function NetComp(name: string, genSerable = true) {
 
 export const NONE_CONTAINER = 0;
 export const ARR_CONTAINER = 1;
-
-export interface NetFiledType {
-    container: number;
-    dataType: DataType;
-    refCtr?: { new (): any };
-}
 
 type DataTypeMappingPrimitive = {
     [DataType.none]: never;
@@ -129,25 +119,6 @@ export function NetArr<DT extends number, R>(type: DT | { new (): R }) {
         });
     };
 }
-
-export interface SchemaProp {
-    paramIndex: number;
-    propertyKey: string;
-    type: NetFiledType;
-}
-
-export interface Schema {
-    name: string;
-    hash: number;
-    count: number;
-    props: Record<string | symbol, SchemaProp>;
-    methods: Record<string | number, MethodSchema>;
-    raw: SchemaProp[];
-}
-
-export type ComponentConstructor<T = any> = { new (): T } & {
-    __schema__: Schema;
-};
 
 // export type ComponentType
 
