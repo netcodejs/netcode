@@ -1,8 +1,8 @@
-import { Entity } from "./entity";
-import { asSerable, composeVersion, decomposeVersion } from "./misc";
+import { composeVersion, decomposeVersion } from "./misc";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
-import { StringDataBuffer } from "./data/string-databuffer";
-import { Schema, SchemaClass } from "./component-variable";
+import { IComponent, SchemaClass } from "./component-variable";
+import { Schema } from "./component-schema";
+import { Entity } from "./entity";
 
 export enum MessageType {
     UPDATE_COMPONENT,
@@ -10,10 +10,13 @@ export enum MessageType {
 }
 
 export class MessageManager<T extends SupportNetDataType> {
-    constructor(readonly dataBuffer: IDataBuffer<T>) {}
+    constructor(
+        readonly statebuffer: IDataBuffer<T>,
+        readonly rpcbuffer: IDataBuffer<T>
+    ) {}
 
-    startSend() {
-        this.dataBuffer.reset();
+    startSendComp() {
+        this.statebuffer.reset();
     }
 
     sendComp(
@@ -23,7 +26,7 @@ export class MessageManager<T extends SupportNetDataType> {
         comp: ISerable & SchemaClass<any>,
         toDestory = false
     ): boolean {
-        const buf = this.dataBuffer;
+        const buf = this.statebuffer;
         // msg type -> compoent
 
         // entity id
@@ -40,17 +43,17 @@ export class MessageManager<T extends SupportNetDataType> {
         return true;
     }
 
-    endSend() {
-        return this.dataBuffer.get();
+    endSendComp() {
+        return this.statebuffer.get();
     }
 
     startRecv(source: T) {
-        this.dataBuffer.set(source);
+        this.statebuffer.set(source);
     }
 
     revcComp() {
-        if (!this.dataBuffer.hasNext()) return null;
-        const buf = this.dataBuffer;
+        if (!this.statebuffer.hasNext()) return null;
+        const buf = this.statebuffer;
         // entity id
         const entityId = buf.readInt();
         // entity compuse version
@@ -70,4 +73,23 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     endRecv() {}
+
+    sendRpc(methodName: number, component: any, params: any[]) {
+        const comp = component as IComponent;
+        const buf = this.rpcbuffer;
+        // schema
+        const s = comp.__schema__;
+        // entity
+        const entity = comp.entity;
+        // method schema
+        const ms = s.methods[methodName];
+        // entity id
+        buf.writeInt(entity.id);
+        // comp index
+        buf.writeUshort(comp.index);
+        // method hash
+        buf.writeInt(ms.hash);
+    }
+
+    recvRpc() {}
 }

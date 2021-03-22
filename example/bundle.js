@@ -74,6 +74,12 @@ var StateSync = (function (exports) {
         return c > 3 && r && Object.defineProperty(target, key, r), r;
     }
 
+    function __param(paramIndex, decorator) {
+        return function (target, key) {
+            decorator(target, key, paramIndex);
+        };
+    }
+
     /** @deprecated */
     function __spreadArrays() {
         for (var s = 0, i = 0, il = arguments.length; i < il; i++)
@@ -111,6 +117,27 @@ var StateSync = (function (exports) {
         DataType[(DataType["bool"] = 18)] = "bool";
     })(DataType || (DataType = {}));
     var DataTypeObect = 99;
+    var DataTypeVoid = 98;
+    function genSchema() {
+        return {
+            hash: NULL_NUM,
+            name: NULL_STR,
+            count: 0,
+            props: Object.create(null),
+            methods: Object.create(null),
+            raw: [],
+        };
+    }
+    function genMethodSchema() {
+        return {
+            hash: NULL_NUM,
+            name: NULL_STR,
+            paramCount: 0,
+            paramTypes: [],
+            returnType: DataTypeVoid,
+        };
+    }
+
     var MAX_VERSION = (1 << 30) - 1;
     function composeVersion(num, destoryed) {
         num = num % MAX_VERSION;
@@ -270,16 +297,6 @@ var StateSync = (function (exports) {
         if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
         return akey > bkey ? 1 : -1;
     }
-    function genSchema() {
-        return {
-            hash: NULL_NUM,
-            name: NULL_STR,
-            count: 0,
-            props: {},
-            methods: {},
-            raw: [],
-        };
-    }
     var hash2compName = Object.create(null);
     var compName2ctr = Object.create(null);
     function NetComp(name, genSerable) {
@@ -331,8 +348,12 @@ var StateSync = (function (exports) {
         };
     }
     function fixupSerableJIT(target) {
-        var serJitStr = "";
         var schema = target.prototype.__schema__;
+        fixedupSerableStateJit(target, schema);
+        fixedupSerableRpcJit(target, schema);
+    }
+    function fixedupSerableStateJit(target, schema) {
+        var serJitStr = "";
         for (var i = 0, count = schema.count; i < count; i++) {
             var prop = schema.props[i];
             var type = prop.type;
@@ -442,6 +463,95 @@ var StateSync = (function (exports) {
         }
         target.prototype.deser = Function("buffer", deserJitStr);
     }
+    function fixedupSerableRpcJit(target, schema) {
+        var rpcNames = Object.keys(schema.methods);
+        for (var i = 0, len = rpcNames.length; i < len; i++) {
+            var name_1 = rpcNames[i];
+            var ms = schema.methods[name_1];
+            var serJitStr = "\n        ";
+            target.prototype["ser" + ms.hash] = Function("buffer", serJitStr);
+            target.prototype["deser" + ms.hash] = Function("buffer", serJitStr);
+        }
+    }
+
+    var RpcType;
+    (function (RpcType) {
+        RpcType[(RpcType["SERVER"] = 0)] = "SERVER";
+        RpcType[(RpcType["CLIENT"] = 1)] = "CLIENT";
+    })(RpcType || (RpcType = {}));
+    var hash2RpcName = {};
+    var Crc32PropertyKeyHashConflict = /** @class */ (function (_super) {
+        __extends(Crc32PropertyKeyHashConflict, _super);
+        function Crc32PropertyKeyHashConflict() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return Crc32PropertyKeyHashConflict;
+    })(Error);
+    function Rpc(type, returnType) {
+        return function (t, propertyKey) {
+            // gen schema
+            var target = t;
+            if (!target.__schema__) target.__schema__ = genSchema();
+            var s = target.__schema__;
+            if (!s.methods[propertyKey]) {
+                s.methods[propertyKey] = genMethodSchema();
+            }
+            var ms = s.methods[propertyKey];
+            ms.hash = crc32.str(propertyKey);
+            ms.name = propertyKey;
+            if (hash2RpcName[ms.hash] && hash2RpcName[ms.hash] != ms.name) {
+                throw new Crc32PropertyKeyHashConflict();
+            }
+            hash2RpcName[ms.hash] = ms.name;
+            if (typeof returnType === "undefined") {
+                ms.returnType = DataTypeVoid;
+            } else {
+                ms.returnType = returnType;
+            }
+            ms.paramCount = ms.paramTypes.length;
+            for (var i = 0, len = ms.paramCount; i < len; i++) {
+                if (!ms.paramTypes[i]) {
+                    console.warn(
+                        "[Netcode]Rpc function " +
+                            propertyKey +
+                            " at paramIndex(" +
+                            i +
+                            ") set the default type DataType.double"
+                    );
+                    ms.paramTypes[i] = DataType.double;
+                }
+            }
+        };
+    }
+    function RpcVar(type) {
+        return function (t, propertyKey, parameterIndex) {
+            // gen schema
+            var target = t;
+            if (!target.__schema__) target.__schema__ = genSchema();
+            var s = target.__schema__;
+            if (!s.methods[propertyKey]) {
+                s.methods[propertyKey] = genMethodSchema();
+            }
+            var ms = s.methods[propertyKey];
+            ms.paramTypes[parameterIndex] = type;
+        };
+    }
+    // export function RpcArr(type: DataType) {
+    //     return function (
+    //         t: any,
+    //         propertyKey: string,
+    //         parameterIndex: number
+    //     ): void {
+    //         // gen schema
+    //         const target: ComponentConstructor = t as any;
+    //         if (!target.__schema__) target.__schema__ = genSchema();
+    //         const s = target.__schema__;
+    //         if (!s.methods[propertyKey]) {
+    //             s.methods[propertyKey] = genMethodSchema();
+    //         }
+    //         const ms = s.methods[propertyKey];
+    //     };
+    // }
 
     // import { fastRemove } from "./misc";
     var ComponentHasNotDecorated = /** @class */ (function (_super) {
@@ -526,10 +636,12 @@ var StateSync = (function (exports) {
                 this.compMap.set(schema.hash, ins);
             }
             if (index < 0) {
-                this._comps.push(ins);
+                index = this._comps.push(ins) - 1;
             } else {
                 this._comps[index] = ins;
             }
+            ins.entity = this;
+            ins.index = index;
             return ins;
         };
         Entity.prototype.addIns = function (ctr, ins, index) {
@@ -555,10 +667,12 @@ var StateSync = (function (exports) {
                 this.compMap.set(schema.hash, ins);
             }
             if (index < 0) {
-                this._comps.push(ins);
+                index = this._comps.push(ins) - 1;
             } else {
                 this._comps[index] = ins;
             }
+            ins.entity = this;
+            ins.index = index;
             return ins;
         };
         // rm(comp: any): boolean {
@@ -637,11 +751,12 @@ var StateSync = (function (exports) {
         MessageType[(MessageType["RPC"] = 1)] = "RPC";
     })(MessageType || (MessageType = {}));
     var MessageManager = /** @class */ (function () {
-        function MessageManager(dataBuffer) {
-            this.dataBuffer = dataBuffer;
+        function MessageManager(statebuffer, rpcbuffer) {
+            this.statebuffer = statebuffer;
+            this.rpcbuffer = rpcbuffer;
         }
-        MessageManager.prototype.startSend = function () {
-            this.dataBuffer.reset();
+        MessageManager.prototype.startSendComp = function () {
+            this.statebuffer.reset();
         };
         MessageManager.prototype.sendComp = function (
             entityId,
@@ -653,7 +768,7 @@ var StateSync = (function (exports) {
             if (toDestory === void 0) {
                 toDestory = false;
             }
-            var buf = this.dataBuffer;
+            var buf = this.statebuffer;
             // msg type -> compoent
             // entity id
             buf.writeInt(entityId);
@@ -667,15 +782,15 @@ var StateSync = (function (exports) {
             comp.ser(buf);
             return true;
         };
-        MessageManager.prototype.endSend = function () {
-            return this.dataBuffer.get();
+        MessageManager.prototype.endSendComp = function () {
+            return this.statebuffer.get();
         };
         MessageManager.prototype.startRecv = function (source) {
-            this.dataBuffer.set(source);
+            this.statebuffer.set(source);
         };
         MessageManager.prototype.revcComp = function () {
-            if (!this.dataBuffer.hasNext()) return null;
-            var buf = this.dataBuffer;
+            if (!this.statebuffer.hasNext()) return null;
+            var buf = this.statebuffer;
             // entity id
             var entityId = buf.readInt();
             // entity compuse version
@@ -696,6 +811,27 @@ var StateSync = (function (exports) {
             };
         };
         MessageManager.prototype.endRecv = function () {};
+        MessageManager.prototype.sendRpc = function (
+            methodName,
+            component,
+            params
+        ) {
+            var comp = component;
+            var buf = this.rpcbuffer;
+            // schema
+            var s = comp.__schema__;
+            // entity
+            var entity = comp.entity;
+            // method schema
+            var ms = s.methods[methodName];
+            // entity id
+            buf.writeInt(entity.id);
+            // comp index
+            buf.writeUshort(comp.index);
+            // method hash
+            buf.writeInt(ms.hash);
+        };
+        MessageManager.prototype.recvRpc = function () {};
         return MessageManager;
     })();
 
@@ -745,7 +881,10 @@ var StateSync = (function (exports) {
             this._entityVersion = new Array(capacity);
             this._entityVersion.fill(0);
             this._destroyEntityId = new Array();
-            this._internalMsgMng = new MessageManager(new dataBufCtr());
+            this._internalMsgMng = new MessageManager(
+                new dataBufCtr(),
+                new dataBufCtr()
+            );
         }
         Domain.Create = function (name, dataBufferType) {
             var args = [];
@@ -884,13 +1023,13 @@ var StateSync = (function (exports) {
                     var ctr = compName2ctr[compName];
                     comp = ent.add(ctr, params.compIdx);
                 }
-                comp.deser(this._internalMsgMng.dataBuffer);
+                comp.deser(this._internalMsgMng.statebuffer);
             }
         };
         Domain.prototype.asData = function () {
-            this._internalMsgMng.startSend();
+            this._internalMsgMng.startSendComp();
             this._ser();
-            return this._internalMsgMng.endSend();
+            return this._internalMsgMng.endSendComp();
         };
         Domain.prototype.setData = function (source) {
             this._internalMsgMng.startRecv(source);
@@ -1409,10 +1548,25 @@ var StateSync = (function (exports) {
         function Transform() {
             this.pos = new Vector();
         }
+        Transform.prototype.move = function (x, y) {
+            this.pos.x += x;
+            this.pos.y += y;
+        };
         __decorate([NetVar(Vector)], Transform.prototype, "pos", void 0);
+        __decorate(
+            [
+                Rpc(RpcType.SERVER),
+                __param(0, RpcVar(DataType.int)),
+                __param(1, RpcVar(DataType.int)),
+            ],
+            Transform.prototype,
+            "move",
+            null
+        );
         Transform = __decorate([NetComp("trans")], Transform);
         return Transform;
     })();
+
     var Base = /** @class */ (function () {
         function Base(name, canvas) {
             this.canvas = canvas;
@@ -1421,7 +1575,7 @@ var StateSync = (function (exports) {
             this.whiteBall = "#F8C3CD";
             this.domain = Domain.Create(name, StringDataBuffer);
             this.ctx = canvas.getContext("2d");
-            this.canvas.width = 1000;
+            this.canvas.width = 950;
             this.canvas.height = 70;
             this.ctx.fillStyle = this.bg;
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -1477,16 +1631,6 @@ var StateSync = (function (exports) {
             _this.domain.reg(client2);
             return _this;
         }
-        Server.prototype.loop = function (time) {
-            this.c1.$comps.trans.pos.x += this.c1Dir;
-            if (
-                this.c1.$comps.trans.pos.x > 800 ||
-                this.c1.$comps.trans.pos.x < 0
-            ) {
-                this.c1Dir = -this.c1Dir;
-            }
-            _super.prototype.loop.call(this, time);
-        };
         return Server;
     })(Base);
     var Client = /** @class */ (function (_super) {

@@ -72,7 +72,9 @@ export class LogicComponent {
     ze: string[] = [];
 
     @Rpc(RpcType.CLIENT)
-    abcv() {}
+    abcv() {
+        this.alive = true;
+    }
 }
 
 @NetComp("arr")
@@ -289,7 +291,8 @@ describe("Serable", () => {
         expect(otherEnt).toBeTruthy();
         const otherView = otherEnt.get(ViewComponent);
         expect(otherView).toBeTruthy();
-        expect(otherView).toMatchObject(view);
+        expect(otherView!.width).toEqual(view!.width);
+        expect(otherView!.height).toEqual(view!.height);
     });
 
     test("ser-deser-array", () => {
@@ -305,12 +308,12 @@ describe("Serable", () => {
         const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.get(serEnt1.id)!;
-        expect(deserEnt1.$comps.arr).toMatchObject(serArr);
+        expect(deserEnt1.$comps.arr.arr).toMatchObject(serArr.arr);
         expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4]);
 
         serArr.arr.push(5, 9);
         deserDomain.setData(serDomain.asData());
-        expect(deserEnt1.$comps.arr).toMatchObject(serArr);
+        expect(deserEnt1.$comps.arr.arr).toMatchObject(serArr.arr);
         expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4, 5, 9]);
     });
 
@@ -329,7 +332,9 @@ describe("Serable", () => {
         const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.get(serEnt1.id)!;
-        expect(deserEnt1.$comps.logic).toMatchObject(serLogic);
+        expect(deserEnt1.$comps.logic.alive).toEqual(serLogic.alive);
+        expect(deserEnt1.$comps.logic.pos).toMatchObject(serLogic.pos);
+        expect(deserEnt1.$comps.logic.ze).toEqual(serLogic.ze);
         expect(deserEnt1.$comps.logic).toMatchObject({
             pos: {
                 x: 123,
@@ -354,4 +359,15 @@ describe("benchmark", () => {
         deserDomain.setData(serDomain.asData());
     }
     expect(Date.now() - start).toBeLessThan(2000);
+});
+
+describe("rpc", () => {
+    test("valid", () => {
+        const serDomain = Domain.Create("ser-domain", StringDataBuffer);
+        const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
+        const serEnt0 = new Entity();
+        const serEnt1 = new Entity();
+        serDomain.reg(serEnt0);
+        serDomain.reg(serEnt1);
+    });
 });

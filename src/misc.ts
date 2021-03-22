@@ -13,22 +13,22 @@ export function getDataTypeByteLength<
         switch (type) {
             case DataType.i8:
             case DataType.u8:
-            case DataType.short:
-            case DataType.ushort:
             case DataType.bool:
                 return 1;
+            case DataType.short:
+            case DataType.ushort:
             case DataType.i16:
             case DataType.u16:
-            case DataType.int:
-            case DataType.uint:
                 return 2;
+            case DataType.uint:
+            case DataType.int:
             case DataType.i32:
             case DataType.u32:
             case DataType.f32:
-            case DataType.long:
-            case DataType.ulong:
             case DataType.float:
                 return 4;
+            case DataType.long:
+            case DataType.ulong:
             case DataType.f64:
             case DataType.double:
                 return 8;

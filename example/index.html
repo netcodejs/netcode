@@ -1,38 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>netcodejs</title>
 </head>
 <script src="./bundle.js"></script>
+
 <body>
-    <div style="width: 1000px; margin: auto;">
-        <div>
-            Client1
+    <div id="app" style="width: 1000px; margin: auto">
+        <div style="border-style: solid; padding: 20px 20px; margin: 10px 0px;">
+            Client1 ->
+            <input type="checkbox" id="client1Predict" @click="checkboxClick">
+            Prediction
+            </input>
+            <input type="checkbox" id="client1Interpolation" @click="checkboxClick">
+            Interpolation
+            </input>
+            <input type="checkbox" id="client1Rollback" @click="checkboxClick">
+            Rollback
+            </input>
+            <canvas id="client1" style="width: 950px; height: 70px; display: block; padding-top: 10px;"></canvas>
         </div>
-        <canvas id="client1"></canvas>
-        <div>
-            Client2
+
+        <div style="border-style: solid; padding: 20px 20px; margin: 10px 0px;">
+            Server ->
+            Delay:
+            <input style="width: 50px; font-size: 15px;" type="number" id="serverDelay" @click="checkboxClick"
+                value="100">
+            ms,
+            </input>
+            Jitter:
+            <input style="width: 50px; font-size: 15px;" type="number" id="serverJitter" @click="checkboxClick"
+                value="20">
+            ms
+            </input>
+            <canvas id="server" style="width: 950px; height: 70px; display: block; padding-top: 10px;"></canvas>
         </div>
-        <canvas id="client2"></canvas>
-        <div>
-            Server
-        </div>
-        <canvas id="server"></canvas>
+
+        <div style="border-style: solid; padding: 20px 20px; margin: 10px 0px;">
+            Client2 ->
+            <input type="checkbox" id="client2Predict" @click="checkboxClick">
+            Prediction
+            </input>
+            <input type="checkbox" id="client2Interpolation" @click="checkboxClick">
+            Interpolation
+            </input>
+            <input type="checkbox" id="client2Rollback" @click="checkboxClick">
+            Rollback
+        <canvas id="client2" style="width: 950px; height: 70px; display: block; padding-top: 10px;"></canvas>
+    </div>
     </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script>
-    const client1 = new StateSync.Client(document.getElementById("client1"))
-    const client2 = new StateSync.Client(document.getElementById("client2"))
-    const server = new StateSync.Server(document.getElementById("server"))
+    function checkboxClick(event) {
+        const t = event.target;
+        console.log(t.id, t.checked, t.value);
+    }
+    const data = { hello: "1111" };
+    const vm = new Vue({ el: "#app", data });
+    const client1 = new StateSync.Client(
+        document.getElementById("client1")
+    );
+    const client2 = new StateSync.Client(
+        document.getElementById("client2")
+    );
+    const server = new StateSync.Server(document.getElementById("server"));
 
+    vm.hello = "aaaa";
     setInterval(() => {
         const data = server.domain.asData();
         client1.domain.setData(data);
         client2.domain.setData(data);
-        console.log(client1, client2, server)
-    }, 500)
+    }, 500);
 </script>
+
 </html>

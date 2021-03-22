@@ -1,24 +1,6 @@
-import {
-    DataType,
-    Domain,
-    Entity,
-    NetComp,
-    NetVar,
-    StringDataBuffer,
-} from "../src";
-
-@NetComp("vec")
-export class Vector {
-    @NetVar(DataType.int)
-    x: number = 0;
-    @NetVar(DataType.int)
-    y: number = 0;
-}
-@NetComp("trans")
-export class Transform {
-    @NetVar(Vector)
-    pos = new Vector();
-}
+import { Domain, Entity, StringDataBuffer } from "../src";
+import { Transform } from "./net-comp";
+export * from "./net-comp";
 
 export class Base {
     readonly domain: Domain;
@@ -30,7 +12,7 @@ export class Base {
     constructor(name: string, readonly canvas: HTMLCanvasElement) {
         this.domain = Domain.Create(name, StringDataBuffer);
         this.ctx = canvas.getContext("2d")!;
-        this.canvas.width = 1000;
+        this.canvas.width = 950;
         this.canvas.height = 70;
         this.ctx.fillStyle = this.bg;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -88,17 +70,6 @@ export class Server extends Base {
 
         this.domain.reg(client1);
         this.domain.reg(client2);
-    }
-
-    loop(time: number) {
-        this.c1.$comps.trans.pos.x += this.c1Dir;
-        if (
-            this.c1.$comps.trans.pos.x > 800 ||
-            this.c1.$comps.trans.pos.x < 0
-        ) {
-            this.c1Dir = -this.c1Dir;
-        }
-        super.loop(time);
     }
 }
 
