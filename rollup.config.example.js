@@ -11,6 +11,7 @@ export default {
     plugins: [
         cjs(),
         typescript({
+            tsconfig: "./example/tsconfig.json",
             tsconfigOverride: { compilerOptions: { declaration: false } },
         }),
     ],

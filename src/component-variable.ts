@@ -124,6 +124,7 @@ export function NetArr<DT extends number, R>(type: DT | { new (): R }) {
 
 export interface IComponent {
     entity: Entity;
+    index: number;
     __schema__: Readonly<Schema>;
 }
 
@@ -246,8 +247,13 @@ export function fixupSerable<T extends Record<string, any>>(target: {
 export function fixupSerableJIT<T extends Record<string, any>>(target: {
     new (): T;
 }) {
-    let serJitStr = "";
     const schema = target.prototype.__schema__ as Schema;
+    fixedupSerableStateJit(target, schema);
+    fixedupSerableRpcJit(target, schema);
+}
+
+export function fixedupSerableStateJit(target: any, schema: Schema) {
+    let serJitStr = "";
     for (let i = 0, count = schema.count; i < count; i++) {
         const prop = schema.props[i];
         const type = prop.type;
@@ -353,4 +359,77 @@ export function fixupSerableJIT<T extends Record<string, any>>(target: {
         }
     }
     target.prototype.deser = Function("buffer", deserJitStr);
+}
+
+export function fixedupSerableRpcJit(target: any, schema: Schema) {
+    const rpcNames = Object.keys(schema.methods);
+    for (let i = 0, len = rpcNames.length; i < len; i++) {
+        const name = rpcNames[i];
+        const ms = schema.methods[name];
+
+        let serJitStr = `
+        `;
+        target.prototype["ser" + ms.hash] = Function("buffer", serJitStr);
+
+        let deserJitStr = "";
+        target.prototype["deser" + ms.hash] = Function("buffer", serJitStr);
+    }
+}
+
+export function fixedupSerableRpc(target: any, schema: Schema) {
+    const rpcNames = Object.keys(schema.methods);
+    for (let i = 0, len = rpcNames.length; i < len; i++) {
+        const name = rpcNames[i];
+        const ms = schema.methods[name];
+        target.prototype["ser" + ms.hash] = function (
+            buffer: IDatabufferWriter,
+            args: any[]
+        ) {
+            for (let j = 0, len = ms.paramCount; j < len; j++) {
+                const value = args[j];
+                switch (ms.paramTypes[j]) {
+                    case DataType.int:
+                    case DataType.i32:
+                        buffer.writeInt(value);
+                        break;
+                    case DataType.float:
+                    case DataType.f32:
+                        buffer.writeFloat(value);
+                        break;
+                    case DataType.double:
+                    case DataType.f64:
+                        buffer.writeDouble(value);
+                        break;
+                    case DataTypeObect:
+                        value.ser(buffer);
+                        break;
+                }
+            }
+        };
+        target.prototype["deser" + ms.hash] = function (
+            buffer: IDataBufferReader
+        ) {
+            const args = new Array(ms.paramCount);
+            for (let j = 0, len = ms.paramCount; j < len; j++) {
+                switch (ms.paramTypes[j]) {
+                    case DataType.int:
+                    case DataType.i32:
+                        args[j] = buffer.readInt();
+                        break;
+                    case DataType.float:
+                    case DataType.f32:
+                        args[j] = buffer.readFloat();
+                        break;
+                    case DataType.double:
+                    case DataType.f64:
+                        args[j] = buffer.readDouble();
+                        break;
+                    case DataTypeObect:
+                        args[j] = new (ms.paramTypes[j] as any)();
+                        args[j].ser(buffer);
+                        break;
+                }
+            }
+        };
+    }
 }

@@ -73,12 +73,15 @@ export class Entity<ProxyObj extends Object = any> {
             this.compMap.set(schema.hash, ins);
         }
         if (index < 0) {
-            this._comps.push(ins);
+            index = this._comps.push(ins) - 1;
         } else {
             this._comps[index] = ins;
         }
+        (ins as any).entity = this;
+        (ins as any).index = index;
         return ins;
     }
+
     addIns<T>(ctr: { new (): T }, ins: T, index = -1): T | null {
         const schema = ctr.prototype.__schema__;
         if (!(schema && schema.name)) {
@@ -99,10 +102,12 @@ export class Entity<ProxyObj extends Object = any> {
             this.compMap.set(schema.hash, ins);
         }
         if (index < 0) {
-            this._comps.push(ins);
+            index = this._comps.push(ins) - 1;
         } else {
             this._comps[index] = ins;
         }
+        (ins as any).entity = this;
+        (ins as any).index = index;
         return ins;
     }
 

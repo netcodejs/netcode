@@ -46,8 +46,8 @@ export function genSchema(): Schema {
         hash: NULL_NUM,
         name: NULL_STR,
         count: 0,
-        props: {},
-        methods: {},
+        props: Object.create(null),
+        methods: Object.create(null),
         raw: [],
     };
 }

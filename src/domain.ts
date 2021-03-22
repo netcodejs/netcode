@@ -56,7 +56,10 @@ export class Domain<T extends SupportNetDataType = any> {
         this._entityVersion = new Array<number>(capacity);
         this._entityVersion.fill(0);
         this._destroyEntityId = new Array<number>();
-        this._internalMsgMng = new MessageManager(new dataBufCtr());
+        this._internalMsgMng = new MessageManager(
+            new dataBufCtr(),
+            new dataBufCtr()
+        );
     }
 
     reg(entity: Entity) {
@@ -168,14 +171,14 @@ export class Domain<T extends SupportNetDataType = any> {
                 const ctr = compName2ctr[compName];
                 comp = ent.add(ctr, params.compIdx);
             }
-            comp.deser(this._internalMsgMng.dataBuffer);
+            comp.deser(this._internalMsgMng.statebuffer);
         }
     }
 
     asData() {
-        this._internalMsgMng.startSend();
+        this._internalMsgMng.startSendComp();
         this._ser();
-        return this._internalMsgMng.endSend();
+        return this._internalMsgMng.endSendComp();
     }
 
     setData(source: T) {
