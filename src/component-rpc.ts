@@ -29,6 +29,7 @@ export function Rpc<RpcReturnType extends void | DataType = void>(
         const ms = s.methods[propertyKey];
         ms.hash = hash(propertyKey);
         ms.name = propertyKey;
+        ms.type = type;
         if (hash2RpcName[ms.hash] && hash2RpcName[ms.hash] != ms.name) {
             throw new Crc32PropertyKeyHashConflict();
         }

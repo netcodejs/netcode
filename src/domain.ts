@@ -1,3 +1,4 @@
+import { hash2RpcName, RpcType } from "./component-rpc";
 import { compName2ctr, hash2compName, SchemaClass } from "./component-variable";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
 import { Entity } from "./entity";
@@ -46,9 +47,11 @@ export class Domain<T extends SupportNetDataType = any> {
     private _destroyEntityId: number[];
     private _entityIdCursor = 0;
     private _internalMsgMng: MessageManager<T>;
+    public readonly readonlyInternalMsgMng!: MessageManager<T>;
 
     public constructor(
         public dataBufCtr: { new (...args: any[]): IDataBuffer<T> },
+        readonly type: RpcType = RpcType.CLIENT,
         public capacity = 50,
         public autoResize = true
     ) {
@@ -60,6 +63,7 @@ export class Domain<T extends SupportNetDataType = any> {
             new dataBufCtr(),
             new dataBufCtr()
         );
+        this.readonlyInternalMsgMng = this._internalMsgMng;
     }
 
     reg(entity: Entity) {
@@ -113,7 +117,7 @@ export class Domain<T extends SupportNetDataType = any> {
         );
     }
 
-    protected _ser() {
+    protected _serComps() {
         for (let ent of this._entities) {
             if (!ent) continue;
             const comps = ent.comps;
@@ -141,7 +145,7 @@ export class Domain<T extends SupportNetDataType = any> {
         }
     }
 
-    protected _der() {
+    protected _derComps() {
         let params: ReturnType<MessageManager<T>["revcComp"]>;
         while ((params = this._internalMsgMng.revcComp())) {
             let ent = this._entities[params.entityId];
@@ -175,16 +179,41 @@ export class Domain<T extends SupportNetDataType = any> {
         }
     }
 
-    asData() {
-        this._internalMsgMng.startSendComp();
-        this._ser();
-        return this._internalMsgMng.endSendComp();
+    protected _deserRpcs() {
+        let param: ReturnType<MessageManager<T>["recvRpc"]>;
+        while ((param = this._internalMsgMng.recvRpc())) {
+            const ent = this._entities[param.entityId];
+            if (!ent) continue;
+            const comp = ent.comps[param.compIdx] as any;
+            if (!comp) continue;
+            const argus = comp["deser" + param.methodHash](
+                this._internalMsgMng.rpcbuffer
+            );
+            const methodName = hash2RpcName[param.methodHash];
+            comp[methodName].apply(comp, argus);
+        }
     }
 
-    setData(source: T) {
-        this._internalMsgMng.startRecv(source);
-        this._der();
-        this._internalMsgMng.endRecv();
+    asData() {
+        this._internalMsgMng.startSendComp();
+        this._serComps();
+        const stateBuffer = this._internalMsgMng.endSendComp();
+
+        this._internalMsgMng.startSendRpc();
+        const rpcBuffer = this._internalMsgMng.endSendRpc();
+
+        return [stateBuffer, rpcBuffer];
+    }
+
+    setData(source: T[]) {
+        const [state, rpc] = source;
+        this._internalMsgMng.startRecvComp(state);
+        this._derComps();
+        this._internalMsgMng.endRecvComp();
+
+        this._internalMsgMng.startRecvRpc(rpc);
+        this._deserRpcs();
+        this._internalMsgMng.endRecvRpc();
     }
 
     private _getEntityId() {

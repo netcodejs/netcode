@@ -12,6 +12,7 @@ import {
     ComponentConstructor,
     genSchema,
 } from "./component-schema";
+import { RpcType } from "./component-rpc";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
 function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
@@ -249,7 +250,7 @@ export function fixupSerableJIT<T extends Record<string, any>>(target: {
 }) {
     const schema = target.prototype.__schema__ as Schema;
     fixedupSerableStateJit(target, schema);
-    fixedupSerableRpcJit(target, schema);
+    fixedupSerableRpc(target, schema);
 }
 
 export function fixedupSerableStateJit(target: any, schema: Schema) {
@@ -429,6 +430,18 @@ export function fixedupSerableRpc(target: any, schema: Schema) {
                         args[j].ser(buffer);
                         break;
                 }
+            }
+        };
+
+        const privateName = "__" + name + "__";
+        target.prototype[privateName] = target.prototype[name];
+        target.prototype[name] = function (...args: any[]) {
+            const ent = this.entity as Entity;
+            const domain = ent.domain!;
+            if (domain.type == ms.type) {
+                this[privateName](...args);
+            } else {
+                domain.readonlyInternalMsgMng.callRpc(ms.hash, this, ...args);
             }
         };
     }

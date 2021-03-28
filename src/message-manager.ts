@@ -1,15 +1,20 @@
 import { composeVersion, decomposeVersion } from "./misc";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
 import { IComponent, SchemaClass } from "./component-variable";
-import { Schema } from "./component-schema";
-import { Entity } from "./entity";
 
 export enum MessageType {
     UPDATE_COMPONENT,
     RPC,
 }
 
+export interface RpcCall {
+    methodName: number;
+    component: any;
+    args: any[];
+}
+
 export class MessageManager<T extends SupportNetDataType> {
+    protected _rpcCalls: RpcCall[] = [];
     constructor(
         readonly statebuffer: IDataBuffer<T>,
         readonly rpcbuffer: IDataBuffer<T>
@@ -44,10 +49,12 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     endSendComp() {
-        return this.statebuffer.get();
+        const out = this.statebuffer.get();
+        this.statebuffer.reset();
+        return out;
     }
 
-    startRecv(source: T) {
+    startRecvComp(source: T) {
         this.statebuffer.set(source);
     }
 
@@ -72,7 +79,15 @@ export class MessageManager<T extends SupportNetDataType> {
         };
     }
 
-    endRecv() {}
+    endRecvComp() {}
+
+    callRpc(methodName: number, component: any, ...args: any) {
+        this._rpcCalls.push({ methodName, component, args });
+    }
+
+    startSendRpc() {
+        // this.rpcbuffer.reset();
+    }
 
     sendRpc(methodName: number, component: any, params: any[]) {
         const comp = component as IComponent;
@@ -89,7 +104,31 @@ export class MessageManager<T extends SupportNetDataType> {
         buf.writeUshort(comp.index);
         // method hash
         buf.writeInt(ms.hash);
+        // param
+        component["ser" + ms.hash](buf, params);
     }
 
-    recvRpc() {}
+    endSendRpc() {
+        const out = this.rpcbuffer.get();
+        this.rpcbuffer.reset();
+        return out;
+    }
+
+    startRecvRpc(source: T) {
+        const buf = this.rpcbuffer;
+        buf.set(source);
+    }
+
+    recvRpc() {
+        if (!this.statebuffer.hasNext()) return null;
+        const buf = this.rpcbuffer;
+        // entity id
+        const entityId = buf.readInt();
+        // comp index
+        const compIdx = buf.readUshort();
+        // method hash
+        const methodHash = buf.readInt();
+        return { entityId, compIdx, methodHash };
+    }
+    endRecvRpc() {}
 }

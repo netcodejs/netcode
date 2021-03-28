@@ -1,4 +1,5 @@
 import { compName2ctr } from "./component-variable";
+import { Domain } from "./domain";
 import { NULL_NUM } from "./macro";
 // import { fastRemove } from "./misc";
 
@@ -28,6 +29,7 @@ class ComponentNotMatchedWhenSetIndex extends Error {}
 export class Entity<ProxyObj extends Object = any> {
     id = NULL_NUM;
     version = NULL_NUM;
+    domain?: Domain;
     compMap: Map<number, Object | Object[]> = new Map();
     static Event = {
         ADD_COMP: "add-comp",

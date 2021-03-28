@@ -1,3 +1,4 @@
+import { RpcType } from "./component-rpc";
 import { NULL_NUM, NULL_STR } from "./macro";
 
 export interface PropSchema {
@@ -27,6 +28,7 @@ export interface MethodSchema {
     paramTypes: DataType[];
     paramCount: number;
     returnType: DataType;
+    type: RpcType;
 }
 
 // prettier-ignore
