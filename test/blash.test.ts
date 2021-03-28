@@ -71,7 +71,7 @@ export class LogicComponent {
     @NetArr(DataType.string)
     ze: string[] = [];
 
-    @Rpc(RpcType.CLIENT)
+    @Rpc(RpcType.SERVER)
     abcv() {
         this.alive = true;
     }
@@ -277,16 +277,20 @@ describe("Serable", () => {
         view.height = 456;
         domain.reg(ent);
 
-        expect(domain.asData()).toEqual(
-            JSON.stringify([0, 0, 0, -16929906, 456, 123])
-        );
+        expect(domain.asData()).toEqual([
+            JSON.stringify([0, 0, 0, -16929906, 456, 123]),
+            JSON.stringify([]),
+        ]);
 
         // deser
         const otherDomain = Domain.Create<string>(
             "other-main",
             StringDataBuffer
         );
-        otherDomain.setData(JSON.stringify([0, 0, 0, -16929906, 456, 123]));
+        otherDomain.setData([
+            JSON.stringify([0, 0, 0, -16929906, 456, 123]),
+            JSON.stringify([]),
+        ]);
         const otherEnt = otherDomain.get(0)!!;
         expect(otherEnt).toBeTruthy();
         const otherView = otherEnt.get(ViewComponent);
@@ -344,30 +348,44 @@ describe("Serable", () => {
     });
 });
 
-describe("benchmark", () => {
-    const serDomain = Domain.Create("ser-domain", StringDataBuffer);
-    const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
-    const serEnt0 = new Entity();
-    serDomain.reg(serEnt0);
-    const serEnt1 = new Entity();
-    serDomain.reg(serEnt1);
-    const serArr = serEnt1.add(ArrComp);
-    serArr.arr.push(1, 2, 3, 4);
+// describe("benchmark", () => {
+//     const serDomain = Domain.Create("ser-domain", StringDataBuffer);
+//     const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
+//     const serEnt0 = new Entity();
+//     serDomain.reg(serEnt0);
+//     const serEnt1 = new Entity();
+//     serDomain.reg(serEnt1);
+//     const serArr = serEnt1.add(ArrComp);
+//     serArr.arr.push(1, 2, 3, 4);
 
-    const start = Date.now();
-    for (let i = 0; i < 1000000; i++) {
-        deserDomain.setData(serDomain.asData());
-    }
-    expect(Date.now() - start).toBeLessThan(2000);
-});
+//     const start = Date.now();
+//     for (let i = 0; i < 1000000; i++) {
+//         deserDomain.setData(serDomain.asData());
+//     }
+//     expect(Date.now() - start).toBeLessThan(2000);
+// });
 
 describe("rpc", () => {
     test("valid", () => {
-        const serDomain = Domain.Create("ser-domain", StringDataBuffer);
-        const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
-        const serEnt0 = new Entity();
-        const serEnt1 = new Entity();
-        serDomain.reg(serEnt0);
-        serDomain.reg(serEnt1);
+        const server = Domain.Create(
+            "ser-domain",
+            StringDataBuffer,
+            RpcType.SERVER
+        );
+        const serverEnt0 = new Entity();
+        const serverLogic0 = serverEnt0.add(LogicComponent);
+        server.reg(serverEnt0);
+
+        serverLogic0.abcv();
+
+        const client = Domain.Create(
+            "deser-domain",
+            StringDataBuffer,
+            RpcType.CLIENT
+        );
+        client.setData(server.asData());
+
+        const clientEnt0 = client.get(0)!;
+        const clientLogic0 = clientEnt0.get(LogicComponent);
     });
 });
