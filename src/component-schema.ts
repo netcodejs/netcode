@@ -61,5 +61,6 @@ export function genMethodSchema(): MethodSchema {
         paramCount: 0,
         paramTypes: [],
         returnType: DataTypeVoid,
+        type: -1,
     };
 }
