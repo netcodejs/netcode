@@ -252,17 +252,29 @@ describe("Domain-instance", () => {
     });
 
     test("Domain-create/get", () => {
-        const domain1 = Domain.Create("other", StringDataBuffer);
+        const domain1 = Domain.Create(
+            "other",
+            StringDataBuffer,
+            RpcType.CLIENT
+        );
         const domain2 = Domain.Get("other");
         expect(domain1 === domain2).toBeTruthy();
     });
 
     test("Domain-create-duplicate", () => {
         const domainName = "Domain-create-duplicate-other";
-        const domain1 = Domain.Create(domainName, StringDataBuffer);
+        const domain1 = Domain.Create(
+            domainName,
+            StringDataBuffer,
+            RpcType.CLIENT
+        );
         expect(domain1).toBeTruthy();
         expect(() => {
-            const domain2 = Domain.Create(domainName, StringDataBuffer);
+            const domain2 = Domain.Create(
+                domainName,
+                StringDataBuffer,
+                RpcType.CLIENT
+            );
         }).toThrow();
     });
 });
@@ -272,25 +284,31 @@ describe("Serable", () => {
         // ser
         const ent = new Entity();
         const view = ent.add(ViewComponent)!;
-        const domain = Domain.Create("main", StringDataBuffer);
+        const domain = Domain.Create("main", StringDataBuffer, RpcType.SERVER);
         view.width = 123;
         view.height = 456;
         domain.reg(ent);
 
-        expect(domain.asData()).toEqual([
-            JSON.stringify([0, 0, 0, -16929906, 456, 123]),
-            JSON.stringify([]),
+        const template = JSON.stringify([
+            1,
+            6,
+            0,
+            0,
+            0,
+            0,
+            -16929906,
+            456,
+            123,
         ]);
+        expect(domain.asData()).toEqual(template);
 
         // deser
         const otherDomain = Domain.Create<string>(
             "other-main",
-            StringDataBuffer
+            StringDataBuffer,
+            RpcType.CLIENT
         );
-        otherDomain.setData([
-            JSON.stringify([0, 0, 0, -16929906, 456, 123]),
-            JSON.stringify([]),
-        ]);
+        otherDomain.setData(template);
         const otherEnt = otherDomain.get(0)!!;
         expect(otherEnt).toBeTruthy();
         const otherView = otherEnt.get(ViewComponent);
@@ -300,7 +318,11 @@ describe("Serable", () => {
     });
 
     test("ser-deser-array", () => {
-        const serDomain = Domain.Create("ser-domain", StringDataBuffer);
+        const serDomain = Domain.Create(
+            "ser-domain",
+            StringDataBuffer,
+            RpcType.SERVER
+        );
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
         const serEnt1 = new Entity();
@@ -309,7 +331,11 @@ describe("Serable", () => {
         serArr.arr.push(1, 2, 3, 4);
         const data = serDomain.asData();
 
-        const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
+        const deserDomain = Domain.Create(
+            "deser-domain",
+            StringDataBuffer,
+            RpcType.CLIENT
+        );
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.get(serEnt1.id)!;
         expect(deserEnt1.$comps.arr.arr).toMatchObject(serArr.arr);
@@ -322,7 +348,11 @@ describe("Serable", () => {
     });
 
     test("ser-deser-obj", () => {
-        const serDomain = Domain.Create("ser-domain", StringDataBuffer);
+        const serDomain = Domain.Create(
+            "ser-domain",
+            StringDataBuffer,
+            RpcType.SERVER
+        );
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
         const serEnt1 = new Entity();
@@ -333,7 +363,11 @@ describe("Serable", () => {
 
         const data = serDomain.asData();
 
-        const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
+        const deserDomain = Domain.Create(
+            "deser-domain",
+            StringDataBuffer,
+            RpcType.CLIENT
+        );
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.get(serEnt1.id)!;
         expect(deserEnt1.$comps.logic.alive).toEqual(serLogic.alive);
@@ -393,6 +427,9 @@ describe("rpc", () => {
         expect(clientLogic0.alive).toEqual(false);
 
         clientLogic0.abcv();
+        // cs
+        server.setData(client.asData());
+        // sc
         client.setData(server.asData());
         expect(clientLogic0.alive).toEqual(true);
     });

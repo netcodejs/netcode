@@ -51,7 +51,7 @@ export class Domain<T extends SupportNetDataType = any> {
 
     public constructor(
         public dataBufCtr: { new (...args: any[]): IDataBuffer<T> },
-        readonly type: RpcType = RpcType.CLIENT,
+        readonly type: RpcType,
         public capacity = 50,
         public autoResize = true
     ) {
@@ -60,6 +60,7 @@ export class Domain<T extends SupportNetDataType = any> {
         this._entityVersion.fill(0);
         this._destroyEntityId = new Array<number>();
         this._internalMsgMng = new MessageManager(
+            new dataBufCtr(),
             new dataBufCtr(),
             new dataBufCtr()
         );
@@ -202,26 +203,84 @@ export class Domain<T extends SupportNetDataType = any> {
         }
     }
 
-    asData() {
-        this._internalMsgMng.startSendComp();
-        this._serComps();
-        const stateBuffer = this._internalMsgMng.endSendComp();
+    asData(): T {
+        const isServer = this.type == RpcType.SERVER;
+        const outBuf = this._internalMsgMng.inoutbuffer;
+        const stateBuf = this._internalMsgMng.statebuffer;
+        const rpcBuf = this._internalMsgMng.rpcbuffer;
 
-        this._internalMsgMng.startSendRpc();
-        const rpcBuffer = this._internalMsgMng.endSendRpc();
+        outBuf.reset();
 
-        return [stateBuffer, rpcBuffer];
+        if (isServer) {
+            this._internalMsgMng.startSendComp();
+            this._internalMsgMng.startSendRpc();
+
+            this._serComps();
+            const stateLen = stateBuf.writerCursor;
+            const rpcLen = rpcBuf.writerCursor;
+
+            outBuf
+                .writeBoolean(isServer)
+                .writeUlong(stateLen)
+                .writeUlong(rpcLen)
+                .append(stateBuf)
+                .append(rpcBuf);
+
+            this._internalMsgMng.endSendComp();
+            this._internalMsgMng.endSendRpc();
+        } else {
+            this._internalMsgMng.startSendRpc();
+
+            const rpcLen = rpcBuf.writerCursor;
+
+            outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
+
+            this._internalMsgMng.endSendRpc();
+        }
+
+        return outBuf.get();
     }
 
-    setData(source: T[]) {
-        const [state, rpc] = source;
-        this._internalMsgMng.startRecvComp(state);
-        this._derComps();
-        this._internalMsgMng.endRecvComp();
+    setData(source: T) {
+        const inBuf = this._internalMsgMng.inoutbuffer;
+        const stateBuf = this._internalMsgMng.statebuffer;
+        const rpcBuf = this._internalMsgMng.rpcbuffer;
 
-        this._internalMsgMng.startRecvRpc(rpc);
-        this._deserRpcs();
-        this._internalMsgMng.endRecvRpc();
+        inBuf.set(source);
+        const isServer = inBuf.readBoolean();
+
+        if (isServer) {
+            const stateLen = inBuf.readUlong();
+            const rpcLen = inBuf.readUlong();
+
+            const stateStart = inBuf.readerCursor;
+            const stateEnd = stateStart + stateLen;
+
+            const rpcStart = stateEnd;
+            const rpcEnd = rpcStart + rpcLen;
+
+            stateBuf.set(source, stateStart, stateEnd);
+            rpcBuf.set(source, rpcStart, rpcEnd);
+
+            this._internalMsgMng.startRecvComp();
+            this._derComps();
+            this._internalMsgMng.endRecvComp();
+
+            this._internalMsgMng.startRecvRpc();
+            this._deserRpcs();
+            this._internalMsgMng.endRecvRpc();
+        } else {
+            const rpcLen = inBuf.readUlong();
+
+            const rpcStart = inBuf.readerCursor;
+            const rpcEnd = rpcStart + rpcLen + 1;
+
+            rpcBuf.set(source, rpcStart, rpcEnd);
+
+            this._internalMsgMng.startRecvRpc();
+            this._deserRpcs();
+            this._internalMsgMng.endRecvRpc();
+        }
     }
 
     private _getEntityId() {
