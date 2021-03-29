@@ -5,7 +5,7 @@ This is a game's state-synchronization framework for javascript/typescript.The f
 # Basic Knowledge
 
 ## Component
-
+### Variable
 Component is not class in the real sense. All class with `@NetComp(className: string)` will be collectively referred to as component.You should mark the property that need synchronize with `@NetVar(type: DataType)` and `@NetArr(type: DataType)` for array.
 
 ```typescript
@@ -29,6 +29,19 @@ class TransformComp {
     position: VectorComp = new VectorComp();
     @NetVar(DataType.float)
     rotation: number = 0;
+}
+```
+### Rpc
+Component also support rpc. When tagged with `@NetRpc(type: RpcType)`, the method could convert to networking function. 
+
+```typescript
+class TransformComp {
+// ... as above
+    @NetRpc(RpcType.CLIENT)
+    move(x: number, y: number) {
+        this.position.x += x;
+        this.position.y += y;
+    }
 }
 ```
 
