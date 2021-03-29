@@ -1,3 +1,11 @@
+<p align="center"><img src="http://cdn.atatakai.cn/netcode-logo-greg.png" /></p>
+<p align="center">
+  <a href="https://github.com/netcodejs/netcode/actions"><img src="https://github.com/netcodejs/netcode/actions/workflows/main.yml/badge.svg" alt="Build Status"></a>
+  <a href="https://npmcharts.com/compare/netcodejs?minimal=true"><img src="https://img.shields.io/npm/dm/netcodejs.svg?sanitize=true" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/netcodejs"><img src="https://img.shields.io/npm/v/netcodejs.svg?sanitize=true" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/netcodejs"><img src="https://img.shields.io/npm/l/netcodejs.svg?sanitize=true" alt="License"></a>
+</p>
+
 # Overview
 
 This is a game's state-synchronization framework for javascript/typescript.The first adapted game engine is CocosCreator, others would suport in future time.
