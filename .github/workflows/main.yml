@@ -2,46 +2,44 @@
 
 name: CI
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    # Triggers the workflow on push or pull request events but only for the main branch
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  Test:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    # This workflow contains a single job called "build"
+    Test:
+        # The type of runner that the job will run on
+        runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-        - name: Checkout branch
-        - uses: actions/checkout@v2
-        - name: Setup Node.js environment
-        - uses: actions/setup-node@v2
-          with:
-            # Set always-auth in npmrc
-            # always-auth: # optional, default is false
-            # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
-            node-version: 12.x, 10.15.1, >=10.15.0 # optional
-            # Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default.
-            # architecture: # optional
-            # Set this option if you want the action to check for the latest available version that satisfies the version spec
-            # check-latest: # optional
-            # Optional registry to set up for auth. Will set the registry in a project level .npmrc and .yarnrc file, and set up auth to read in from env.NODE_AUTH_TOKEN
-            # registry-url: # optional
-            # Optional scope for authenticating against scoped registries
-            # scope: # optional
-            # Used to pull node distributions from node-versions.  Since there's a default, this is typically not supplied by the user.
-            # token: # optional, default is ${{ github.token }}
-            # Deprecated. Use node-version instead. Will not be supported after October 1, 2019
-        - name: Run install and test
-        - run: yarn install
-        - run: yarn test
+        # Steps represent a sequence of tasks that will be executed as part of the job
+        steps:
+            - name: Run install and test
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+				# Set always-auth in npmrc
+				# always-auth: # optional, default is false
+				# Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
+				node-version: 12.x, 10.15.1, >=10.15.0 # optional
+				# Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default.
+				# architecture: # optional
+				# Set this option if you want the action to check for the latest available version that satisfies the version spec
+				# check-latest: # optional
+				# Optional registry to set up for auth. Will set the registry in a project level .npmrc and .yarnrc file, and set up auth to read in from env.NODE_AUTH_TOKEN
+				# registry-url: # optional
+				# Optional scope for authenticating against scoped registries
+				# scope: # optional
+				# Used to pull node distributions from node-versions.  Since there's a default, this is typically not supplied by the user.
+				# token: # optional, default is ${{ github.token }}
+				# Deprecated. Use node-version instead. Will not be supported after October 1, 2019
+            - run: yarn install
+            - run: yarn test
