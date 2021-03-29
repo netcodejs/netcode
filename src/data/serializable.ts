@@ -15,8 +15,14 @@ export interface IDataBufferReader<T extends SupportNetDataType = any> {
     readDouble(): number;
     readBoolean(): boolean;
 
-    set(source: T): void;
+    set(source: T, start?: number, end?: number): void;
     hasNext(): boolean;
+
+    readonly readerCursor: number;
+    readonly readBuffer: any;
+
+    readonly readerStart: number;
+    readonly readerEnd: number;
 }
 
 export interface IDatabufferWriter<T extends SupportNetDataType = any> {
@@ -31,6 +37,11 @@ export interface IDatabufferWriter<T extends SupportNetDataType = any> {
     writeBoolean(source: boolean): IDatabufferWriter<T>;
     get(): T;
     reset(): void;
+
+    append(other: IDatabufferWriter<T>): IDatabufferWriter<T>;
+
+    readonly writerCursor: number;
+    readonly writeBuffer: any;
 }
 
 export interface IDataBuffer<T extends SupportNetDataType>
