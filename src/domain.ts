@@ -86,6 +86,7 @@ export class Domain<T extends SupportNetDataType = any> {
     private _reg(entity: Entity, id: number, version: number) {
         entity.id = id;
         entity.version = version;
+        entity.domain = this;
         this._entities[entity.id] = entity;
     }
 
@@ -93,8 +94,15 @@ export class Domain<T extends SupportNetDataType = any> {
         if (!this.isValid(entity))
             throw new EntityNotValidError(entity.toString());
         this._entityVersion[entity.id]++;
+        this._unreg(entity);
         this._destroyEntityId.push(entity.id);
         this._entities[entity.id] = null;
+    }
+
+    private _unreg(entity: Entity) {
+        entity.id = NULL_NUM;
+        entity.version = NULL_NUM;
+        entity.domain = undefined;
     }
 
     get(id: number) {

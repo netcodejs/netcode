@@ -81,15 +81,15 @@ export class MessageManager<T extends SupportNetDataType> {
 
     endRecvComp() {}
 
-    callRpc(methodName: number, component: any, ...args: any) {
-        this._rpcCalls.push({ methodName, component, args });
-    }
+    // callRpc(methodName: number, component: any, ...args: any) {
+    //     this._rpcCalls.push({ methodName, component, args });
+    // }
 
     startSendRpc() {
         // this.rpcbuffer.reset();
     }
 
-    sendRpc(methodName: number, component: any, params: any[]) {
+    sendRpc(methodName: string, component: any, params: any[]) {
         const comp = component as IComponent;
         const buf = this.rpcbuffer;
         // schema

@@ -156,6 +156,9 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                     case DataType.f64:
                         buffer.writeDouble(value);
                         break;
+                    case DataType.bool:
+                        buffer.writeBoolean(value);
+                        break;
                     case DataTypeObect:
                         value.ser(buffer);
                         break;
@@ -175,6 +178,9 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                         case DataType.double:
                         case DataType.f64:
                             buffer.writeDouble(value[i]);
+                            break;
+                        case DataType.bool:
+                            buffer.writeBoolean(value[i]);
                             break;
                         case DataTypeObect:
                             value.ser(buffer);
@@ -207,6 +213,9 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                     case DataType.f64:
                         (this as any)[key] = buffer.readDouble();
                         break;
+                    case DataType.bool:
+                        (this as any)[key] = buffer.readBoolean();
+                        break;
                     case DataTypeObect:
                         if (!(this as any)[key])
                             (this as any)[key] = new prop.type.refCtr!();
@@ -232,6 +241,9 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                         case DataType.double:
                         case DataType.f64:
                             arr[i] = buffer.readDouble();
+                            break;
+                        case DataType.bool:
+                            arr[i] = buffer.readBoolean();
                             break;
                         case DataTypeObect:
                             if (!(this as any)[key])
@@ -273,6 +285,9 @@ export function fixedupSerableStateJit(target: any, schema: Schema) {
                 case DataType.f64:
                     serJitStr += `buffer.writeDouble(this.${key});`;
                     break;
+                case DataType.bool:
+                    serJitStr += `buffer.writeBoolean(this.${key});`;
+                    break;
                 case DataTypeObect:
                     serJitStr += `this.${key}.ser(buffer);`;
                     break;
@@ -292,6 +307,9 @@ export function fixedupSerableStateJit(target: any, schema: Schema) {
                 case DataType.double:
                 case DataType.f64:
                     itemSerFuncStr = `buffer.writeDouble(arr[i]);`;
+                    break;
+                case DataType.bool:
+                    serJitStr += `buffer.writeBoolean(this.${key});`;
                     break;
                 case DataTypeObect:
                     itemSerFuncStr = `arr[i].ser(buffer);`;
@@ -325,6 +343,9 @@ export function fixedupSerableStateJit(target: any, schema: Schema) {
                 case DataType.f64:
                     deserJitStr += `this.${key}=buffer.readDouble();`;
                     break;
+                case DataType.bool:
+                    deserJitStr += `this.${key}=buffer.readBoolean();`;
+                    break;
                 case DataTypeObect:
                     deserJitStr += `this.${key}.deser(buffer);`;
                     break;
@@ -347,6 +368,9 @@ export function fixedupSerableStateJit(target: any, schema: Schema) {
                 case DataType.double:
                 case DataType.f64:
                     itemSerFuncStr = `arr[i]=buffer.readDouble();`;
+                    break;
+                case DataType.bool:
+                    deserJitStr += `arr[i]=buffer.readBoolean();`;
                     break;
                 case DataTypeObect:
                     itemSerFuncStr = `arr[i].deser(buffer);`;
@@ -441,7 +465,7 @@ export function fixedupSerableRpc(target: any, schema: Schema) {
             if (domain.type == ms.type) {
                 this[privateName](...args);
             } else {
-                domain.readonlyInternalMsgMng.callRpc(ms.hash, this, ...args);
+                domain.readonlyInternalMsgMng.sendRpc(name, this, args);
             }
         };
     }

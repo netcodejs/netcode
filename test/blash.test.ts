@@ -384,8 +384,16 @@ describe("rpc", () => {
             RpcType.CLIENT
         );
         client.setData(server.asData());
-
         const clientEnt0 = client.get(0)!;
-        const clientLogic0 = clientEnt0.get(LogicComponent);
+        const clientLogic0 = clientEnt0.get(LogicComponent)!;
+        expect(clientLogic0.alive).toEqual(serverLogic0.alive);
+
+        serverLogic0.alive = false;
+        client.setData(server.asData());
+        expect(clientLogic0.alive).toEqual(false);
+
+        clientLogic0.abcv();
+        client.setData(server.asData());
+        expect(clientLogic0.alive).toEqual(true);
     });
 });
