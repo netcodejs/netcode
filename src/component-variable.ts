@@ -455,6 +455,7 @@ export function fixedupSerableRpc(target: any, schema: Schema) {
                         break;
                 }
             }
+            return args;
         };
 
         const privateName = "__" + name + "__";

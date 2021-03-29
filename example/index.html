@@ -63,18 +63,24 @@
     const data = { hello: "1111" };
     const vm = new Vue({ el: "#app", data });
     const client1 = new StateSync.Client(
+        1,
         document.getElementById("client1")
     );
     const client2 = new StateSync.Client(
+        2,
         document.getElementById("client2")
     );
     const server = new StateSync.Server(document.getElementById("server"));
 
     vm.hello = "aaaa";
     setInterval(() => {
-        const data = server.domain.asData();
-        client1.domain.setData(data);
-        client2.domain.setData(data);
+        // client to server
+        server.domain.setData(client1.domain.asData())
+        server.domain.setData(client2.domain.asData())
+        // server to client
+        const scData = server.domain.asData();
+        client1.domain.setData(scData);
+        client2.domain.setData(scData);
     }, 500);
 </script>
 

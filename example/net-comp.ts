@@ -19,3 +19,14 @@ export class Transform {
         this.pos.y += y;
     }
 }
+
+@NetComp("view")
+export class View {
+    @NetVar(DataType.ulong)
+    color = 0xffffff;
+
+    @Rpc(RpcType.SERVER)
+    changeColor(@RpcVar(DataType.ulong) inColor: number) {
+        this.color = inColor;
+    }
+}

@@ -16,6 +16,10 @@ export type DomainConstructorParamters<
 > = TT extends new (_: any, ...args: infer P) => Domain ? P : never;
 export class Domain<T extends SupportNetDataType = any> {
     private static _domainMap: Record<string, Domain> = Object.create(null);
+    public static NULL = {} as Domain;
+    public static isNull(other: Domain) {
+        return this.NULL === other;
+    }
 
     static Create<T extends SupportNetDataType = any>(
         name: string,
@@ -103,7 +107,7 @@ export class Domain<T extends SupportNetDataType = any> {
     private _unreg(entity: Entity) {
         entity.id = NULL_NUM;
         entity.version = NULL_NUM;
-        entity.domain = undefined;
+        entity.domain = Domain.NULL;
     }
 
     get(id: number) {
