@@ -16,7 +16,7 @@ var StateSync = (function (exports) {
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
     /* global Reflect, Promise */
-
+    var a = "aaa";
     var extendStatics = function (d, b) {
         extendStatics =
             Object.setPrototypeOf ||
