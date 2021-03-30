@@ -1888,6 +1888,12 @@ var StateSync = (function (exports) {
             _this.canvas = canvas;
             return _this;
         }
+        Server.prototype.loop = function (dt) {
+            _super.prototype.loop.call(this, dt);
+            var t1 = this.c1.$comps.trans;
+            this.c2.$comps.trans;
+            t1.move(1, 0);
+        };
         return Server;
     })(Base);
     var Client = /** @class */ (function (_super) {

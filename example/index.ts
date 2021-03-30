@@ -86,6 +86,14 @@ export class Server extends Base {
     constructor(readonly canvas: HTMLCanvasElement) {
         super("server", canvas, RpcType.SERVER);
     }
+
+    loop(dt: number) {
+        super.loop(dt);
+        const t1 = this.c1.$comps.trans as Transform;
+        const t2 = this.c2.$comps.trans as Transform;
+
+        t1.move(1, 0);
+    }
 }
 
 export class Client extends Base {
