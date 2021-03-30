@@ -17,6 +17,7 @@ var StateSync = (function (exports) {
     ***************************************************************************** */
     /* global Reflect, Promise */
     var a = "aaba";
+    var b = "hja";
     var extendStatics = function (d, b) {
         extendStatics =
             Object.setPrototypeOf ||
