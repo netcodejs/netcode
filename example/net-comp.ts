@@ -22,11 +22,11 @@ export class Transform {
 
 @NetComp("view")
 export class View {
-    @NetVar(DataType.ulong)
+    @NetVar(DataType.int)
     color = 0xffffff;
 
     @Rpc(RpcType.SERVER)
-    changeColor(@RpcVar(DataType.ulong) inColor: number) {
+    changeColor(@RpcVar(DataType.int) inColor: number) {
         this.color = inColor;
     }
 }

@@ -1,6 +1,7 @@
 import { Domain, Entity, Rpc, RpcType, StringDataBuffer } from "../src";
 import { Transform, View } from "./net-comp";
 export * from "./net-comp";
+export * from "./mock-net";
 
 export class Base {
     readonly domain: Domain;
@@ -90,9 +91,7 @@ export class Server extends Base {
 export class Client extends Base {
     constructor(readonly index: number, readonly canvas: HTMLCanvasElement) {
         super("client" + index, canvas, RpcType.CLIENT);
-        setTimeout(() => {
-            this.mine.$comps.view.changeColor(this.color);
-        });
+        this.mine.$comps.view.changeColor(this.color);
     }
 
     get mine() {

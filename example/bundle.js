@@ -16,8 +16,7 @@ var StateSync = (function (exports) {
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
     /* global Reflect, Promise */
-    var a = "aaba";
-    var b = "hja";
+
     var extendStatics = function (d, b) {
         extendStatics =
             Object.setPrototypeOf ||
@@ -1557,10 +1556,10 @@ var StateSync = (function (exports) {
     })(ADirty);
 
     var tempTypedBuffer = {
-        int: new Int16Array(1),
-        uint: new Uint16Array(1),
-        short: new Int8Array(1),
-        ushort: new Uint8Array(1),
+        int: new Int32Array(1),
+        uint: new Uint32Array(1),
+        short: new Int16Array(1),
+        ushort: new Uint16Array(1),
         long: new Int32Array(1),
         ulong: new Uint32Array(1),
         float: new Float32Array(1),
@@ -1783,15 +1782,39 @@ var StateSync = (function (exports) {
         View.prototype.changeColor = function (inColor) {
             this.color = inColor;
         };
-        __decorate([NetVar(DataType.ulong)], View.prototype, "color", void 0);
+        __decorate([NetVar(DataType.int)], View.prototype, "color", void 0);
         __decorate(
-            [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.ulong))],
+            [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.int))],
             View.prototype,
             "changeColor",
             null
         );
         View = __decorate([NetComp("view")], View);
         return View;
+    })();
+
+    var Net = /** @class */ (function () {
+        function Net() {}
+        Net.send = function (obj) {
+            var _this = this;
+            var promise = new Promise(function (resolve) {
+                setTimeout(
+                    resolve,
+                    _this.delay + Math.random() * _this.jitter,
+                    obj
+                );
+            });
+            return {
+                recv: function (func, context) {
+                    promise.then(function (res) {
+                        func.call(context, res);
+                    });
+                },
+            };
+        };
+        Net.delay = 0;
+        Net.jitter = 0;
+        return Net;
     })();
 
     var Base = /** @class */ (function () {
@@ -1875,9 +1898,7 @@ var StateSync = (function (exports) {
                 this;
             _this.index = index;
             _this.canvas = canvas;
-            setTimeout(function () {
-                _this.mine.$comps.view.changeColor(_this.color);
-            });
+            _this.mine.$comps.view.changeColor(_this.color);
             return _this;
         }
         Object.defineProperty(Client.prototype, "mine", {
@@ -1899,6 +1920,7 @@ var StateSync = (function (exports) {
 
     exports.Base = Base;
     exports.Client = Client;
+    exports.Net = Net;
     exports.Server = Server;
     exports.Transform = Transform;
     exports.Vector = Vector;
