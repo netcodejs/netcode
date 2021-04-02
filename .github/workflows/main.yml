@@ -43,11 +43,11 @@ jobs:
         run: yarn build
 
       - name: Check version and publish
-      - id: publish
+        id: publish
+        if: ${{ github.event_name == "push" }}
         uses: JS-DevTools/npm-publish@v1
-      - if: ${{ github.event_name == "push" }}
         with:
           token: ${{ secrets.NPM_TOKEN }}
-      - if: steps.publish.outputs.type != 'none'
-        run: |
-          echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+          if: steps.publish.outputs.type != 'none'
+          run: |
+            echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
