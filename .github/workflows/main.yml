@@ -44,7 +44,7 @@ jobs:
 
       - name: Check version and publish
         id: publish
-        if: ${{ github.event_name == "push" }}
+        if: ${{ github.event_name == 'push' }}
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
