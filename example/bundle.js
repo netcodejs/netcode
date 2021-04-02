@@ -135,6 +135,7 @@ var StateSync = (function (exports) {
             paramCount: 0,
             paramTypes: [],
             returnType: DataTypeVoid,
+            type: -1,
         };
     }
 
@@ -350,7 +351,7 @@ var StateSync = (function (exports) {
     function fixupSerableJIT(target) {
         var schema = target.prototype.__schema__;
         fixedupSerableStateJit(target, schema);
-        fixedupSerableRpcJit(target, schema);
+        fixedupSerableRpc(target, schema);
     }
     function fixedupSerableStateJit(target, schema) {
         var serJitStr = "";
@@ -372,6 +373,9 @@ var StateSync = (function (exports) {
                     case DataType.f64:
                         serJitStr += "buffer.writeDouble(this." + key + ");";
                         break;
+                    case DataType.bool:
+                        serJitStr += "buffer.writeBoolean(this." + key + ");";
+                        break;
                     case DataTypeObect:
                         serJitStr += "this." + key + ".ser(buffer);";
                         break;
@@ -391,6 +395,9 @@ var StateSync = (function (exports) {
                     case DataType.double:
                     case DataType.f64:
                         itemSerFuncStr = "buffer.writeDouble(arr[i]);";
+                        break;
+                    case DataType.bool:
+                        serJitStr += "buffer.writeBoolean(this." + key + ");";
                         break;
                     case DataTypeObect:
                         itemSerFuncStr = "arr[i].ser(buffer);";
@@ -424,6 +431,9 @@ var StateSync = (function (exports) {
                     case DataType.f64:
                         deserJitStr += "this." + key + "=buffer.readDouble();";
                         break;
+                    case DataType.bool:
+                        deserJitStr += "this." + key + "=buffer.readBoolean();";
+                        break;
                     case DataTypeObect:
                         deserJitStr += "this." + key + ".deser(buffer);";
                         break;
@@ -451,6 +461,9 @@ var StateSync = (function (exports) {
                     case DataType.f64:
                         itemSerFuncStr = "arr[i]=buffer.readDouble();";
                         break;
+                    case DataType.bool:
+                        deserJitStr += "arr[i]=buffer.readBoolean();";
+                        break;
                     case DataTypeObect:
                         itemSerFuncStr = "arr[i].deser(buffer);";
                         break;
@@ -463,14 +476,75 @@ var StateSync = (function (exports) {
         }
         target.prototype.deser = Function("buffer", deserJitStr);
     }
-    function fixedupSerableRpcJit(target, schema) {
+    function fixedupSerableRpc(target, schema) {
         var rpcNames = Object.keys(schema.methods);
+        var _loop_1 = function (i, len) {
+            var name_2 = rpcNames[i];
+            var ms = schema.methods[name_2];
+            target.prototype["ser" + ms.hash] = function (buffer, args) {
+                for (var j = 0, len_1 = ms.paramCount; j < len_1; j++) {
+                    var value = args[j];
+                    switch (ms.paramTypes[j]) {
+                        case DataType.int:
+                        case DataType.i32:
+                            buffer.writeInt(value);
+                            break;
+                        case DataType.float:
+                        case DataType.f32:
+                            buffer.writeFloat(value);
+                            break;
+                        case DataType.double:
+                        case DataType.f64:
+                            buffer.writeDouble(value);
+                            break;
+                        case DataTypeObect:
+                            value.ser(buffer);
+                            break;
+                    }
+                }
+            };
+            target.prototype["deser" + ms.hash] = function (buffer) {
+                var args = new Array(ms.paramCount);
+                for (var j = 0, len_2 = ms.paramCount; j < len_2; j++) {
+                    switch (ms.paramTypes[j]) {
+                        case DataType.int:
+                        case DataType.i32:
+                            args[j] = buffer.readInt();
+                            break;
+                        case DataType.float:
+                        case DataType.f32:
+                            args[j] = buffer.readFloat();
+                            break;
+                        case DataType.double:
+                        case DataType.f64:
+                            args[j] = buffer.readDouble();
+                            break;
+                        case DataTypeObect:
+                            args[j] = new ms.paramTypes[j]();
+                            args[j].ser(buffer);
+                            break;
+                    }
+                }
+                return args;
+            };
+            var privateName = "__" + name_2 + "__";
+            target.prototype[privateName] = target.prototype[name_2];
+            target.prototype[name_2] = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var ent = this.entity;
+                var domain = ent.domain;
+                if (domain.type == ms.type) {
+                    this[privateName].apply(this, args);
+                } else {
+                    domain.readonlyInternalMsgMng.sendRpc(name_2, this, args);
+                }
+            };
+        };
         for (var i = 0, len = rpcNames.length; i < len; i++) {
-            var name_1 = rpcNames[i];
-            var ms = schema.methods[name_1];
-            var serJitStr = "\n        ";
-            target.prototype["ser" + ms.hash] = Function("buffer", serJitStr);
-            target.prototype["deser" + ms.hash] = Function("buffer", serJitStr);
+            _loop_1(i);
         }
     }
 
@@ -499,6 +573,7 @@ var StateSync = (function (exports) {
             var ms = s.methods[propertyKey];
             ms.hash = crc32.str(propertyKey);
             ms.name = propertyKey;
+            ms.type = type;
             if (hash2RpcName[ms.hash] && hash2RpcName[ms.hash] != ms.name) {
                 throw new Crc32PropertyKeyHashConflict();
             }
@@ -553,6 +628,410 @@ var StateSync = (function (exports) {
     //     };
     // }
 
+    var MessageType;
+    (function (MessageType) {
+        MessageType[(MessageType["UPDATE_COMPONENT"] = 0)] = "UPDATE_COMPONENT";
+        MessageType[(MessageType["RPC"] = 1)] = "RPC";
+    })(MessageType || (MessageType = {}));
+    var MessageManager = /** @class */ (function () {
+        function MessageManager(inoutbuffer, statebuffer, rpcbuffer) {
+            this.inoutbuffer = inoutbuffer;
+            this.statebuffer = statebuffer;
+            this.rpcbuffer = rpcbuffer;
+            this._rpcCalls = [];
+        }
+        MessageManager.prototype.startSendComp = function () {
+            this.statebuffer.reset();
+        };
+        MessageManager.prototype.sendComp = function (
+            entityId,
+            entityVersion,
+            compIdx,
+            comp,
+            toDestory
+        ) {
+            if (toDestory === void 0) {
+                toDestory = false;
+            }
+            var buf = this.statebuffer;
+            // msg type -> compoent
+            // entity id
+            buf.writeInt(entityId);
+            // entity compuse version
+            buf.writeInt(composeVersion(entityVersion, toDestory));
+            // comp index
+            buf.writeInt(compIdx);
+            // comp hash
+            buf.writeLong(comp.__schema__.hash);
+            // ser comp
+            comp.ser(buf);
+            return true;
+        };
+        MessageManager.prototype.endSendComp = function () {
+            this.statebuffer.reset();
+        };
+        MessageManager.prototype.startRecvComp = function () {};
+        MessageManager.prototype.revcComp = function () {
+            if (!this.statebuffer.hasNext()) return null;
+            var buf = this.statebuffer;
+            // entity id
+            var entityId = buf.readInt();
+            // entity compuse version
+            var _a = decomposeVersion(buf.readInt()),
+                entityVersion = _a[0],
+                toDestory = _a[1];
+            // comp index
+            var compIdx = buf.readInt();
+            // comp hash
+            var hash = buf.readLong();
+            // deser comp
+            return {
+                entityId: entityId,
+                entityVersion: entityVersion,
+                toDestory: toDestory,
+                compIdx: compIdx,
+                hash: hash,
+            };
+        };
+        MessageManager.prototype.endRecvComp = function () {};
+        // callRpc(methodName: number, component: any, ...args: any) {
+        //     this._rpcCalls.push({ methodName, component, args });
+        // }
+        MessageManager.prototype.startSendRpc = function () {
+            // this.rpcbuffer.reset();
+        };
+        MessageManager.prototype.sendRpc = function (
+            methodName,
+            component,
+            params
+        ) {
+            var comp = component;
+            var buf = this.rpcbuffer;
+            // schema
+            var s = comp.__schema__;
+            // entity
+            var entity = comp.entity;
+            // method schema
+            var ms = s.methods[methodName];
+            // entity id
+            buf.writeInt(entity.id);
+            // comp index
+            buf.writeUshort(comp.index);
+            // method hash
+            buf.writeLong(ms.hash);
+            // param
+            component["ser" + ms.hash](buf, params);
+        };
+        MessageManager.prototype.endSendRpc = function () {
+            this.rpcbuffer.reset();
+        };
+        MessageManager.prototype.startRecvRpc = function () {};
+        MessageManager.prototype.recvRpc = function () {
+            if (!this.rpcbuffer.hasNext()) return null;
+            var buf = this.rpcbuffer;
+            // entity id
+            var entityId = buf.readInt();
+            // comp index
+            var compIdx = buf.readUshort();
+            // method hash
+            var methodHash = buf.readLong();
+            return {
+                entityId: entityId,
+                compIdx: compIdx,
+                methodHash: methodHash,
+            };
+        };
+        MessageManager.prototype.endRecvRpc = function () {};
+        return MessageManager;
+    })();
+
+    var EntityNotValidError = /** @class */ (function (_super) {
+        __extends(EntityNotValidError, _super);
+        function EntityNotValidError() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return EntityNotValidError;
+    })(Error);
+    var EntityRepeatRegisteredError = /** @class */ (function (_super) {
+        __extends(EntityRepeatRegisteredError, _super);
+        function EntityRepeatRegisteredError() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return EntityRepeatRegisteredError;
+    })(Error);
+    var EntityGroupOutOfRangeYouCanOpenAutoResize = /** @class */ (function (
+        _super
+    ) {
+        __extends(EntityGroupOutOfRangeYouCanOpenAutoResize, _super);
+        function EntityGroupOutOfRangeYouCanOpenAutoResize() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return EntityGroupOutOfRangeYouCanOpenAutoResize;
+    })(Error);
+    var DomainDuplicated = /** @class */ (function (_super) {
+        __extends(DomainDuplicated, _super);
+        function DomainDuplicated() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return DomainDuplicated;
+    })(Error);
+    var Domain = /** @class */ (function () {
+        function Domain(dataBufCtr, type, capacity, autoResize) {
+            if (capacity === void 0) {
+                capacity = 50;
+            }
+            if (autoResize === void 0) {
+                autoResize = true;
+            }
+            this.dataBufCtr = dataBufCtr;
+            this.type = type;
+            this.capacity = capacity;
+            this.autoResize = autoResize;
+            this._entityIdCursor = 0;
+            this._entities = new Array(capacity);
+            this._entityVersion = new Array(capacity);
+            this._entityVersion.fill(0);
+            this._destroyEntityId = new Array();
+            this._internalMsgMng = new MessageManager(
+                new dataBufCtr(),
+                new dataBufCtr(),
+                new dataBufCtr()
+            );
+            this.readonlyInternalMsgMng = this._internalMsgMng;
+        }
+        Domain.isNull = function (other) {
+            return this.NULL === other;
+        };
+        Domain.Create = function (name, dataBufferType) {
+            var args = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                args[_i - 2] = arguments[_i];
+            }
+            if (this._domainMap[name]) {
+                throw new DomainDuplicated(name);
+            }
+            return (this._domainMap[name] = new (Domain.bind.apply(
+                Domain,
+                __spreadArrays([void 0, dataBufferType], args)
+            ))());
+        };
+        Domain.Get = function (name) {
+            if (name === void 0) {
+                name = "main";
+            }
+            return this._domainMap[name];
+        };
+        Domain.Clear = function () {
+            this._domainMap = Object.create(null);
+        };
+        Object.defineProperty(Domain.prototype, "entities", {
+            get: function () {
+                return this._entities;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        Domain.prototype.reg = function (entity) {
+            if (this.isValid(entity))
+                throw new EntityRepeatRegisteredError(entity.toString());
+            if (this._entityIdCursor == this.capacity) {
+                if (this.autoResize) {
+                    this.resize(Math.ceil(this.capacity * 1.5));
+                } else
+                    throw new EntityGroupOutOfRangeYouCanOpenAutoResize(
+                        "Domain: capacity: " +
+                            this.capacity +
+                            "; " +
+                            entity.toString()
+                    );
+            }
+            var id = this._getEntityId();
+            var version = this._entityVersion[id];
+            this._reg(entity, id, version);
+        };
+        Domain.prototype._reg = function (entity, id, version) {
+            entity.id = id;
+            entity.version = version;
+            entity.domain = this;
+            this._entities[entity.id] = entity;
+        };
+        Domain.prototype.unreg = function (entity) {
+            if (!this.isValid(entity))
+                throw new EntityNotValidError(entity.toString());
+            this._entityVersion[entity.id]++;
+            this._unreg(entity);
+            this._destroyEntityId.push(entity.id);
+            this._entities[entity.id] = null;
+        };
+        Domain.prototype._unreg = function (entity) {
+            entity.id = NULL_NUM;
+            entity.version = NULL_NUM;
+            entity.domain = Domain.NULL;
+        };
+        Domain.prototype.get = function (id) {
+            return this._entities[id];
+        };
+        Domain.prototype.resize = function (newSize) {
+            var oldSize = this.capacity;
+            this._entities.length = newSize;
+            this._entityVersion.length = newSize;
+            this._entityVersion.fill(0, oldSize, newSize);
+            this.capacity = newSize;
+        };
+        Domain.prototype.isValid = function (entity) {
+            return (
+                entity.id != NULL_NUM &&
+                entity.version != NULL_NUM &&
+                entity.version == this._entityVersion[entity.id]
+            );
+        };
+        Domain.prototype._serComps = function () {
+            for (var _i = 0, _a = this._entities; _i < _a.length; _i++) {
+                var ent = _a[_i];
+                if (!ent) continue;
+                var comps = ent.comps;
+                for (
+                    var compIdx = 0, len = comps.length;
+                    compIdx < len;
+                    compIdx++
+                ) {
+                    var comp = comps[compIdx];
+                    var serableComp = asSerable(comp);
+                    if (!serableComp) {
+                        console.warn(
+                            "[Domain#_ser(compIdx: " +
+                                compIdx +
+                                ", entity: " +
+                                ent +
+                                ")]comp is not Serable!"
+                        );
+                        continue;
+                    }
+                    this._internalMsgMng.sendComp(
+                        ent.id,
+                        ent.version,
+                        compIdx,
+                        comp,
+                        false
+                    );
+                }
+            }
+        };
+        Domain.prototype._derComps = function () {
+            var params;
+            while ((params = this._internalMsgMng.revcComp())) {
+                var ent = this._entities[params.entityId];
+                if (
+                    ent &&
+                    (params.toDestory || ent.version !== params.entityVersion)
+                ) {
+                    this.unreg(ent);
+                }
+                if (!ent && !params.toDestory) {
+                    ent = new Entity();
+                    this._reg(ent, params.entityId, params.entityVersion);
+                }
+                if (!ent) continue;
+                var comp = ent.comps[params.compIdx];
+                if (!comp) {
+                    var compName = hash2compName[params.hash];
+                    if (!compName) {
+                        console.warn(
+                            "[Domain#_deser]Cannot find compName by hash(" +
+                                params.hash +
+                                ")!"
+                        );
+                        continue;
+                    }
+                    var ctr = compName2ctr[compName];
+                    comp = ent.add(ctr, params.compIdx);
+                }
+                comp.deser(this._internalMsgMng.statebuffer);
+            }
+        };
+        Domain.prototype._deserRpcs = function () {
+            var param;
+            while ((param = this._internalMsgMng.recvRpc())) {
+                var ent = this._entities[param.entityId];
+                if (!ent) continue;
+                var comp = ent.comps[param.compIdx];
+                if (!comp) continue;
+                var argus = comp["deser" + param.methodHash](
+                    this._internalMsgMng.rpcbuffer
+                );
+                var methodName = hash2RpcName[param.methodHash];
+                comp[methodName].apply(comp, argus);
+            }
+        };
+        Domain.prototype.asData = function () {
+            var isServer = this.type == RpcType.SERVER;
+            var outBuf = this._internalMsgMng.inoutbuffer;
+            var stateBuf = this._internalMsgMng.statebuffer;
+            var rpcBuf = this._internalMsgMng.rpcbuffer;
+            outBuf.reset();
+            if (isServer) {
+                this._internalMsgMng.startSendComp();
+                this._internalMsgMng.startSendRpc();
+                this._serComps();
+                var stateLen = stateBuf.writerCursor;
+                var rpcLen = rpcBuf.writerCursor;
+                outBuf
+                    .writeBoolean(isServer)
+                    .writeUlong(stateLen)
+                    .writeUlong(rpcLen)
+                    .append(stateBuf)
+                    .append(rpcBuf);
+                this._internalMsgMng.endSendComp();
+                this._internalMsgMng.endSendRpc();
+            } else {
+                this._internalMsgMng.startSendRpc();
+                var rpcLen = rpcBuf.writerCursor;
+                outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
+                this._internalMsgMng.endSendRpc();
+            }
+            return outBuf.get();
+        };
+        Domain.prototype.setData = function (source) {
+            var inBuf = this._internalMsgMng.inoutbuffer;
+            var stateBuf = this._internalMsgMng.statebuffer;
+            var rpcBuf = this._internalMsgMng.rpcbuffer;
+            inBuf.set(source);
+            var isServer = inBuf.readBoolean();
+            if (isServer) {
+                var stateLen = inBuf.readUlong();
+                var rpcLen = inBuf.readUlong();
+                var stateStart = inBuf.readerCursor;
+                var stateEnd = stateStart + stateLen;
+                var rpcStart = stateEnd;
+                var rpcEnd = rpcStart + rpcLen;
+                stateBuf.set(source, stateStart, stateEnd);
+                rpcBuf.set(source, rpcStart, rpcEnd);
+                this._internalMsgMng.startRecvComp();
+                this._derComps();
+                this._internalMsgMng.endRecvComp();
+                this._internalMsgMng.startRecvRpc();
+                this._deserRpcs();
+                this._internalMsgMng.endRecvRpc();
+            } else {
+                var rpcLen = inBuf.readUlong();
+                var rpcStart = inBuf.readerCursor;
+                var rpcEnd = rpcStart + rpcLen + 1;
+                rpcBuf.set(source, rpcStart, rpcEnd);
+                this._internalMsgMng.startRecvRpc();
+                this._deserRpcs();
+                this._internalMsgMng.endRecvRpc();
+            }
+        };
+        Domain.prototype._getEntityId = function () {
+            return this._destroyEntityId.length > 0
+                ? this._destroyEntityId.unshift()
+                : this._entityIdCursor++;
+        };
+        Domain._domainMap = Object.create(null);
+        Domain.NULL = {};
+        return Domain;
+    })();
+
     // import { fastRemove } from "./misc";
     var ComponentHasNotDecorated = /** @class */ (function (_super) {
         __extends(ComponentHasNotDecorated, _super);
@@ -592,6 +1071,7 @@ var StateSync = (function (exports) {
         function Entity() {
             this.id = NULL_NUM;
             this.version = NULL_NUM;
+            this.domain = Domain.NULL;
             this.compMap = new Map();
             this.$comps = new Proxy(this, {
                 get: function (target, p, receiver) {
@@ -743,306 +1223,6 @@ var StateSync = (function (exports) {
             UNREG_ENTITY: "unreg-entity",
         };
         return Entity;
-    })();
-
-    var MessageType;
-    (function (MessageType) {
-        MessageType[(MessageType["UPDATE_COMPONENT"] = 0)] = "UPDATE_COMPONENT";
-        MessageType[(MessageType["RPC"] = 1)] = "RPC";
-    })(MessageType || (MessageType = {}));
-    var MessageManager = /** @class */ (function () {
-        function MessageManager(statebuffer, rpcbuffer) {
-            this.statebuffer = statebuffer;
-            this.rpcbuffer = rpcbuffer;
-        }
-        MessageManager.prototype.startSendComp = function () {
-            this.statebuffer.reset();
-        };
-        MessageManager.prototype.sendComp = function (
-            entityId,
-            entityVersion,
-            compIdx,
-            comp,
-            toDestory
-        ) {
-            if (toDestory === void 0) {
-                toDestory = false;
-            }
-            var buf = this.statebuffer;
-            // msg type -> compoent
-            // entity id
-            buf.writeInt(entityId);
-            // entity compuse version
-            buf.writeInt(composeVersion(entityVersion, toDestory));
-            // comp index
-            buf.writeInt(compIdx);
-            // comp hash
-            buf.writeLong(comp.__schema__.hash);
-            // ser comp
-            comp.ser(buf);
-            return true;
-        };
-        MessageManager.prototype.endSendComp = function () {
-            return this.statebuffer.get();
-        };
-        MessageManager.prototype.startRecv = function (source) {
-            this.statebuffer.set(source);
-        };
-        MessageManager.prototype.revcComp = function () {
-            if (!this.statebuffer.hasNext()) return null;
-            var buf = this.statebuffer;
-            // entity id
-            var entityId = buf.readInt();
-            // entity compuse version
-            var _a = decomposeVersion(buf.readInt()),
-                entityVersion = _a[0],
-                toDestory = _a[1];
-            // comp index
-            var compIdx = buf.readInt();
-            // comp hash
-            var hash = buf.readLong();
-            // deser comp
-            return {
-                entityId: entityId,
-                entityVersion: entityVersion,
-                toDestory: toDestory,
-                compIdx: compIdx,
-                hash: hash,
-            };
-        };
-        MessageManager.prototype.endRecv = function () {};
-        MessageManager.prototype.sendRpc = function (
-            methodName,
-            component,
-            params
-        ) {
-            var comp = component;
-            var buf = this.rpcbuffer;
-            // schema
-            var s = comp.__schema__;
-            // entity
-            var entity = comp.entity;
-            // method schema
-            var ms = s.methods[methodName];
-            // entity id
-            buf.writeInt(entity.id);
-            // comp index
-            buf.writeUshort(comp.index);
-            // method hash
-            buf.writeInt(ms.hash);
-        };
-        MessageManager.prototype.recvRpc = function () {};
-        return MessageManager;
-    })();
-
-    var EntityNotValidError = /** @class */ (function (_super) {
-        __extends(EntityNotValidError, _super);
-        function EntityNotValidError() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return EntityNotValidError;
-    })(Error);
-    var EntityRepeatRegisteredError = /** @class */ (function (_super) {
-        __extends(EntityRepeatRegisteredError, _super);
-        function EntityRepeatRegisteredError() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return EntityRepeatRegisteredError;
-    })(Error);
-    var EntityGroupOutOfRangeYouCanOpenAutoResize = /** @class */ (function (
-        _super
-    ) {
-        __extends(EntityGroupOutOfRangeYouCanOpenAutoResize, _super);
-        function EntityGroupOutOfRangeYouCanOpenAutoResize() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return EntityGroupOutOfRangeYouCanOpenAutoResize;
-    })(Error);
-    var DomainDuplicated = /** @class */ (function (_super) {
-        __extends(DomainDuplicated, _super);
-        function DomainDuplicated() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return DomainDuplicated;
-    })(Error);
-    var Domain = /** @class */ (function () {
-        function Domain(dataBufCtr, capacity, autoResize) {
-            if (capacity === void 0) {
-                capacity = 50;
-            }
-            if (autoResize === void 0) {
-                autoResize = true;
-            }
-            this.dataBufCtr = dataBufCtr;
-            this.capacity = capacity;
-            this.autoResize = autoResize;
-            this._entityIdCursor = 0;
-            this._entities = new Array(capacity);
-            this._entityVersion = new Array(capacity);
-            this._entityVersion.fill(0);
-            this._destroyEntityId = new Array();
-            this._internalMsgMng = new MessageManager(
-                new dataBufCtr(),
-                new dataBufCtr()
-            );
-        }
-        Domain.Create = function (name, dataBufferType) {
-            var args = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                args[_i - 2] = arguments[_i];
-            }
-            if (this._domainMap[name]) {
-                throw new DomainDuplicated(name);
-            }
-            return (this._domainMap[name] = new (Domain.bind.apply(
-                Domain,
-                __spreadArrays([void 0, dataBufferType], args)
-            ))());
-        };
-        Domain.Get = function (name) {
-            if (name === void 0) {
-                name = "main";
-            }
-            return this._domainMap[name];
-        };
-        Domain.Clear = function () {
-            this._domainMap = Object.create(null);
-        };
-        Object.defineProperty(Domain.prototype, "entities", {
-            get: function () {
-                return this._entities;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Domain.prototype.reg = function (entity) {
-            if (this.isValid(entity))
-                throw new EntityRepeatRegisteredError(entity.toString());
-            if (this._entityIdCursor == this.capacity) {
-                if (this.autoResize) {
-                    this.resize(Math.ceil(this.capacity * 1.5));
-                } else
-                    throw new EntityGroupOutOfRangeYouCanOpenAutoResize(
-                        "Domain: capacity: " +
-                            this.capacity +
-                            "; " +
-                            entity.toString()
-                    );
-            }
-            var id = this._getEntityId();
-            var version = this._entityVersion[id];
-            this._reg(entity, id, version);
-        };
-        Domain.prototype._reg = function (entity, id, version) {
-            entity.id = id;
-            entity.version = version;
-            this._entities[entity.id] = entity;
-        };
-        Domain.prototype.unreg = function (entity) {
-            if (!this.isValid(entity))
-                throw new EntityNotValidError(entity.toString());
-            this._entityVersion[entity.id]++;
-            this._destroyEntityId.push(entity.id);
-            this._entities[entity.id] = null;
-        };
-        Domain.prototype.get = function (id) {
-            return this._entities[id];
-        };
-        Domain.prototype.resize = function (newSize) {
-            var oldSize = this.capacity;
-            this._entities.length = newSize;
-            this._entityVersion.length = newSize;
-            this._entityVersion.fill(0, oldSize, newSize);
-            this.capacity = newSize;
-        };
-        Domain.prototype.isValid = function (entity) {
-            return (
-                entity.id != NULL_NUM &&
-                entity.version != NULL_NUM &&
-                entity.version == this._entityVersion[entity.id]
-            );
-        };
-        Domain.prototype._ser = function () {
-            for (var _i = 0, _a = this._entities; _i < _a.length; _i++) {
-                var ent = _a[_i];
-                if (!ent) continue;
-                var comps = ent.comps;
-                for (
-                    var compIdx = 0, len = comps.length;
-                    compIdx < len;
-                    compIdx++
-                ) {
-                    var comp = comps[compIdx];
-                    var serableComp = asSerable(comp);
-                    if (!serableComp) {
-                        console.warn(
-                            "[Domain#_ser(compIdx: " +
-                                compIdx +
-                                ", entity: " +
-                                ent +
-                                ")]comp is not Serable!"
-                        );
-                        continue;
-                    }
-                    this._internalMsgMng.sendComp(
-                        ent.id,
-                        ent.version,
-                        compIdx,
-                        comp,
-                        false
-                    );
-                }
-            }
-        };
-        Domain.prototype._der = function () {
-            var params;
-            while ((params = this._internalMsgMng.revcComp())) {
-                var ent = this._entities[params.entityId];
-                if (
-                    ent &&
-                    (params.toDestory || ent.version !== params.entityVersion)
-                ) {
-                    this.unreg(ent);
-                }
-                if (!ent && !params.toDestory) {
-                    ent = new Entity();
-                    this._reg(ent, params.entityId, params.entityVersion);
-                }
-                if (!ent) continue;
-                var comp = ent.comps[params.compIdx];
-                if (!comp) {
-                    var compName = hash2compName[params.hash];
-                    if (!compName) {
-                        console.warn(
-                            "[Domain#_deser]Cannot find compName by hash(" +
-                                params.hash +
-                                ")!"
-                        );
-                        continue;
-                    }
-                    var ctr = compName2ctr[compName];
-                    comp = ent.add(ctr, params.compIdx);
-                }
-                comp.deser(this._internalMsgMng.statebuffer);
-            }
-        };
-        Domain.prototype.asData = function () {
-            this._internalMsgMng.startSendComp();
-            this._ser();
-            return this._internalMsgMng.endSendComp();
-        };
-        Domain.prototype.setData = function (source) {
-            this._internalMsgMng.startRecv(source);
-            this._der();
-            this._internalMsgMng.endRecv();
-        };
-        Domain.prototype._getEntityId = function () {
-            return this._destroyEntityId.length > 0
-                ? this._destroyEntityId.unshift()
-                : this._entityIdCursor++;
-        };
-        Domain._domainMap = Object.create(null);
-        return Domain;
     })();
 
     var ADirty = /** @class */ (function () {
@@ -1376,10 +1556,10 @@ var StateSync = (function (exports) {
     })(ADirty);
 
     var tempTypedBuffer = {
-        int: new Int16Array(1),
-        uint: new Uint16Array(1),
-        short: new Int8Array(1),
-        ushort: new Uint8Array(1),
+        int: new Int32Array(1),
+        uint: new Uint32Array(1),
+        short: new Int16Array(1),
+        ushort: new Uint16Array(1),
         long: new Int32Array(1),
         ulong: new Uint32Array(1),
         float: new Float32Array(1),
@@ -1395,17 +1575,23 @@ var StateSync = (function (exports) {
     var StringDataBuffer = /** @class */ (function () {
         function StringDataBuffer() {
             this.writeBuffer = [];
+            this.writerCursor = 0;
             this.readBuffer = [];
-            this.cursor = 0;
+            this.readerCursor = 0;
+            this.readerStart = 0;
+            this.readerEnd = 0;
         }
         StringDataBuffer.prototype.check = function (increment) {
             if (increment === void 0) {
                 increment = 0;
             }
-            if (this.cursor + increment >= this.readBuffer.length) {
+            if (
+                this.writerCursor + increment >= this.readBuffer.length &&
+                this.writerCursor + increment >= this.readerEnd
+            ) {
                 throw new StringDataBufferOutOfRange(
                     "Cursor: (" +
-                        this.cursor +
+                        this.writerCursor +
                         "), buffer's length: (" +
                         this.writeBuffer.length +
                         ")"
@@ -1413,123 +1599,146 @@ var StateSync = (function (exports) {
             }
         };
         StringDataBuffer.prototype.reset = function () {
-            this.cursor = 0;
+            this.writerCursor = 0;
+            this.readerCursor = 0;
+            this.readBuffer.length = 0;
+            this.writeBuffer.length = 0;
         };
         StringDataBuffer.prototype.readInt = function () {
             this.check();
             var temp = tempTypedBuffer.int;
-            temp[0] = this.readBuffer[this.cursor++];
+            temp[0] = this.readBuffer[this.readerCursor++];
             return temp[0];
         };
         StringDataBuffer.prototype.readUint = function () {
             this.check();
             var temp = tempTypedBuffer.uint;
-            temp[0] = this.readBuffer[this.cursor++];
+            temp[0] = this.readBuffer[this.readerCursor++];
             return temp[0];
         };
         StringDataBuffer.prototype.readShort = function () {
             this.check();
             var temp = tempTypedBuffer.short;
-            temp[0] = this.readBuffer[this.cursor++];
+            temp[0] = this.readBuffer[this.readerCursor++];
             return temp[0];
         };
         StringDataBuffer.prototype.readUshort = function () {
             this.check();
             var temp = tempTypedBuffer.ushort;
-            temp[0] = this.readBuffer[this.cursor++];
+            temp[0] = this.readBuffer[this.readerCursor++];
             return temp[0];
         };
         StringDataBuffer.prototype.readLong = function () {
             this.check();
             var temp = tempTypedBuffer.long;
-            temp[0] = this.readBuffer[this.cursor++];
+            temp[0] = this.readBuffer[this.readerCursor++];
             return temp[0];
         };
         StringDataBuffer.prototype.readUlong = function () {
             this.check();
             var temp = tempTypedBuffer.ulong;
-            temp[0] = this.readBuffer[this.cursor++];
+            temp[0] = this.readBuffer[this.readerCursor++];
             return temp[0];
         };
         StringDataBuffer.prototype.readFloat = function () {
             this.check();
             var temp = tempTypedBuffer.float;
-            temp[0] = this.readBuffer[this.cursor++];
+            temp[0] = this.readBuffer[this.readerCursor++];
             return temp[0];
         };
         StringDataBuffer.prototype.readDouble = function () {
             this.check();
             var temp = tempTypedBuffer.double;
-            temp[0] = this.readBuffer[this.cursor++];
+            temp[0] = this.readBuffer[this.readerCursor++];
             return temp[0];
         };
         StringDataBuffer.prototype.readBoolean = function () {
             this.check();
-            return Boolean(this.readBuffer[this.cursor++]);
+            return Boolean(this.readBuffer[this.readerCursor++]);
         };
-        StringDataBuffer.prototype.set = function (source) {
-            this.cursor = 0;
+        StringDataBuffer.prototype.set = function (source, start, end) {
+            if (start === void 0) {
+                start = 0;
+            }
+            if (end === void 0) {
+                end = -1;
+            }
+            this.writerCursor = 0;
             var dst = JSON.parse(source);
-            this.readBuffer = Array.isArray(dst) ? dst : [];
+            var dstChecked = Array.isArray(dst) ? dst : [];
+            if (end < 0) {
+                end += dstChecked.length;
+            }
+            this.readerStart = this.readerCursor = start;
+            this.readerEnd = end;
+            this.readBuffer = dstChecked;
         };
         StringDataBuffer.prototype.writeInt = function (source) {
             var temp = tempTypedBuffer.int;
             temp[0] = source;
-            this.writeBuffer[this.cursor++] = source;
+            this.writeBuffer[this.writerCursor++] = source;
             return this;
         };
         StringDataBuffer.prototype.writeUint = function (source) {
             var temp = tempTypedBuffer.uint;
             temp[0] = source;
-            this.writeBuffer[this.cursor++] = source;
+            this.writeBuffer[this.writerCursor++] = source;
             return this;
         };
         StringDataBuffer.prototype.writeShort = function (source) {
             var temp = tempTypedBuffer.short;
             temp[0] = source;
-            this.writeBuffer[this.cursor++] = source;
+            this.writeBuffer[this.writerCursor++] = source;
             return this;
         };
         StringDataBuffer.prototype.writeUshort = function (source) {
             var temp = tempTypedBuffer.ushort;
             temp[0] = source;
-            this.writeBuffer[this.cursor++] = source;
+            this.writeBuffer[this.writerCursor++] = source;
             return this;
         };
         StringDataBuffer.prototype.writeLong = function (source) {
             var temp = tempTypedBuffer.long;
             temp[0] = source;
-            this.writeBuffer[this.cursor++] = source;
+            this.writeBuffer[this.writerCursor++] = source;
             return this;
         };
         StringDataBuffer.prototype.writeUlong = function (source) {
             var temp = tempTypedBuffer.ulong;
             temp[0] = source;
-            this.writeBuffer[this.cursor++] = source;
+            this.writeBuffer[this.writerCursor++] = source;
             return this;
         };
         StringDataBuffer.prototype.writeFloat = function (source) {
             var temp = tempTypedBuffer.float;
             temp[0] = source;
-            this.writeBuffer[this.cursor++] = source;
+            this.writeBuffer[this.writerCursor++] = source;
             return this;
         };
         StringDataBuffer.prototype.writeDouble = function (source) {
             var temp = tempTypedBuffer.double;
             temp[0] = source;
-            this.writeBuffer[this.cursor++] = source;
+            this.writeBuffer[this.writerCursor++] = source;
             return this;
         };
         StringDataBuffer.prototype.writeBoolean = function (source) {
-            this.writeBuffer[this.cursor++] = source ? 1 : 0;
+            this.writeBuffer[this.writerCursor++] = source ? 1 : 0;
             return this;
         };
         StringDataBuffer.prototype.get = function () {
-            this.writeBuffer.length = this.cursor;
+            this.writeBuffer.length = this.writerCursor;
             return JSON.stringify(this.writeBuffer);
         };
         StringDataBuffer.prototype.hasNext = function () {
-            return this.cursor < this.readBuffer.length;
+            return (
+                this.readerCursor < this.readBuffer.length &&
+                this.writerCursor < this.readerEnd
+            );
+        };
+        StringDataBuffer.prototype.append = function (other) {
+            this.writeBuffer.push.apply(this.writeBuffer, other.writeBuffer);
+            this.writerCursor += other.writerCursor;
+            return this;
         };
         return StringDataBuffer;
     })();
@@ -1566,20 +1775,62 @@ var StateSync = (function (exports) {
         Transform = __decorate([NetComp("trans")], Transform);
         return Transform;
     })();
+    var View = /** @class */ (function () {
+        function View() {
+            this.color = 0xffffff;
+        }
+        View.prototype.changeColor = function (inColor) {
+            this.color = inColor;
+        };
+        __decorate([NetVar(DataType.int)], View.prototype, "color", void 0);
+        __decorate(
+            [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.int))],
+            View.prototype,
+            "changeColor",
+            null
+        );
+        View = __decorate([NetComp("view")], View);
+        return View;
+    })();
+
+    var Net = /** @class */ (function () {
+        function Net() {}
+        Net.send = function (obj) {
+            var _this = this;
+            var promise = new Promise(function (resolve) {
+                setTimeout(
+                    resolve,
+                    _this.delay + Math.random() * _this.jitter,
+                    obj
+                );
+            });
+            return {
+                recv: function (func, context) {
+                    promise.then(function (res) {
+                        func.call(context, res);
+                    });
+                },
+            };
+        };
+        Net.delay = 0;
+        Net.jitter = 0;
+        return Net;
+    })();
 
     var Base = /** @class */ (function () {
-        function Base(name, canvas) {
+        function Base(name, canvas, rpcType) {
             this.canvas = canvas;
             this.bg = "#947A6D";
-            this.yelloBall = "#F7D94C";
-            this.whiteBall = "#F8C3CD";
-            this.domain = Domain.Create(name, StringDataBuffer);
+            this.yelloBall = 0xf7d94c;
+            this.whiteBall = 0xf8c3cd;
+            this.domain = Domain.Create(name, StringDataBuffer, rpcType);
             this.ctx = canvas.getContext("2d");
             this.canvas.width = 950;
             this.canvas.height = 70;
             this.ctx.fillStyle = this.bg;
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             this.myLoop = this.loop.bind(this);
+            this.initScene();
             this.render(0);
         }
         Base.prototype.loop = function (time) {
@@ -1588,68 +1839,98 @@ var StateSync = (function (exports) {
         Base.prototype.render = function (time) {
             requestAnimationFrame(this.myLoop);
             this.canvas.width = this.canvas.width;
-            var d = this.domain;
+            this.domain;
             var ctx = this.ctx;
             ctx.fillStyle = this.bg;
             ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            var c1 = d.get(0);
+            var c1 = this.c1;
             if (c1) {
                 var p1 = c1.$comps.trans;
-                ctx.fillStyle = this.whiteBall;
+                var v1 = c1.$comps.view;
+                ctx.fillStyle = "#" + v1.color.toString(16);
                 ctx.beginPath();
                 ctx.arc(p1.pos.x, p1.pos.y, 26, 0, 2 * Math.PI);
                 ctx.fill();
             }
-            var c2 = d.get(1);
+            var c2 = this.c2;
             if (c2) {
                 var p2 = c2.$comps.trans;
-                ctx.fillStyle = this.yelloBall;
+                var v2 = c2.$comps.view;
+                ctx.fillStyle = "#" + v2.color.toString(16);
                 ctx.beginPath();
                 ctx.arc(p2.pos.x, p2.pos.y, 26, 0, 2 * Math.PI);
                 ctx.fill();
             }
+        };
+        Base.prototype.initScene = function () {
+            var ent1 = new Entity();
+            var trans1 = ent1.add(Transform);
+            trans1.pos.y = 35;
+            trans1.pos.x = 50;
+            ent1.add(View);
+            var ent2 = new Entity();
+            var trans2 = ent2.add(Transform);
+            ent2.add(View);
+            trans2.pos.y = 35;
+            trans2.pos.x = 30;
+            this.c1 = ent1;
+            this.c2 = ent2;
+            this.domain.reg(ent1);
+            this.domain.reg(ent2);
         };
         return Base;
     })();
     var Server = /** @class */ (function (_super) {
         __extends(Server, _super);
         function Server(canvas) {
-            var _this = _super.call(this, "server", canvas) || this;
+            var _this =
+                _super.call(this, "server", canvas, RpcType.SERVER) || this;
             _this.canvas = canvas;
-            _this.c1Dir = 5;
-            var client1 = new Entity();
-            _this.c1 = client1;
-            var t1 = client1.add(Transform);
-            t1.pos.y = 35;
-            t1.pos.x = 50;
-            var client2 = new Entity();
-            _this.c2 = client2;
-            var t2 = client2.add(Transform);
-            t2.pos.y = 35;
-            t2.pos.x = 30;
-            _this.domain.reg(client1);
-            _this.domain.reg(client2);
             return _this;
         }
+        Server.prototype.loop = function (dt) {
+            _super.prototype.loop.call(this, dt);
+            var t1 = this.c1.$comps.trans;
+            this.c2.$comps.trans;
+            t1.move(1, 0);
+        };
         return Server;
     })(Base);
     var Client = /** @class */ (function (_super) {
         __extends(Client, _super);
-        function Client(canvas) {
+        function Client(index, canvas) {
             var _this =
-                _super.call(this, "client" + Math.random(), canvas) || this;
+                _super.call(this, "client" + index, canvas, RpcType.CLIENT) ||
+                this;
+            _this.index = index;
             _this.canvas = canvas;
+            _this.mine.$comps.view.changeColor(_this.color);
             return _this;
         }
-        Client.clients = [];
+        Object.defineProperty(Client.prototype, "mine", {
+            get: function () {
+                return this.index == 1 ? this.c1 : this.c2;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        Object.defineProperty(Client.prototype, "color", {
+            get: function () {
+                return this.index == 1 ? this.yelloBall : this.whiteBall;
+            },
+            enumerable: false,
+            configurable: true,
+        });
         return Client;
     })(Base);
 
     exports.Base = Base;
     exports.Client = Client;
+    exports.Net = Net;
     exports.Server = Server;
     exports.Transform = Transform;
     exports.Vector = Vector;
+    exports.View = View;
 
     Object.defineProperty(exports, "__esModule", { value: true });
 

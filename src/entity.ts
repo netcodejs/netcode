@@ -29,7 +29,7 @@ class ComponentNotMatchedWhenSetIndex extends Error {}
 export class Entity<ProxyObj extends Object = any> {
     id = NULL_NUM;
     version = NULL_NUM;
-    domain?: Domain;
+    domain: Domain = Domain.NULL;
     compMap: Map<number, Object | Object[]> = new Map();
     static Event = {
         ADD_COMP: "add-comp",

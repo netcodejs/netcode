@@ -19,3 +19,14 @@ export class Transform {
         this.pos.y += y;
     }
 }
+
+@NetComp("view")
+export class View {
+    @NetVar(DataType.int)
+    color = 0xffffff;
+
+    @Rpc(RpcType.SERVER)
+    changeColor(@RpcVar(DataType.int) inColor: number) {
+        this.color = inColor;
+    }
+}

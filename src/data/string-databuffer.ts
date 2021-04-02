@@ -1,10 +1,10 @@
 import { IDataBuffer, IDatabufferWriter } from "./serializable";
 
 const tempTypedBuffer = {
-    int: new Int16Array(1),
-    uint: new Uint16Array(1),
-    short: new Int8Array(1),
-    ushort: new Uint8Array(1),
+    int: new Int32Array(1),
+    uint: new Uint32Array(1),
+    short: new Int16Array(1),
+    ushort: new Uint16Array(1),
     long: new Int32Array(1),
     ulong: new Uint32Array(1),
     float: new Float32Array(1),
