@@ -3,7 +3,7 @@ import { Transform, View } from "./net-comp";
 export * from "./net-comp";
 export * from "./mock-net";
 
-export class Base {
+export abstract class Base {
     readonly domain: Domain;
     protected ctx: CanvasRenderingContext2D;
     bg = "#947A6D";
@@ -80,6 +80,10 @@ export class Base {
         this.domain.reg(ent1);
         this.domain.reg(ent2);
     }
+
+    onKeyDown(ev: KeyboardEvent): void {}
+
+    onKeyUp(ev: KeyboardEvent): void {}
 }
 
 export class Server extends Base {
@@ -91,15 +95,24 @@ export class Server extends Base {
         super.loop(dt);
         const t1 = this.c1.$comps.trans as Transform;
         const t2 = this.c2.$comps.trans as Transform;
-
-        t1.move(1, 0);
     }
 }
 
+export interface ControlKeyboarnMap {
+    left: string;
+    right: string;
+}
+
 export class Client extends Base {
-    constructor(readonly index: number, readonly canvas: HTMLCanvasElement) {
+    constructor(
+        readonly index: number,
+        readonly canvas: HTMLCanvasElement,
+        readonly controlMap: ControlKeyboarnMap
+    ) {
         super("client" + index, canvas, RpcType.CLIENT);
         this.mine.$comps.view.changeColor(this.color);
+        window.addEventListener("keydown", this.onKeyDown.bind(this));
+        window.addEventListener("keyup", this.onKeyUp.bind(this));
     }
 
     get mine() {
@@ -108,5 +121,19 @@ export class Client extends Base {
 
     get color() {
         return this.index == 1 ? this.yelloBall : this.whiteBall;
+    }
+
+    onKeyDown(ev: KeyboardEvent) {
+        const map = this.controlMap;
+        if (ev.key === map.left) {
+        } else if (ev.key === map.right) {
+        }
+    }
+
+    onKeyUp(ev: KeyboardEvent) {
+        const map = this.controlMap;
+        if (ev.key === map.left) {
+        } else if (ev.key === map.right) {
+        }
     }
 }

@@ -1757,7 +1757,7 @@ var StateSync = (function (exports) {
         function Transform() {
             this.pos = new Vector();
         }
-        Transform.prototype.move = function (x, y) {
+        Transform.prototype.serverMove = function (x, y) {
             this.pos.x += x;
             this.pos.y += y;
         };
@@ -1769,7 +1769,7 @@ var StateSync = (function (exports) {
                 __param(1, RpcVar(DataType.int)),
             ],
             Transform.prototype,
-            "move",
+            "serverMove",
             null
         );
         Transform = __decorate([NetComp("trans")], Transform);
@@ -1878,6 +1878,8 @@ var StateSync = (function (exports) {
             this.domain.reg(ent1);
             this.domain.reg(ent2);
         };
+        Base.prototype.onKeyDown = function (ev) {};
+        Base.prototype.onKeyUp = function (ev) {};
         return Base;
     })();
     var Server = /** @class */ (function (_super) {
@@ -1890,21 +1892,23 @@ var StateSync = (function (exports) {
         }
         Server.prototype.loop = function (dt) {
             _super.prototype.loop.call(this, dt);
-            var t1 = this.c1.$comps.trans;
+            this.c1.$comps.trans;
             this.c2.$comps.trans;
-            t1.move(1, 0);
         };
         return Server;
     })(Base);
     var Client = /** @class */ (function (_super) {
         __extends(Client, _super);
-        function Client(index, canvas) {
+        function Client(index, canvas, controlMap) {
             var _this =
                 _super.call(this, "client" + index, canvas, RpcType.CLIENT) ||
                 this;
             _this.index = index;
             _this.canvas = canvas;
+            _this.controlMap = controlMap;
             _this.mine.$comps.view.changeColor(_this.color);
+            window.addEventListener("keydown", _this.onKeyDown.bind(_this));
+            window.addEventListener("keyup", _this.onKeyUp.bind(_this));
             return _this;
         }
         Object.defineProperty(Client.prototype, "mine", {
@@ -1921,6 +1925,16 @@ var StateSync = (function (exports) {
             enumerable: false,
             configurable: true,
         });
+        Client.prototype.onKeyDown = function (ev) {
+            var map = this.controlMap;
+            if (ev.key === map.left);
+            else if (ev.key === map.right);
+        };
+        Client.prototype.onKeyUp = function (ev) {
+            var map = this.controlMap;
+            if (ev.key === map.left);
+            else if (ev.key === map.right);
+        };
         return Client;
     })(Base);
 
