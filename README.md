@@ -10,10 +10,16 @@
 
 This is a game's state-synchronization framework for javascript/typescript.The first adapted game engine is CocosCreator, others would suport in future time.
 
+# Example
+
+For [example](https://netcodejs.github.io/netcode/example/) site, you can view code in [link](./exmaple)
+
 # Basic Knowledge
 
 ## Component
+
 ### Variable
+
 Component is not class in the real sense. All class with `@NetComp(className: string)` will be collectively referred to as component.You should mark the property that need synchronize with `@NetVar(type: DataType)` and `@NetArr(type: DataType)` for array.
 
 ```typescript
@@ -39,12 +45,14 @@ class TransformComp {
     rotation: number = 0;
 }
 ```
+
 ### Rpc
-Component also support rpc. When tagged with `@NetRpc(type: RpcType)`, the method could convert to networking function. 
+
+Component also support rpc. When tagged with `@NetRpc(type: RpcType)`, the method could convert to networking function.
 
 ```typescript
 class TransformComp {
-// ... as above
+    // ... as above
     @NetRpc(RpcType.CLIENT)
     move(x: number, y: number) {
         this.position.x += x;
