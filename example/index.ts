@@ -1,7 +1,13 @@
 import { Domain, Entity, Rpc, RpcType, StringDataBuffer } from "../src";
+import { Net } from "./mock-net";
 import { Transform, View } from "./net-comp";
 export * from "./net-comp";
 export * from "./mock-net";
+
+export class Time {
+    static deltaTime: number = 0;
+    static fixedDeltaTime: number = 1 / 30;
+}
 
 export abstract class Base {
     readonly domain: Domain;
@@ -14,6 +20,8 @@ export abstract class Base {
     c1!: Entity;
     c2!: Entity;
 
+    private _preTimestamp = 0;
+    private _fixedTimeAccumulator = 0;
     constructor(
         name: string,
         readonly canvas: HTMLCanvasElement,
@@ -30,9 +38,31 @@ export abstract class Base {
         this.render(0);
     }
 
+    update() {}
+
+    fixedUpdate() {}
+
+    lateUpdate() {}
+
     loop(time: number) {
+        this.update();
+        if (this._preTimestamp === 0) {
+            Time.deltaTime = 1 / 60;
+        } else {
+            Time.deltaTime = time - this._preTimestamp;
+        }
+        this._preTimestamp = time;
+        this._fixedTimeAccumulator += time;
+        let count = 0;
+        while (this._fixedTimeAccumulator >= Time.fixedDeltaTime && count < 3) {
+            count++;
+            this._fixedTimeAccumulator -= Time.fixedDeltaTime;
+            this.fixedUpdate();
+        }
         this.render(time);
+        this.lateUpdate();
     }
+
     render(time: number) {
         requestAnimationFrame(this.myLoop);
         this.canvas.width = this.canvas.width;
@@ -96,6 +126,14 @@ export class Server extends Base {
         const t1 = this.c1.$comps.trans as Transform;
         const t2 = this.c2.$comps.trans as Transform;
     }
+
+    fixedUpdate() {
+        const c1 = Net.client1;
+        const c2 = Net.client2;
+        const data = this.domain.asData();
+        Net.send(data).recv(c1.domain.setData, c1.domain);
+        Net.send(data).recv(c2.domain.setData, c2.domain);
+    }
 }
 
 export interface ControlKeyboarnMap {
@@ -103,7 +141,13 @@ export interface ControlKeyboarnMap {
     right: string;
 }
 
+export interface UserInput {
+    isLeft: boolean;
+    isRight: boolean;
+}
+
 export class Client extends Base {
+    private _input: UserInput = { isLeft: false, isRight: false };
     constructor(
         readonly index: number,
         readonly canvas: HTMLCanvasElement,
@@ -126,14 +170,27 @@ export class Client extends Base {
     onKeyDown(ev: KeyboardEvent) {
         const map = this.controlMap;
         if (ev.key === map.left) {
+            this._input.isLeft = true;
         } else if (ev.key === map.right) {
+            this._input.isRight = true;
         }
     }
 
     onKeyUp(ev: KeyboardEvent) {
         const map = this.controlMap;
         if (ev.key === map.left) {
+            this._input.isLeft = false;
         } else if (ev.key === map.right) {
+            this._input.isRight = false;
         }
+    }
+
+    fixedUpdate() {
+        const input = this._input;
+        const trans = this.mine.get(Transform)!;
+        trans.serverMove((input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0), 0);
+
+        const data = this.domain.asData();
+        Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
     }
 }

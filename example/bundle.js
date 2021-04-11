@@ -1743,6 +1743,30 @@ var StateSync = (function (exports) {
         return StringDataBuffer;
     })();
 
+    var Net = /** @class */ (function () {
+        function Net() {}
+        Net.send = function (obj) {
+            var _this = this;
+            var promise = new Promise(function (resolve) {
+                setTimeout(
+                    resolve,
+                    _this.delay + Math.random() * _this.jitter,
+                    obj
+                );
+            });
+            return {
+                recv: function (func, context) {
+                    promise.then(function (res) {
+                        func.call(context, res);
+                    });
+                },
+            };
+        };
+        Net.delay = 0;
+        Net.jitter = 0;
+        return Net;
+    })();
+
     var Vector = /** @class */ (function () {
         function Vector() {
             this.x = 0;
@@ -1793,36 +1817,20 @@ var StateSync = (function (exports) {
         return View;
     })();
 
-    var Net = /** @class */ (function () {
-        function Net() {}
-        Net.send = function (obj) {
-            var _this = this;
-            var promise = new Promise(function (resolve) {
-                setTimeout(
-                    resolve,
-                    _this.delay + Math.random() * _this.jitter,
-                    obj
-                );
-            });
-            return {
-                recv: function (func, context) {
-                    promise.then(function (res) {
-                        func.call(context, res);
-                    });
-                },
-            };
-        };
-        Net.delay = 0;
-        Net.jitter = 0;
-        return Net;
+    var Time = /** @class */ (function () {
+        function Time() {}
+        Time.deltaTime = 0;
+        Time.fixedDeltaTime = 1 / 30;
+        return Time;
     })();
-
     var Base = /** @class */ (function () {
         function Base(name, canvas, rpcType) {
             this.canvas = canvas;
             this.bg = "#947A6D";
             this.yelloBall = 0xf7d94c;
             this.whiteBall = 0xf8c3cd;
+            this._preTimestamp = 0;
+            this._fixedTimeAccumulator = 0;
             this.domain = Domain.Create(name, StringDataBuffer, rpcType);
             this.ctx = canvas.getContext("2d");
             this.canvas.width = 950;
@@ -1833,8 +1841,29 @@ var StateSync = (function (exports) {
             this.initScene();
             this.render(0);
         }
+        Base.prototype.update = function () {};
+        Base.prototype.fixedUpdate = function () {};
+        Base.prototype.lateUpdate = function () {};
         Base.prototype.loop = function (time) {
+            this.update();
+            if (this._preTimestamp === 0) {
+                Time.deltaTime = 1 / 60;
+            } else {
+                Time.deltaTime = time - this._preTimestamp;
+            }
+            this._preTimestamp = time;
+            this._fixedTimeAccumulator += time;
+            var count = 0;
+            while (
+                this._fixedTimeAccumulator >= Time.fixedDeltaTime &&
+                count < 3
+            ) {
+                count++;
+                this._fixedTimeAccumulator -= Time.fixedDeltaTime;
+                this.fixedUpdate();
+            }
             this.render(time);
+            this.lateUpdate();
         };
         Base.prototype.render = function (time) {
             requestAnimationFrame(this.myLoop);
@@ -1895,6 +1924,13 @@ var StateSync = (function (exports) {
             this.c1.$comps.trans;
             this.c2.$comps.trans;
         };
+        Server.prototype.fixedUpdate = function () {
+            var c1 = Net.client1;
+            var c2 = Net.client2;
+            var data = this.domain.asData();
+            Net.send(data).recv(c1.domain.setData, c1.domain);
+            Net.send(data).recv(c2.domain.setData, c2.domain);
+        };
         return Server;
     })(Base);
     var Client = /** @class */ (function (_super) {
@@ -1906,6 +1942,7 @@ var StateSync = (function (exports) {
             _this.index = index;
             _this.canvas = canvas;
             _this.controlMap = controlMap;
+            _this._input = { isLeft: false, isRight: false };
             _this.mine.$comps.view.changeColor(_this.color);
             window.addEventListener("keydown", _this.onKeyDown.bind(_this));
             window.addEventListener("keyup", _this.onKeyUp.bind(_this));
@@ -1927,13 +1964,29 @@ var StateSync = (function (exports) {
         });
         Client.prototype.onKeyDown = function (ev) {
             var map = this.controlMap;
-            if (ev.key === map.left);
-            else if (ev.key === map.right);
+            if (ev.key === map.left) {
+                this._input.isLeft = true;
+            } else if (ev.key === map.right) {
+                this._input.isRight = true;
+            }
         };
         Client.prototype.onKeyUp = function (ev) {
             var map = this.controlMap;
-            if (ev.key === map.left);
-            else if (ev.key === map.right);
+            if (ev.key === map.left) {
+                this._input.isLeft = false;
+            } else if (ev.key === map.right) {
+                this._input.isRight = false;
+            }
+        };
+        Client.prototype.fixedUpdate = function () {
+            var input = this._input;
+            var trans = this.mine.get(Transform);
+            trans.serverMove(
+                (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0),
+                0
+            );
+            var data = this.domain.asData();
+            Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
         };
         return Client;
     })(Base);
@@ -1942,6 +1995,7 @@ var StateSync = (function (exports) {
     exports.Client = Client;
     exports.Net = Net;
     exports.Server = Server;
+    exports.Time = Time;
     exports.Transform = Transform;
     exports.Vector = Vector;
     exports.View = View;
