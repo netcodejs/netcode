@@ -5,8 +5,8 @@ export * from "./net-comp";
 export * from "./mock-net";
 
 export class Time {
-    static deltaTime: number = 0;
-    static fixedDeltaTime: number = 1 / 30;
+    deltaTime: number = 0;
+    fixedDeltaTime: number = (1 / 15) * 1000;
 }
 
 export abstract class Base {
@@ -16,6 +16,7 @@ export abstract class Base {
     yelloBall = 0xf7d94c;
     whiteBall = 0xf8c3cd;
     myLoop: FrameRequestCallback;
+    time = new Time();
 
     c1!: Entity;
     c2!: Entity;
@@ -47,16 +48,19 @@ export abstract class Base {
     loop(time: number) {
         this.update();
         if (this._preTimestamp === 0) {
-            Time.deltaTime = 1 / 60;
+            this.time.deltaTime = (1 / 60) * 1000;
         } else {
-            Time.deltaTime = time - this._preTimestamp;
+            this.time.deltaTime = time - this._preTimestamp;
         }
         this._preTimestamp = time;
-        this._fixedTimeAccumulator += time;
+        this._fixedTimeAccumulator += this.time.deltaTime;
         let count = 0;
-        while (this._fixedTimeAccumulator >= Time.fixedDeltaTime && count < 3) {
+        while (
+            this._fixedTimeAccumulator >= this.time.fixedDeltaTime &&
+            count < 3
+        ) {
             count++;
-            this._fixedTimeAccumulator -= Time.fixedDeltaTime;
+            this._fixedTimeAccumulator -= this.time.fixedDeltaTime;
             this.fixedUpdate();
         }
         this.render(time);
@@ -188,7 +192,8 @@ export class Client extends Base {
     fixedUpdate() {
         const input = this._input;
         const trans = this.mine.get(Transform)!;
-        trans.serverMove((input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0), 0);
+        const dirX = (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0);
+        trans.serverMove(dirX * this.time.fixedDeltaTime * 0.1, 0);
 
         const data = this.domain.asData();
         Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
