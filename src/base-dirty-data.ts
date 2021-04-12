@@ -34,6 +34,11 @@ export class Int extends ADirty<number> implements ISerable {
         }
     }
 
+    constructor(value = 0) {
+        super();
+        this._value = value;
+    }
+
     ser(buffer: IDatabufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
@@ -65,6 +70,11 @@ export class Float extends ADirty<number> implements ISerable {
             this._value = inValue;
             this.dirty = true;
         }
+    }
+
+    constructor(value = 0) {
+        super();
+        this._value = value;
     }
 
     ser(buffer: IDatabufferWriter<any>): void {
@@ -100,6 +110,11 @@ export class Long extends ADirty<number> implements ISerable {
         }
     }
 
+    constructor(value = 0) {
+        super();
+        this._value = value;
+    }
+
     ser(buffer: IDatabufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
@@ -131,6 +146,11 @@ export class Uint extends ADirty<number> implements ISerable {
             this._value = inValue;
             this.dirty = true;
         }
+    }
+
+    constructor(value = 0) {
+        super();
+        this._value = value;
     }
 
     ser(buffer: IDatabufferWriter<any>): void {
@@ -166,6 +186,11 @@ export class Double extends ADirty<number> implements ISerable {
         }
     }
 
+    constructor(value = 0) {
+        super();
+        this._value = value;
+    }
+
     ser(buffer: IDatabufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
@@ -197,6 +222,11 @@ export class Ulong extends ADirty<number> implements ISerable {
             this._value = inValue;
             this.dirty = true;
         }
+    }
+
+    constructor(value = 0) {
+        super();
+        this._value = value;
     }
 
     ser(buffer: IDatabufferWriter<any>): void {
@@ -232,6 +262,11 @@ export class Short extends ADirty<number> implements ISerable {
         }
     }
 
+    constructor(value = 0) {
+        super();
+        this._value = value;
+    }
+
     ser(buffer: IDatabufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
@@ -263,6 +298,11 @@ export class Ushort extends ADirty<number> implements ISerable {
             this._value = inValue;
             this.dirty = true;
         }
+    }
+
+    constructor(value = 0) {
+        super();
+        this._value = value;
     }
 
     ser(buffer: IDatabufferWriter<any>): void {
