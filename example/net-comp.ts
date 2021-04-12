@@ -1,4 +1,4 @@
-import { DataType, NetComp, NetVar, Rpc, RpcType, RpcVar } from "../src";
+import { DataType, Int, NetComp, NetVar, Rpc, RpcType, RpcVar } from "../src";
 
 @NetComp("vec")
 export class Vector {
@@ -32,4 +32,13 @@ export class View {
     changeColor(@RpcVar(DataType.int) inColor: number) {
         this.color = inColor;
     }
+}
+
+@NetComp("time")
+export class ServerTime {
+    @NetVar(DataType.int)
+    timestamp: number = 0;
+
+    @NetVar(Int)
+    deltaTime: Int = new Int();
 }

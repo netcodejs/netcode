@@ -1,12 +1,15 @@
 import { Domain, Entity, Rpc, RpcType, StringDataBuffer } from "../src";
 import { Net } from "./mock-net";
-import { Transform, View } from "./net-comp";
+import { ServerTime, Transform, Vector, View } from "./net-comp";
 export * from "./net-comp";
 export * from "./mock-net";
 
 export class Time {
     deltaTime: number = 0;
-    fixedDeltaTime: number = (1 / 15) * 1000;
+    fixedDeltaTime: number = (1 / 10) * 1000;
+
+    fixedTimestamp: number = 0;
+    timestamp: number = 0;
 }
 
 export abstract class Base {
@@ -17,9 +20,11 @@ export abstract class Base {
     whiteBall = 0xf8c3cd;
     myLoop: FrameRequestCallback;
     time = new Time();
+    doInterpolating = false;
 
     c1!: Entity;
     c2!: Entity;
+    server!: Entity;
 
     private _preTimestamp = 0;
     private _fixedTimeAccumulator = 0;
@@ -36,7 +41,7 @@ export abstract class Base {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.myLoop = this.loop.bind(this);
         this.initScene();
-        this.render(0);
+        this.render();
     }
 
     update() {}
@@ -45,32 +50,37 @@ export abstract class Base {
 
     lateUpdate() {}
 
-    loop(time: number) {
-        this.update();
+    loop(timestamp: number) {
+        const Time = this.time;
         if (this._preTimestamp === 0) {
-            this.time.deltaTime = (1 / 60) * 1000;
+            Time.deltaTime = (1 / 60) * 1000;
         } else {
-            this.time.deltaTime = time - this._preTimestamp;
+            Time.deltaTime = timestamp - this._preTimestamp;
         }
-        this._preTimestamp = time;
-        this._fixedTimeAccumulator += this.time.deltaTime;
+
+        Time.timestamp += Time.deltaTime;
+        this.update();
+
+        this._preTimestamp = timestamp;
+        this._fixedTimeAccumulator += Time.deltaTime;
+
         let count = 0;
-        while (
-            this._fixedTimeAccumulator >= this.time.fixedDeltaTime &&
-            count < 3
-        ) {
+        while (this._fixedTimeAccumulator >= Time.fixedDeltaTime && count < 3) {
             count++;
-            this._fixedTimeAccumulator -= this.time.fixedDeltaTime;
+            this._fixedTimeAccumulator -= Time.fixedDeltaTime;
+            Time.fixedTimestamp += Time.fixedDeltaTime;
             this.fixedUpdate();
         }
-        this.render(time);
+        this.render();
         this.lateUpdate();
     }
 
-    render(time: number) {
+    render() {
         requestAnimationFrame(this.myLoop);
-        this.canvas.width = this.canvas.width;
+        const Time = this.time;
         const d = this.domain;
+
+        this.canvas.width = this.canvas.width;
         const ctx = this.ctx;
 
         ctx.fillStyle = this.bg;
@@ -79,21 +89,26 @@ export abstract class Base {
         if (c1) {
             const p1 = c1.$comps.trans as Transform;
             const v1 = c1.$comps.view as View;
-            ctx.fillStyle = "#" + v1.color.toString(16);
-            ctx.beginPath();
-            ctx.arc(p1.pos.x, p1.pos.y, 26, 0, 2 * Math.PI);
-            ctx.fill();
+            this._drawBall(ctx, p1.pos, "#" + v1.color.toString(16));
         }
 
         const c2 = this.c2;
         if (c2) {
             const p2 = c2.$comps.trans as Transform;
             const v2 = c2.$comps.view as View;
-            ctx.fillStyle = "#" + v2.color.toString(16);
-            ctx.beginPath();
-            ctx.arc(p2.pos.x, p2.pos.y, 26, 0, 2 * Math.PI);
-            ctx.fill();
+            this._drawBall(ctx, p2.pos, "#" + v2.color.toString(16));
         }
+    }
+
+    protected _drawBall(
+        ctx: CanvasRenderingContext2D,
+        pos: Vector,
+        color: string
+    ) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 26, 0, 2 * Math.PI);
+        ctx.fill();
     }
 
     initScene() {
@@ -109,8 +124,13 @@ export abstract class Base {
         trans2.pos.y = 35;
         trans2.pos.x = 30;
 
+        const server = new Entity();
+        server.add(ServerTime);
+
         this.c1 = ent1;
         this.c2 = ent2;
+        this.server = server;
+        this.domain.reg(server);
         this.domain.reg(ent1);
         this.domain.reg(ent2);
     }
@@ -132,6 +152,10 @@ export class Server extends Base {
     }
 
     fixedUpdate() {
+        const Time = this.time;
+        const serverTime = this.server.get(ServerTime)!;
+        serverTime.timestamp = Time.fixedTimestamp;
+
         const c1 = Net.client1;
         const c2 = Net.client2;
         const data = this.domain.asData();
@@ -197,5 +221,10 @@ export class Client extends Base {
 
         const data = this.domain.asData();
         Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
+
+        const serverTime = this.server.get(ServerTime)!;
+        this.time.timestamp =
+            this.time.timestamp * 0.5 + serverTime.timestamp * 0.5;
+        console.log(serverTime.timestamp, this.time.timestamp);
     }
 }

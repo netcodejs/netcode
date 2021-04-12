@@ -1234,13 +1234,16 @@ var StateSync = (function (exports) {
         };
         return ADirty;
     })();
-    /** @class */ (function (_super) {
+    var Int = /** @class */ (function (_super) {
         __extends(Int, _super);
-        function Int() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
+        function Int(value) {
+            if (value === void 0) {
+                value = 0;
+            }
+            var _this = _super.call(this) || this;
             _this.dirty = false;
             _this._value = 0;
+            _this._value = value;
             return _this;
         }
         Object.defineProperty(Int.prototype, "value", {
@@ -1276,11 +1279,14 @@ var StateSync = (function (exports) {
     })(ADirty);
     /** @class */ (function (_super) {
         __extends(Float, _super);
-        function Float() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
+        function Float(value) {
+            if (value === void 0) {
+                value = 0;
+            }
+            var _this = _super.call(this) || this;
             _this.dirty = false;
             _this._value = 0;
+            _this._value = value;
             return _this;
         }
         Object.defineProperty(Float.prototype, "value", {
@@ -1316,11 +1322,14 @@ var StateSync = (function (exports) {
     })(ADirty);
     /** @class */ (function (_super) {
         __extends(Long, _super);
-        function Long() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
+        function Long(value) {
+            if (value === void 0) {
+                value = 0;
+            }
+            var _this = _super.call(this) || this;
             _this.dirty = false;
             _this._value = 0;
+            _this._value = value;
             return _this;
         }
         Object.defineProperty(Long.prototype, "value", {
@@ -1356,11 +1365,14 @@ var StateSync = (function (exports) {
     })(ADirty);
     /** @class */ (function (_super) {
         __extends(Uint, _super);
-        function Uint() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
+        function Uint(value) {
+            if (value === void 0) {
+                value = 0;
+            }
+            var _this = _super.call(this) || this;
             _this.dirty = false;
             _this._value = 0;
+            _this._value = value;
             return _this;
         }
         Object.defineProperty(Uint.prototype, "value", {
@@ -1396,11 +1408,14 @@ var StateSync = (function (exports) {
     })(ADirty);
     /** @class */ (function (_super) {
         __extends(Double, _super);
-        function Double() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
+        function Double(value) {
+            if (value === void 0) {
+                value = 0;
+            }
+            var _this = _super.call(this) || this;
             _this.dirty = false;
             _this._value = 0;
+            _this._value = value;
             return _this;
         }
         Object.defineProperty(Double.prototype, "value", {
@@ -1436,11 +1451,14 @@ var StateSync = (function (exports) {
     })(ADirty);
     /** @class */ (function (_super) {
         __extends(Ulong, _super);
-        function Ulong() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
+        function Ulong(value) {
+            if (value === void 0) {
+                value = 0;
+            }
+            var _this = _super.call(this) || this;
             _this.dirty = false;
             _this._value = 0;
+            _this._value = value;
             return _this;
         }
         Object.defineProperty(Ulong.prototype, "value", {
@@ -1476,11 +1494,14 @@ var StateSync = (function (exports) {
     })(ADirty);
     /** @class */ (function (_super) {
         __extends(Short, _super);
-        function Short() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
+        function Short(value) {
+            if (value === void 0) {
+                value = 0;
+            }
+            var _this = _super.call(this) || this;
             _this.dirty = false;
             _this._value = 0;
+            _this._value = value;
             return _this;
         }
         Object.defineProperty(Short.prototype, "value", {
@@ -1516,11 +1537,14 @@ var StateSync = (function (exports) {
     })(ADirty);
     /** @class */ (function (_super) {
         __extends(Ushort, _super);
-        function Ushort() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
+        function Ushort(value) {
+            if (value === void 0) {
+                value = 0;
+            }
+            var _this = _super.call(this) || this;
             _this.dirty = false;
             _this._value = 0;
+            _this._value = value;
             return _this;
         }
         Object.defineProperty(Ushort.prototype, "value", {
@@ -1816,11 +1840,29 @@ var StateSync = (function (exports) {
         View = __decorate([NetComp("view")], View);
         return View;
     })();
+    var ServerTime = /** @class */ (function () {
+        function ServerTime() {
+            this.timestamp = 0;
+            this.deltaTime = new Int();
+        }
+        __decorate(
+            [NetVar(DataType.int)],
+            ServerTime.prototype,
+            "timestamp",
+            void 0
+        );
+        __decorate([NetVar(Int)], ServerTime.prototype, "deltaTime", void 0);
+        ServerTime = __decorate([NetComp("time")], ServerTime);
+        return ServerTime;
+    })();
 
     var Time = /** @class */ (function () {
-        function Time() {}
-        Time.deltaTime = 0;
-        Time.fixedDeltaTime = 1 / 30;
+        function Time() {
+            this.deltaTime = 0;
+            this.fixedDeltaTime = (1 / 10) * 1000;
+            this.fixedTimestamp = 0;
+            this.timestamp = 0;
+        }
         return Time;
     })();
     var Base = /** @class */ (function () {
@@ -1829,6 +1871,8 @@ var StateSync = (function (exports) {
             this.bg = "#947A6D";
             this.yelloBall = 0xf7d94c;
             this.whiteBall = 0xf8c3cd;
+            this.time = new Time();
+            this.doInterpolating = false;
             this._preTimestamp = 0;
             this._fixedTimeAccumulator = 0;
             this.domain = Domain.Create(name, StringDataBuffer, rpcType);
@@ -1839,20 +1883,22 @@ var StateSync = (function (exports) {
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             this.myLoop = this.loop.bind(this);
             this.initScene();
-            this.render(0);
+            this.render();
         }
         Base.prototype.update = function () {};
         Base.prototype.fixedUpdate = function () {};
         Base.prototype.lateUpdate = function () {};
-        Base.prototype.loop = function (time) {
-            this.update();
+        Base.prototype.loop = function (timestamp) {
+            var Time = this.time;
             if (this._preTimestamp === 0) {
-                Time.deltaTime = 1 / 60;
+                Time.deltaTime = (1 / 60) * 1000;
             } else {
-                Time.deltaTime = time - this._preTimestamp;
+                Time.deltaTime = timestamp - this._preTimestamp;
             }
-            this._preTimestamp = time;
-            this._fixedTimeAccumulator += time;
+            Time.timestamp += Time.deltaTime;
+            this.update();
+            this._preTimestamp = timestamp;
+            this._fixedTimeAccumulator += Time.deltaTime;
             var count = 0;
             while (
                 this._fixedTimeAccumulator >= Time.fixedDeltaTime &&
@@ -1860,15 +1906,17 @@ var StateSync = (function (exports) {
             ) {
                 count++;
                 this._fixedTimeAccumulator -= Time.fixedDeltaTime;
+                Time.fixedTimestamp += Time.fixedDeltaTime;
                 this.fixedUpdate();
             }
-            this.render(time);
+            this.render();
             this.lateUpdate();
         };
-        Base.prototype.render = function (time) {
+        Base.prototype.render = function () {
             requestAnimationFrame(this.myLoop);
-            this.canvas.width = this.canvas.width;
+            this.time;
             this.domain;
+            this.canvas.width = this.canvas.width;
             var ctx = this.ctx;
             ctx.fillStyle = this.bg;
             ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -1876,20 +1924,20 @@ var StateSync = (function (exports) {
             if (c1) {
                 var p1 = c1.$comps.trans;
                 var v1 = c1.$comps.view;
-                ctx.fillStyle = "#" + v1.color.toString(16);
-                ctx.beginPath();
-                ctx.arc(p1.pos.x, p1.pos.y, 26, 0, 2 * Math.PI);
-                ctx.fill();
+                this._drawBall(ctx, p1.pos, "#" + v1.color.toString(16));
             }
             var c2 = this.c2;
             if (c2) {
                 var p2 = c2.$comps.trans;
                 var v2 = c2.$comps.view;
-                ctx.fillStyle = "#" + v2.color.toString(16);
-                ctx.beginPath();
-                ctx.arc(p2.pos.x, p2.pos.y, 26, 0, 2 * Math.PI);
-                ctx.fill();
+                this._drawBall(ctx, p2.pos, "#" + v2.color.toString(16));
             }
+        };
+        Base.prototype._drawBall = function (ctx, pos, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 26, 0, 2 * Math.PI);
+            ctx.fill();
         };
         Base.prototype.initScene = function () {
             var ent1 = new Entity();
@@ -1902,8 +1950,12 @@ var StateSync = (function (exports) {
             ent2.add(View);
             trans2.pos.y = 35;
             trans2.pos.x = 30;
+            var server = new Entity();
+            server.add(ServerTime);
             this.c1 = ent1;
             this.c2 = ent2;
+            this.server = server;
+            this.domain.reg(server);
             this.domain.reg(ent1);
             this.domain.reg(ent2);
         };
@@ -1925,6 +1977,9 @@ var StateSync = (function (exports) {
             this.c2.$comps.trans;
         };
         Server.prototype.fixedUpdate = function () {
+            var Time = this.time;
+            var serverTime = this.server.get(ServerTime);
+            serverTime.timestamp = Time.fixedTimestamp;
             var c1 = Net.client1;
             var c2 = Net.client2;
             var data = this.domain.asData();
@@ -1981,12 +2036,14 @@ var StateSync = (function (exports) {
         Client.prototype.fixedUpdate = function () {
             var input = this._input;
             var trans = this.mine.get(Transform);
-            trans.serverMove(
-                (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0),
-                0
-            );
+            var dirX = (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0);
+            trans.serverMove(dirX * this.time.fixedDeltaTime * 0.1, 0);
             var data = this.domain.asData();
             Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
+            var serverTime = this.server.get(ServerTime);
+            this.time.timestamp =
+                this.time.timestamp * 0.5 + serverTime.timestamp * 0.5;
+            console.log(serverTime.timestamp, this.time.timestamp);
         };
         return Client;
     })(Base);
@@ -1995,6 +2052,7 @@ var StateSync = (function (exports) {
     exports.Client = Client;
     exports.Net = Net;
     exports.Server = Server;
+    exports.ServerTime = ServerTime;
     exports.Time = Time;
     exports.Transform = Transform;
     exports.Vector = Vector;
