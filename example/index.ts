@@ -1,19 +1,28 @@
 import { Domain, Entity, Rpc, RpcType, StringDataBuffer } from "../src";
+import { Net } from "./mock-net";
 import { Transform, View } from "./net-comp";
 export * from "./net-comp";
 export * from "./mock-net";
 
-export class Base {
+export class Time {
+    deltaTime: number = 0;
+    fixedDeltaTime: number = (1 / 15) * 1000;
+}
+
+export abstract class Base {
     readonly domain: Domain;
     protected ctx: CanvasRenderingContext2D;
     bg = "#947A6D";
     yelloBall = 0xf7d94c;
     whiteBall = 0xf8c3cd;
     myLoop: FrameRequestCallback;
+    time = new Time();
 
     c1!: Entity;
     c2!: Entity;
 
+    private _preTimestamp = 0;
+    private _fixedTimeAccumulator = 0;
     constructor(
         name: string,
         readonly canvas: HTMLCanvasElement,
@@ -30,9 +39,34 @@ export class Base {
         this.render(0);
     }
 
+    update() {}
+
+    fixedUpdate() {}
+
+    lateUpdate() {}
+
     loop(time: number) {
+        this.update();
+        if (this._preTimestamp === 0) {
+            this.time.deltaTime = (1 / 60) * 1000;
+        } else {
+            this.time.deltaTime = time - this._preTimestamp;
+        }
+        this._preTimestamp = time;
+        this._fixedTimeAccumulator += this.time.deltaTime;
+        let count = 0;
+        while (
+            this._fixedTimeAccumulator >= this.time.fixedDeltaTime &&
+            count < 3
+        ) {
+            count++;
+            this._fixedTimeAccumulator -= this.time.fixedDeltaTime;
+            this.fixedUpdate();
+        }
         this.render(time);
+        this.lateUpdate();
     }
+
     render(time: number) {
         requestAnimationFrame(this.myLoop);
         this.canvas.width = this.canvas.width;
@@ -80,6 +114,10 @@ export class Base {
         this.domain.reg(ent1);
         this.domain.reg(ent2);
     }
+
+    onKeyDown(ev: KeyboardEvent): void {}
+
+    onKeyUp(ev: KeyboardEvent): void {}
 }
 
 export class Server extends Base {
@@ -91,15 +129,38 @@ export class Server extends Base {
         super.loop(dt);
         const t1 = this.c1.$comps.trans as Transform;
         const t2 = this.c2.$comps.trans as Transform;
+    }
 
-        t1.move(1, 0);
+    fixedUpdate() {
+        const c1 = Net.client1;
+        const c2 = Net.client2;
+        const data = this.domain.asData();
+        Net.send(data).recv(c1.domain.setData, c1.domain);
+        Net.send(data).recv(c2.domain.setData, c2.domain);
     }
 }
 
+export interface ControlKeyboarnMap {
+    left: string;
+    right: string;
+}
+
+export interface UserInput {
+    isLeft: boolean;
+    isRight: boolean;
+}
+
 export class Client extends Base {
-    constructor(readonly index: number, readonly canvas: HTMLCanvasElement) {
+    private _input: UserInput = { isLeft: false, isRight: false };
+    constructor(
+        readonly index: number,
+        readonly canvas: HTMLCanvasElement,
+        readonly controlMap: ControlKeyboarnMap
+    ) {
         super("client" + index, canvas, RpcType.CLIENT);
         this.mine.$comps.view.changeColor(this.color);
+        window.addEventListener("keydown", this.onKeyDown.bind(this));
+        window.addEventListener("keyup", this.onKeyUp.bind(this));
     }
 
     get mine() {
@@ -108,5 +169,33 @@ export class Client extends Base {
 
     get color() {
         return this.index == 1 ? this.yelloBall : this.whiteBall;
+    }
+
+    onKeyDown(ev: KeyboardEvent) {
+        const map = this.controlMap;
+        if (ev.key === map.left) {
+            this._input.isLeft = true;
+        } else if (ev.key === map.right) {
+            this._input.isRight = true;
+        }
+    }
+
+    onKeyUp(ev: KeyboardEvent) {
+        const map = this.controlMap;
+        if (ev.key === map.left) {
+            this._input.isLeft = false;
+        } else if (ev.key === map.right) {
+            this._input.isRight = false;
+        }
+    }
+
+    fixedUpdate() {
+        const input = this._input;
+        const trans = this.mine.get(Transform)!;
+        const dirX = (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0);
+        trans.serverMove(dirX * this.time.fixedDeltaTime * 0.1, 0);
+
+        const data = this.domain.asData();
+        Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
     }
 }

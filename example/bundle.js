@@ -1743,56 +1743,6 @@ var StateSync = (function (exports) {
         return StringDataBuffer;
     })();
 
-    var Vector = /** @class */ (function () {
-        function Vector() {
-            this.x = 0;
-            this.y = 0;
-        }
-        __decorate([NetVar(DataType.int)], Vector.prototype, "x", void 0);
-        __decorate([NetVar(DataType.int)], Vector.prototype, "y", void 0);
-        Vector = __decorate([NetComp("vec")], Vector);
-        return Vector;
-    })();
-    var Transform = /** @class */ (function () {
-        function Transform() {
-            this.pos = new Vector();
-        }
-        Transform.prototype.move = function (x, y) {
-            this.pos.x += x;
-            this.pos.y += y;
-        };
-        __decorate([NetVar(Vector)], Transform.prototype, "pos", void 0);
-        __decorate(
-            [
-                Rpc(RpcType.SERVER),
-                __param(0, RpcVar(DataType.int)),
-                __param(1, RpcVar(DataType.int)),
-            ],
-            Transform.prototype,
-            "move",
-            null
-        );
-        Transform = __decorate([NetComp("trans")], Transform);
-        return Transform;
-    })();
-    var View = /** @class */ (function () {
-        function View() {
-            this.color = 0xffffff;
-        }
-        View.prototype.changeColor = function (inColor) {
-            this.color = inColor;
-        };
-        __decorate([NetVar(DataType.int)], View.prototype, "color", void 0);
-        __decorate(
-            [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.int))],
-            View.prototype,
-            "changeColor",
-            null
-        );
-        View = __decorate([NetComp("view")], View);
-        return View;
-    })();
-
     var Net = /** @class */ (function () {
         function Net() {}
         Net.send = function (obj) {
@@ -1817,12 +1767,70 @@ var StateSync = (function (exports) {
         return Net;
     })();
 
+    var Vector = /** @class */ (function () {
+        function Vector() {
+            this.x = 0;
+            this.y = 0;
+        }
+        __decorate([NetVar(DataType.int)], Vector.prototype, "x", void 0);
+        __decorate([NetVar(DataType.int)], Vector.prototype, "y", void 0);
+        Vector = __decorate([NetComp("vec")], Vector);
+        return Vector;
+    })();
+    var Transform = /** @class */ (function () {
+        function Transform() {
+            this.pos = new Vector();
+        }
+        Transform.prototype.serverMove = function (x, y) {
+            this.pos.x += x;
+            this.pos.y += y;
+        };
+        __decorate([NetVar(Vector)], Transform.prototype, "pos", void 0);
+        __decorate(
+            [
+                Rpc(RpcType.SERVER),
+                __param(0, RpcVar(DataType.int)),
+                __param(1, RpcVar(DataType.int)),
+            ],
+            Transform.prototype,
+            "serverMove",
+            null
+        );
+        Transform = __decorate([NetComp("trans")], Transform);
+        return Transform;
+    })();
+    var View = /** @class */ (function () {
+        function View() {
+            this.color = 0xffffff;
+        }
+        View.prototype.changeColor = function (inColor) {
+            this.color = inColor;
+        };
+        __decorate([NetVar(DataType.int)], View.prototype, "color", void 0);
+        __decorate(
+            [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.int))],
+            View.prototype,
+            "changeColor",
+            null
+        );
+        View = __decorate([NetComp("view")], View);
+        return View;
+    })();
+
+    var Time = /** @class */ (function () {
+        function Time() {}
+        Time.deltaTime = 0;
+        Time.fixedDeltaTime = 1 / 30;
+        return Time;
+    })();
     var Base = /** @class */ (function () {
         function Base(name, canvas, rpcType) {
             this.canvas = canvas;
             this.bg = "#947A6D";
             this.yelloBall = 0xf7d94c;
             this.whiteBall = 0xf8c3cd;
+            this._preTimestamp = 0;
+            this._fixedTimeAccumulator = 0;
             this.domain = Domain.Create(name, StringDataBuffer, rpcType);
             this.ctx = canvas.getContext("2d");
             this.canvas.width = 950;
@@ -1833,8 +1841,29 @@ var StateSync = (function (exports) {
             this.initScene();
             this.render(0);
         }
+        Base.prototype.update = function () {};
+        Base.prototype.fixedUpdate = function () {};
+        Base.prototype.lateUpdate = function () {};
         Base.prototype.loop = function (time) {
+            this.update();
+            if (this._preTimestamp === 0) {
+                Time.deltaTime = 1 / 60;
+            } else {
+                Time.deltaTime = time - this._preTimestamp;
+            }
+            this._preTimestamp = time;
+            this._fixedTimeAccumulator += time;
+            var count = 0;
+            while (
+                this._fixedTimeAccumulator >= Time.fixedDeltaTime &&
+                count < 3
+            ) {
+                count++;
+                this._fixedTimeAccumulator -= Time.fixedDeltaTime;
+                this.fixedUpdate();
+            }
             this.render(time);
+            this.lateUpdate();
         };
         Base.prototype.render = function (time) {
             requestAnimationFrame(this.myLoop);
@@ -1878,6 +1907,8 @@ var StateSync = (function (exports) {
             this.domain.reg(ent1);
             this.domain.reg(ent2);
         };
+        Base.prototype.onKeyDown = function (ev) {};
+        Base.prototype.onKeyUp = function (ev) {};
         return Base;
     })();
     var Server = /** @class */ (function (_super) {
@@ -1890,21 +1921,31 @@ var StateSync = (function (exports) {
         }
         Server.prototype.loop = function (dt) {
             _super.prototype.loop.call(this, dt);
-            var t1 = this.c1.$comps.trans;
+            this.c1.$comps.trans;
             this.c2.$comps.trans;
-            t1.move(1, 0);
+        };
+        Server.prototype.fixedUpdate = function () {
+            var c1 = Net.client1;
+            var c2 = Net.client2;
+            var data = this.domain.asData();
+            Net.send(data).recv(c1.domain.setData, c1.domain);
+            Net.send(data).recv(c2.domain.setData, c2.domain);
         };
         return Server;
     })(Base);
     var Client = /** @class */ (function (_super) {
         __extends(Client, _super);
-        function Client(index, canvas) {
+        function Client(index, canvas, controlMap) {
             var _this =
                 _super.call(this, "client" + index, canvas, RpcType.CLIENT) ||
                 this;
             _this.index = index;
             _this.canvas = canvas;
+            _this.controlMap = controlMap;
+            _this._input = { isLeft: false, isRight: false };
             _this.mine.$comps.view.changeColor(_this.color);
+            window.addEventListener("keydown", _this.onKeyDown.bind(_this));
+            window.addEventListener("keyup", _this.onKeyUp.bind(_this));
             return _this;
         }
         Object.defineProperty(Client.prototype, "mine", {
@@ -1921,6 +1962,32 @@ var StateSync = (function (exports) {
             enumerable: false,
             configurable: true,
         });
+        Client.prototype.onKeyDown = function (ev) {
+            var map = this.controlMap;
+            if (ev.key === map.left) {
+                this._input.isLeft = true;
+            } else if (ev.key === map.right) {
+                this._input.isRight = true;
+            }
+        };
+        Client.prototype.onKeyUp = function (ev) {
+            var map = this.controlMap;
+            if (ev.key === map.left) {
+                this._input.isLeft = false;
+            } else if (ev.key === map.right) {
+                this._input.isRight = false;
+            }
+        };
+        Client.prototype.fixedUpdate = function () {
+            var input = this._input;
+            var trans = this.mine.get(Transform);
+            trans.serverMove(
+                (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0),
+                0
+            );
+            var data = this.domain.asData();
+            Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
+        };
         return Client;
     })(Base);
 
@@ -1928,6 +1995,7 @@ var StateSync = (function (exports) {
     exports.Client = Client;
     exports.Net = Net;
     exports.Server = Server;
+    exports.Time = Time;
     exports.Transform = Transform;
     exports.Vector = Vector;
     exports.View = View;

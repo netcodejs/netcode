@@ -14,7 +14,10 @@ export class Transform {
     pos = new Vector();
 
     @Rpc(RpcType.SERVER)
-    move(@RpcVar(DataType.int) x: number, @RpcVar(DataType.int) y: number) {
+    serverMove(
+        @RpcVar(DataType.int) x: number,
+        @RpcVar(DataType.int) y: number
+    ) {
         this.pos.x += x;
         this.pos.y += y;
     }
