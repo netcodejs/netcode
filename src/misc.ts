@@ -7,30 +7,30 @@ export function fastRemove(arr: any[], index: number) {
 }
 
 export function getDataTypeByteLength<
-    T extends Exclude<DataType, DataType.string>
+    T extends Exclude<DataType, DataType.STRING>
 >(type?: T) {
     if (type) {
         switch (type) {
-            case DataType.i8:
-            case DataType.u8:
-            case DataType.bool:
+            case DataType.I8:
+            case DataType.U8:
+            case DataType.BOOL:
                 return 1;
-            case DataType.short:
+            case DataType.SHORT:
             case DataType.ushort:
-            case DataType.i16:
-            case DataType.u16:
+            case DataType.I16:
+            case DataType.U16:
                 return 2;
             case DataType.uint:
-            case DataType.int:
-            case DataType.i32:
-            case DataType.u32:
-            case DataType.f32:
-            case DataType.float:
+            case DataType.INT:
+            case DataType.I32:
+            case DataType.U32:
+            case DataType.F32:
+            case DataType.FLOAT:
                 return 4;
-            case DataType.long:
+            case DataType.LONG:
             case DataType.ulong:
-            case DataType.f64:
-            case DataType.double:
+            case DataType.F64:
+            case DataType.DOUBLE:
                 return 8;
         }
     }

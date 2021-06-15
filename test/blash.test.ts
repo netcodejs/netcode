@@ -15,6 +15,7 @@ import {
     Rpc,
     RpcType,
     SchemaClass,
+    getSchemaByPrototype,
 } from "../src";
 import {
     IDataBufferReader,
@@ -28,9 +29,9 @@ export class ViewComponent /*  implements IComponent */ {
     // __schema__!: Readonly<Schema>;
     // entity!: Entity;
 
-    @NetVar(DataType.int)
+    @NetVar(DataType.INT)
     width: number = 0;
-    @NetVar(DataType.int)
+    @NetVar(DataType.INT)
     height: number = 0;
 
     // onLoad() {}
@@ -38,17 +39,17 @@ export class ViewComponent /*  implements IComponent */ {
 
 @NetComp("reverseView")
 export class ReverseViewComponent {
-    @NetVar(DataType.int)
+    @NetVar(DataType.INT)
     height: number = 0;
-    @NetVar(DataType.int)
+    @NetVar(DataType.INT)
     width: number = 0;
 }
 
 //@Component
 export class ViewComponentNoDecoration /* implements IComponent */ {
-    @NetVar(DataType.int)
+    @NetVar(DataType.INT)
     width: number = 0;
-    @NetVar(DataType.int)
+    @NetVar(DataType.INT)
     height: number = 0;
 
     // onLoad() {}
@@ -56,19 +57,19 @@ export class ViewComponentNoDecoration /* implements IComponent */ {
 
 @NetComp("vec")
 export class VectorComponent {
-    @NetVar(DataType.float)
+    @NetVar(DataType.FLOAT)
     x: number = 0;
-    @NetVar(DataType.float)
+    @NetVar(DataType.FLOAT)
     y: number = 0;
 }
 
 @NetComp("logic")
 export class LogicComponent {
-    @NetVar(DataType.bool)
+    @NetVar(DataType.BOOL)
     alive: boolean = false;
     @NetVar(VectorComponent)
     pos: VectorComponent = new VectorComponent();
-    @NetArr(DataType.string)
+    @NetArr(DataType.STRING)
     ze: string[] = [];
 
     @Rpc(RpcType.SERVER)
@@ -79,8 +80,20 @@ export class LogicComponent {
 
 @NetComp("arr")
 class ArrComp {
-    @NetArr(DataType.float)
+    @NetArr(DataType.FLOAT)
     arr: number[] = [];
+}
+
+@NetComp("lenArr")
+class LengthArrComp extends ArrComp {
+    @NetVar(DataType.INT)
+    length: number = 0;
+}
+
+@NetComp("lenArr")
+class DynamicArrComp extends LengthArrComp {
+    @NetVar(DataType.INT)
+    opcaity: number = 10;
 }
 
 beforeEach(() => {
@@ -103,12 +116,12 @@ describe("SchemaAndClassId", () => {
             count: 3,
             props: {
                 0: {
-                    type: { dataType: DataType.bool },
+                    type: { dataType: DataType.BOOL },
                     paramIndex: 0,
                     propertyKey: "alive",
                 },
                 alive: {
-                    type: { dataType: DataType.bool },
+                    type: { dataType: DataType.BOOL },
                     paramIndex: 0,
                     propertyKey: "alive",
                 },
@@ -126,7 +139,7 @@ describe("SchemaAndClassId", () => {
                 },
                 2: {
                     type: {
-                        dataType: DataType.string,
+                        dataType: DataType.STRING,
                         container: ARR_CONTAINER,
                     },
                 },
@@ -432,5 +445,35 @@ describe("rpc", () => {
         // sc
         client.setData(server.asData());
         expect(clientLogic0.alive).toEqual(true);
+    });
+});
+
+describe("inherit", () => {
+    test("class", () => {
+        const ArrCompSchema = getSchemaByPrototype(ArrComp.prototype)!!;
+        expect(ArrCompSchema.name).toEqual("arr");
+
+        const LenArrCompSchema = getSchemaByPrototype(
+            LengthArrComp.prototype
+        )!!;
+        const DynamicArrCompSchema = getSchemaByPrototype(
+            DynamicArrComp.prototype
+        )!!;
+        expect(LenArrCompSchema.name).toEqual("lenArr");
+        expect(LenArrCompSchema.raw).toEqual(
+            expect.arrayContaining(ArrCompSchema.raw)
+        );
+
+        expect(LenArrCompSchema.count).toEqual(2);
+        expect(ArrCompSchema.count).toEqual(1);
+
+        expect(LenArrCompSchema).not.toStrictEqual(ArrCompSchema);
+
+        expect(DynamicArrCompSchema.raw).toEqual(
+            expect.arrayContaining(ArrCompSchema.raw)
+        );
+        expect(DynamicArrCompSchema.raw).toEqual(
+            expect.arrayContaining(LenArrCompSchema.raw)
+        );
     });
 });

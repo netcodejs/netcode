@@ -1,4 +1,3 @@
-import { RpcType } from "./component-rpc";
 import { NULL_NUM, NULL_STR } from "./macro";
 
 export interface PropSchema {
@@ -31,10 +30,15 @@ export interface MethodSchema {
     type: RpcType;
 }
 
+export enum RpcType {
+    SERVER,
+    CLIENT,
+}
+
 // prettier-ignore
 export enum DataType {
-    none, i8 = 1, u8, i16, u16, i32, u32, f32, f64,
-    short, ushort, int, uint, long, ulong, float, double, string, bool
+    NONE, I8 = 1, U8, I16, U16, I32, U32, F32, F64,
+    SHORT, ushort, INT, uint, LONG, ulong, FLOAT, DOUBLE, STRING, BOOL
 }
 export const DataTypeObect = 99;
 export const DataTypeVoid = 98;
@@ -43,24 +47,46 @@ export type ComponentConstructor<T = any> = { new (): T } & {
     __schema__: Schema;
 };
 
-export function genSchema(): Schema {
-    return {
-        hash: NULL_NUM,
-        name: NULL_STR,
-        count: 0,
-        props: Object.create(null),
-        methods: Object.create(null),
-        raw: [],
-    };
+export function genSchema(o = Object.create(null)): Schema {
+    o.hash = NULL_NUM;
+    o.name = NULL_STR;
+    o.count = 0;
+    o.props = Object.create(null);
+    o.methods = Object.create(null);
+    o.raw = [];
+    return o;
 }
 
-export function genMethodSchema(): MethodSchema {
-    return {
-        hash: NULL_NUM,
-        name: NULL_STR,
-        paramCount: 0,
-        paramTypes: [],
-        returnType: DataTypeVoid,
-        type: -1,
-    };
+export function genMethodSchema(o = Object.create(null)): MethodSchema {
+    o.hash = NULL_NUM;
+    o.name = NULL_STR;
+    o.paramCount = 0;
+    o.paramTypes = [];
+    o.returnType = DataTypeVoid;
+    o.type = -1;
+    return o;
+}
+
+export const SCHEME_KEY = "__schema__";
+export function getSchemaByPrototype(prototype: any): Schema | null {
+    if (prototype.hasOwnProperty(SCHEME_KEY)) {
+        return (prototype as any)[SCHEME_KEY];
+    }
+    return null;
+}
+
+export function getOrCreateScheme(prototype: any) {
+    if (prototype.hasOwnProperty(SCHEME_KEY)) {
+        return (prototype as any)[SCHEME_KEY];
+    }
+
+    const s = genSchema() as Schema;
+    (prototype as any)[SCHEME_KEY] = s;
+    const superCtr = Object.getPrototypeOf(prototype);
+
+    const superSchema = superCtr[SCHEME_KEY] as Schema;
+    if (superSchema) {
+        s.raw.push.apply(s.raw, superSchema.raw);
+    }
+    return s;
 }

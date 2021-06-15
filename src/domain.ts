@@ -1,4 +1,5 @@
-import { hash2RpcName, RpcType } from "./component-rpc";
+import { hash2RpcName } from "./component-rpc";
+import { RpcType } from "./component-schema";
 import { compName2ctr, hash2compName, SchemaClass } from "./component-variable";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
 import { Entity } from "./entity";

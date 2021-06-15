@@ -4,13 +4,10 @@ import {
     DataTypeVoid,
     genMethodSchema,
     genSchema,
+    getOrCreateScheme,
+    RpcType,
 } from "./component-schema";
 import { str as hash } from "./lib/crc-32";
-
-export enum RpcType {
-    SERVER,
-    CLIENT,
-}
 
 export const hash2RpcName = {} as Record<number, string>;
 export class Crc32PropertyKeyHashConflict extends Error {}
@@ -20,9 +17,7 @@ export function Rpc<RpcReturnType extends void | DataType = void>(
 ) {
     return function (t: any, propertyKey: string): void {
         // gen schema
-        const target: ComponentConstructor = t as any;
-        if (!target.__schema__) target.__schema__ = genSchema();
-        const s = target.__schema__;
+        const s = getOrCreateScheme(t);
         if (!s.methods[propertyKey]) {
             s.methods[propertyKey] = genMethodSchema();
         }
@@ -46,7 +41,7 @@ export function Rpc<RpcReturnType extends void | DataType = void>(
                 console.warn(
                     `[Netcode]Rpc function ${propertyKey} at paramIndex(${i}) set the default type DataType.double`
                 );
-                ms.paramTypes[i] = DataType.double;
+                ms.paramTypes[i] = DataType.DOUBLE;
             }
         }
     };
@@ -58,10 +53,7 @@ export function RpcVar(type: DataType) {
         propertyKey: string,
         parameterIndex: number
     ): void {
-        // gen schema
-        const target: ComponentConstructor = t as any;
-        if (!target.__schema__) target.__schema__ = genSchema();
-        const s = target.__schema__;
+        const s = getOrCreateScheme(t);
         if (!s.methods[propertyKey]) {
             s.methods[propertyKey] = genMethodSchema();
         }
@@ -69,21 +61,3 @@ export function RpcVar(type: DataType) {
         ms.paramTypes[parameterIndex] = type;
     };
 }
-
-// export function RpcArr(type: DataType) {
-//     return function (
-//         t: any,
-//         propertyKey: string,
-//         parameterIndex: number
-//     ): void {
-//         // gen schema
-//         const target: ComponentConstructor = t as any;
-//         if (!target.__schema__) target.__schema__ = genSchema();
-//         const s = target.__schema__;
-//         if (!s.methods[propertyKey]) {
-//             s.methods[propertyKey] = genMethodSchema();
-//         }
-//         const ms = s.methods[propertyKey];
-
-//     };
-// }
