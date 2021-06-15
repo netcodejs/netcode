@@ -1,5 +1,6 @@
 import typescript from "rollup-plugin-typescript2";
 import cjs from "@rollup/plugin-commonjs";
+import serve from "rollup-plugin-serve";
 
 export default {
     input: "example/index.ts",
@@ -13,6 +14,10 @@ export default {
         typescript({
             tsconfig: "./example/tsconfig.json",
             tsconfigOverride: { compilerOptions: { declaration: false } },
+        }),
+        serve({
+            open: true,
+            contentBase: "example",
         }),
     ],
 };

@@ -51,8 +51,8 @@
             </input>
             <input type="checkbox" id="client2Rollback" @click="checkboxClick">
             Rollback
-        <canvas id="client2" style="width: 950px; height: 70px; display: block; padding-top: 10px;"></canvas>
-    </div>
+            <canvas id="client2" style="width: 950px; height: 70px; display: block; padding-top: 10px;"></canvas>
+        </div>
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
@@ -60,35 +60,18 @@
     const data = { hello: "1111", statusDelay: 0, statusJitter: 0 };
     const vm = new Vue({ el: "#app", data });
 
-    function checkboxClick(event) {
-        const t = event.target;
-        console.log(t.id, t.checked, t.value);
-        switch(t.id)
-        {
-            case "serverJitter":
-                Net.jitter = Number(t.value);
-                data.statusJitter = Net.jitter;
-                break;
-            case "serverDelay":
-                Net.delay = Number(t.value);
-                data.statusDelay = Net.delay;
-
-                break;
-        }
-    }
-    
     const client1 = new StateSync.Client(
         1,
         document.getElementById("client1"),
-        {left: "a", right: "d"}
-        );
-        const client2 = new StateSync.Client(
-            2,
-            document.getElementById("client2"),
-            {left: "ArrowLeft", right: "ArrowRight"}
-            );
-            const server = new StateSync.Server(document.getElementById("server"));
-            
+        { left: "a", right: "d" }
+    );
+    const client2 = new StateSync.Client(
+        2,
+        document.getElementById("client2"),
+        { left: "ArrowLeft", right: "ArrowRight" }
+    );
+    const server = new StateSync.Server(document.getElementById("server"));
+
     const Net = StateSync.Net
     vm.hello = "aaaa";
     Net.delay = 100;
@@ -98,6 +81,23 @@
     Net.client1 = client1;
     Net.client2 = client2;
     Net.server = server;
+
+    function checkboxClick(event) {
+        const t = event.target;
+        console.log(t.id, t.checked, t.value);
+        switch (t.id) {
+            case "serverJitter":
+                Net.jitter = Number(t.value);
+                data.statusJitter = Net.jitter;
+                break;
+            case "serverDelay":
+                Net.delay = Number(t.value);
+                data.statusDelay = Net.delay;
+                break;
+            case "client1Predict":
+                client1.isPrediction = t.checked
+        }
+    }
 </script>
 
 </html>

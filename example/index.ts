@@ -24,7 +24,10 @@ export abstract class Base {
 
     c1!: Entity;
     c2!: Entity;
-    server!: Entity;
+    remote!: Entity;
+    isPrediction = false;
+    isInterpolation = false;
+    isRollback = false;
 
     private _preTimestamp = 0;
     private _fixedTimeAccumulator = 0;
@@ -124,13 +127,13 @@ export abstract class Base {
         trans2.pos.y = 35;
         trans2.pos.x = 30;
 
-        const server = new Entity();
-        server.add(ServerTime);
+        const remote = new Entity();
+        remote.add(ServerTime);
 
         this.c1 = ent1;
         this.c2 = ent2;
-        this.server = server;
-        this.domain.reg(server);
+        this.remote = remote;
+        this.domain.reg(remote);
         this.domain.reg(ent1);
         this.domain.reg(ent2);
     }
@@ -138,6 +141,11 @@ export abstract class Base {
     onKeyDown(ev: KeyboardEvent): void {}
 
     onKeyUp(ev: KeyboardEvent): void {}
+
+    receive(data: any) {
+        if (this.isPrediction) return;
+        this.domain.setData(data);
+    }
 }
 
 export class Server extends Base {
@@ -153,14 +161,14 @@ export class Server extends Base {
 
     fixedUpdate() {
         const Time = this.time;
-        const serverTime = this.server.get(ServerTime)!;
+        const serverTime = this.remote.get(ServerTime)!;
         serverTime.timestamp = Time.fixedTimestamp;
 
         const c1 = Net.client1;
         const c2 = Net.client2;
         const data = this.domain.asData();
-        Net.send(data).recv(c1.domain.setData, c1.domain);
-        Net.send(data).recv(c2.domain.setData, c2.domain);
+        Net.send(data).recv(c1.receive, c1);
+        Net.send(data).recv(c2.receive, c2);
     }
 }
 
@@ -220,11 +228,11 @@ export class Client extends Base {
         trans.serverMove(dirX * this.time.fixedDeltaTime * 0.1, 0);
 
         const data = this.domain.asData();
-        Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
+        Net.send(data).recv(Net.server.receive, Net.server);
 
-        const serverTime = this.server.get(ServerTime)!;
+        const serverTime = this.remote.get(ServerTime)!;
         this.time.timestamp =
             this.time.timestamp * 0.5 + serverTime.timestamp * 0.5;
-        console.log(serverTime.timestamp, this.time.timestamp);
+        console.log(serverTime.timestamp - this.time.timestamp);
     }
 }
