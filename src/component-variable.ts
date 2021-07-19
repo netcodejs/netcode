@@ -1,4 +1,4 @@
-import { Entity } from "./entity";
+import { Entity, IComp } from "./base";
 import { NULL_NUM, NULL_STR } from "./macro";
 import { ProtoOf } from "./misc";
 import { str as hash } from "./lib/crc-32";
@@ -14,6 +14,7 @@ import {
     getOrCreateScheme,
     SCHEME_KEY,
 } from "./component-schema";
+import { Domain } from "./domain";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
 function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
@@ -24,9 +25,8 @@ function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
 }
 
 export const hash2compName: Record<number, string> = Object.create(null);
-export const compName2ctr: Record<string, { new (): any }> = Object.create(
-    null
-);
+export const compName2ctr: Record<string, { new (): any }> =
+    Object.create(null);
 
 export function NetComp(name: string, genSerable = true) {
     return function <T>(target: { new (): T }) {
@@ -78,7 +78,7 @@ type DataTypeMappingPrimitive = {
     [DataType.STRING]: string;
 };
 
-export type SchemaClass<T> = T & { [SCHEME_KEY]: Schema };
+export type SchemaClass<T extends IComp = IComp> = T & { [SCHEME_KEY]: Schema };
 
 export function NetVar<DT extends number, R>(type: DT | { new (): R }) {
     return function <PK extends string | symbol>(
@@ -128,7 +128,7 @@ export function fixupSerable<T extends Record<string, any>>(target: {
     new (): T;
 }) {
     target.prototype.ser = function (
-        this: SchemaClass<T>,
+        this: SchemaClass & Record<string, any>,
         buffer: IDatabufferWriter
     ) {
         const schema = this[SCHEME_KEY];
@@ -186,7 +186,7 @@ export function fixupSerable<T extends Record<string, any>>(target: {
         }
     };
     target.prototype.deser = function (
-        this: SchemaClass<T>,
+        this: SchemaClass & Record<string, any>,
         buffer: IDataBufferReader
     ) {
         const schema = this[SCHEME_KEY];
@@ -451,9 +451,7 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
 
         const privateName = "__" + name + "__";
         prototype[privateName] = prototype[name];
-        prototype[name] = function (...args: any[]) {
-            const ent = this.entity as Entity;
-            const domain = ent.domain!;
+        prototype[name] = function (domain: Domain, ...args: any[]) {
             if (domain.type == ms.type) {
                 this[privateName](...args);
             } else {

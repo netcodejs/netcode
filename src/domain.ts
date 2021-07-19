@@ -2,7 +2,7 @@ import { hash2RpcName } from "./component-rpc";
 import { RpcType } from "./component-schema";
 import { compName2ctr, hash2compName, SchemaClass } from "./component-variable";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
-import { Entity } from "./entity";
+import { Entity } from "./base";
 import { NULL_NUM } from "./macro";
 import { MessageManager } from "./message-manager";
 import { asSerable } from "./misc";
@@ -12,9 +12,8 @@ class EntityRepeatRegisteredError extends Error {}
 class EntityGroupOutOfRangeYouCanOpenAutoResize extends Error {}
 class DomainDuplicated extends Error {}
 
-export type DomainConstructorParamters<
-    TT extends new (...args: any) => any
-> = TT extends new (_: any, ...args: infer P) => Domain ? P : never;
+export type DomainConstructorParamters<TT extends new (...args: any) => any> =
+    TT extends new (_: any, ...args: infer P) => Domain ? P : never;
 export class Domain<T extends SupportNetDataType = any> {
     private static _domainMap: Record<string, Domain> = Object.create(null);
     public static NULL = {} as Domain;
@@ -87,28 +86,36 @@ export class Domain<T extends SupportNetDataType = any> {
         const id = this._getEntityId();
         const version = this._entityVersion[id];
         this._reg(entity, id, version);
+        entity["_init"](this);
     }
 
     private _reg(entity: Entity, id: number, version: number) {
-        entity.id = id;
-        entity.version = version;
-        entity.domain = this;
+        entity["_id"] = id;
+        entity["_version"] = version;
         this._entities[entity.id] = entity;
+    }
+
+    hasReg(entity: Entity) {
+        return this.isValid(entity);
+    }
+
+    unregWithoutValidation(entity: Entity) {
+        this._entityVersion[entity.id]++;
+        this._unreg(entity);
+        this._destroyEntityId.push(entity.id);
+        this._entities[entity.id] = null;
+        entity["_destroy"](this);
     }
 
     unreg(entity: Entity) {
         if (!this.isValid(entity))
             throw new EntityNotValidError(entity.toString());
-        this._entityVersion[entity.id]++;
-        this._unreg(entity);
-        this._destroyEntityId.push(entity.id);
-        this._entities[entity.id] = null;
+        this.unregWithoutValidation(entity);
     }
 
     private _unreg(entity: Entity) {
-        entity.id = NULL_NUM;
-        entity.version = NULL_NUM;
-        entity.domain = Domain.NULL;
+        entity["_id"] = NULL_NUM;
+        entity["_version"] = NULL_NUM;
     }
 
     get(id: number) {
@@ -140,7 +147,7 @@ export class Domain<T extends SupportNetDataType = any> {
                 compIdx < len;
                 compIdx++
             ) {
-                const comp = comps[compIdx] as SchemaClass<{}>;
+                const comp = comps[compIdx] as SchemaClass;
                 const serableComp = asSerable(comp);
                 if (!serableComp) {
                     console.warn(
@@ -178,18 +185,9 @@ export class Domain<T extends SupportNetDataType = any> {
             if (!ent) continue;
 
             let comp = ent.comps[params.compIdx] as ISerable;
-            if (!comp) {
-                const compName = hash2compName[params.hash];
-                if (!compName) {
-                    console.warn(
-                        `[Domain#_deser]Cannot find compName by hash(${params.hash})!`
-                    );
-                    continue;
-                }
-                const ctr = compName2ctr[compName];
-                comp = ent.add(ctr, params.compIdx);
+            if (comp) {
+                comp.deser(this._internalMsgMng.statebuffer);
             }
-            comp.deser(this._internalMsgMng.statebuffer);
         }
     }
 
