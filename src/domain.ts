@@ -1,21 +1,26 @@
 import { hash2RpcName } from "./component-rpc";
 import { RpcType } from "./component-schema";
-import { compName2ctr, hash2compName, SchemaClass } from "./component-variable";
+import { compName2ctr, hash2compName, ISchema } from "./component-variable";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
 import { Entity } from "./base";
 import { NULL_NUM } from "./macro";
 import { MessageManager } from "./message-manager";
 import { asSerable } from "./misc";
+import { ArrayMap } from "./array-map";
 
 class EntityNotValidError extends Error {}
 class EntityRepeatRegisteredError extends Error {}
 class EntityGroupOutOfRangeYouCanOpenAutoResize extends Error {}
 class DomainDuplicated extends Error {}
+class DomainLengthLimit extends Error {}
+
+const DOMAIN_INDEX_BITS = 2;
+const DOMAIN_MAX_INDEX = (1 << DOMAIN_INDEX_BITS) - 1;
 
 export type DomainConstructorParamters<TT extends new (...args: any) => any> =
     TT extends new (_: any, ...args: infer P) => Domain ? P : never;
 export class Domain<T extends SupportNetDataType = any> {
-    private static _domainMap: Record<string, Domain> = Object.create(null);
+    private static _name2domainMap: ArrayMap<string, Domain> = new ArrayMap();
     public static NULL = {} as Domain;
     public static isNull(other: Domain) {
         return this.NULL === other;
@@ -26,23 +31,39 @@ export class Domain<T extends SupportNetDataType = any> {
         dataBufferType: new (...args: any) => IDataBuffer<T>,
         ...args: DomainConstructorParamters<typeof Domain>
     ) {
-        if (this._domainMap[name]) {
+        if (this._name2domainMap.has(name)) {
             throw new DomainDuplicated(name);
         }
-        return (this._domainMap[name] = new Domain(
-            dataBufferType,
-            ...args
-        )) as Domain<T>;
+        if (this._name2domainMap.readonlyValues.length >= DOMAIN_MAX_INDEX) {
+            throw new DomainLengthLimit();
+        }
+        const news: Domain<T> = new Domain(dataBufferType, ...args);
+        const domainIndex = this._name2domainMap.set(name, news);
+        news._index = domainIndex;
+        return news;
     }
 
     static Get<T extends SupportNetDataType>(name: string = "main") {
-        return this._domainMap[name] as Domain<T>;
+        return this._name2domainMap.get(name) as Domain<T>;
+    }
+
+    static GetByEntity(entity: Entity) {
+        const domainIndex = entity.id & DOMAIN_MAX_INDEX;
+        const domain = this._name2domainMap.values[domainIndex];
+        if (domain.isValid(entity)) {
+            return domain;
+        }
+        return null;
     }
 
     static Clear() {
-        this._domainMap = Object.create(null);
+        this._name2domainMap = Object.create(null);
     }
 
+    get index() {
+        return this._index;
+    }
+    private _index = -1;
     private _entities: (Entity | null)[];
     public get entities() {
         return this._entities;
@@ -92,7 +113,8 @@ export class Domain<T extends SupportNetDataType = any> {
     private _reg(entity: Entity, id: number, version: number) {
         entity["_id"] = id;
         entity["_version"] = version;
-        this._entities[entity.id] = entity;
+        const index = this._getEntityIndexById(entity.id);
+        this._entities[index] = entity;
     }
 
     hasReg(entity: Entity) {
@@ -100,10 +122,11 @@ export class Domain<T extends SupportNetDataType = any> {
     }
 
     unregWithoutValidation(entity: Entity) {
-        this._entityVersion[entity.id]++;
+        const index = this._getEntityIndexById(entity.id);
+        this._entityVersion[index]++;
         this._unreg(entity);
         this._destroyEntityId.push(entity.id);
-        this._entities[entity.id] = null;
+        this._entities[index] = null;
         entity["_destroy"](this);
     }
 
@@ -134,7 +157,8 @@ export class Domain<T extends SupportNetDataType = any> {
         return (
             entity.id != NULL_NUM &&
             entity.version != NULL_NUM &&
-            entity.version == this._entityVersion[entity.id]
+            entity.version ==
+                this._entityVersion[this._getEntityIndexById(entity.id)]
         );
     }
 
@@ -147,7 +171,7 @@ export class Domain<T extends SupportNetDataType = any> {
                 compIdx < len;
                 compIdx++
             ) {
-                const comp = comps[compIdx] as SchemaClass;
+                const comp = comps[compIdx] as ISchema;
                 const serableComp = asSerable(comp);
                 if (!serableComp) {
                     console.warn(
@@ -286,9 +310,13 @@ export class Domain<T extends SupportNetDataType = any> {
         }
     }
 
+    private _getEntityIndexById(id: number) {
+        return id >> DOMAIN_INDEX_BITS;
+    }
+
     private _getEntityId() {
         return this._destroyEntityId.length > 0
             ? this._destroyEntityId.unshift()
-            : this._entityIdCursor++;
+            : this._entityIdCursor++ << (DOMAIN_INDEX_BITS + this._index);
     }
 }

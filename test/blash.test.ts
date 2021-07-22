@@ -14,8 +14,9 @@ import {
     NONE_CONTAINER,
     Rpc,
     RpcType,
-    SchemaClass,
+    ISchema,
     getSchemaByPrototype,
+    IComp,
 } from "../src";
 import {
     IDataBufferReader,
@@ -25,46 +26,62 @@ import {
 import { StringDataBuffer } from "../src/data/string-databuffer";
 
 @NetComp("view")
-export class ViewComponent /*  implements IComponent */ {
-    // __schema__!: Readonly<Schema>;
-    // entity!: Entity;
-
+export class ViewComponent implements IComp {
     @NetVar(DataType.INT)
     width: number = 0;
     @NetVar(DataType.INT)
     height: number = 0;
 
-    // onLoad() {}
+    fixedUpdate(
+        entity: Entity<any>,
+        domain: Domain<any>,
+        compIdx: number
+    ): void {}
 }
 
 @NetComp("reverseView")
-export class ReverseViewComponent {
+export class ReverseViewComponent implements IComp {
     @NetVar(DataType.INT)
     height: number = 0;
     @NetVar(DataType.INT)
     width: number = 0;
+
+    fixedUpdate(
+        entity: Entity<any>,
+        domain: Domain<any>,
+        compIdx: number
+    ): void {}
 }
 
 //@Component
-export class ViewComponentNoDecoration /* implements IComponent */ {
+export class ViewComponentNoDecoration implements IComp {
     @NetVar(DataType.INT)
     width: number = 0;
     @NetVar(DataType.INT)
     height: number = 0;
 
-    // onLoad() {}
+    fixedUpdate(
+        entity: Entity<any>,
+        domain: Domain<any>,
+        compIdx: number
+    ): void {}
 }
 
 @NetComp("vec")
-export class VectorComponent {
+export class VectorComponent implements IComp {
     @NetVar(DataType.FLOAT)
     x: number = 0;
     @NetVar(DataType.FLOAT)
     y: number = 0;
+    fixedUpdate(
+        entity: Entity<any>,
+        domain: Domain<any>,
+        compIdx: number
+    ): void {}
 }
 
 @NetComp("logic")
-export class LogicComponent {
+export class LogicComponent implements IComp {
     @NetVar(DataType.BOOL)
     alive: boolean = false;
     @NetVar(VectorComponent)
@@ -76,24 +93,45 @@ export class LogicComponent {
     abcv() {
         this.alive = true;
     }
+
+    fixedUpdate(
+        entity: Entity<any>,
+        domain: Domain<any>,
+        compIdx: number
+    ): void {}
 }
 
 @NetComp("arr")
-class ArrComp {
+class ArrComp implements IComp {
     @NetArr(DataType.FLOAT)
     arr: number[] = [];
+    fixedUpdate(
+        entity: Entity<any>,
+        domain: Domain<any>,
+        compIdx: number
+    ): void {}
 }
 
 @NetComp("lenArr")
-class LengthArrComp extends ArrComp {
+class LengthArrComp extends ArrComp implements IComp {
     @NetVar(DataType.INT)
     length: number = 0;
+    fixedUpdate(
+        entity: Entity<any>,
+        domain: Domain<any>,
+        compIdx: number
+    ): void {}
 }
 
 @NetComp("lenArr")
-class DynamicArrComp extends LengthArrComp {
+class DynamicArrComp extends LengthArrComp implements IComp {
     @NetVar(DataType.INT)
     opcaity: number = 10;
+    fixedUpdate(
+        entity: Entity<any>,
+        domain: Domain<any>,
+        compIdx: number
+    ): void {}
 }
 
 beforeEach(() => {
@@ -102,10 +140,10 @@ beforeEach(() => {
 
 describe("SchemaAndClassId", () => {
     test("basic", () => {
-        let v1 = new ViewComponent() as SchemaClass<ViewComponent>;
-        let v2 = new ViewComponent() as SchemaClass<ViewComponent>;
+        let v1 = new ViewComponent() as ISchema & ViewComponent;
+        let v2 = new ViewComponent() as ISchema & ViewComponent;
 
-        let l1 = new LogicComponent() as SchemaClass<LogicComponent>;
+        let l1 = new LogicComponent() as ISchema & LogicComponent;
         expect(v1.__schema__).toStrictEqual(v2.__schema__);
         expect((ReverseViewComponent.prototype as any).__schema__.name).toEqual(
             "reverseView"
@@ -163,30 +201,11 @@ describe("SchemaAndClassId", () => {
 });
 
 describe("entity-componrnt", () => {
-    test("addComp-black", () => {
-        const ent = new Entity();
-        const view = ent.add(ViewComponent)!;
-        const logic = ent.add(LogicComponent)!;
-
-        expect(view).toBeTruthy();
-        expect(logic).toBeTruthy();
-
-        expect(ent.comps.length).toEqual(2);
-        expect(ent.comps.indexOf(view)).toBeGreaterThan(-1);
-        expect(ent.comps.indexOf(logic)).toBeGreaterThan(-1);
-
-        const view2 = ent.add(ViewComponent)!;
-        expect(view2).toBeTruthy();
-        expect(ent.comps.indexOf(view2)).toBeGreaterThan(-1);
-    });
     test("rmComp/hasComp/getComp-black", () => {
-        const ent = new Entity();
-        const view = ent.add(ViewComponent)!;
-        const logic = ent.add(LogicComponent)!;
-
-        // ent.rm(view);
-        // ent.rm(logic);
-        const newLogic = ent.add(LogicComponent);
+        const view = new ViewComponent();
+        const logic = new LogicComponent();
+        const newLogic = new LogicComponent();
+        const ent = new Entity(view, logic, newLogic);
         const hasView = ent.has(ViewComponent);
         const getView = ent.get(ViewComponent);
 
@@ -198,9 +217,8 @@ describe("entity-componrnt", () => {
         expect(getView).toBeTruthy();
     });
     test("addComp-white-no-decoration", () => {
-        const entity = new Entity();
         expect(() => {
-            entity.add(ViewComponentNoDecoration);
+            new Entity(new ViewComponentNoDecoration());
         }).toThrowError();
     });
 });
@@ -211,9 +229,8 @@ describe("Quick-Access", () => {
         view: ViewComponent;
     }
     test("basic", () => {
-        const ent = new Entity<QuickAccess>();
-        expect(ent.$comps.logic).not.toBeTruthy();
-        const logic = ent.add(LogicComponent);
+        const logic = new LogicComponent();
+        const ent = new Entity<QuickAccess>(logic);
         expect(ent.$comps.logic).toBeTruthy();
         expect(logic === ent.$comps.logic).toBeTruthy();
     });
@@ -303,15 +320,7 @@ describe("Serable", () => {
         domain.reg(ent);
 
         const template = JSON.stringify([
-            1,
-            6,
-            0,
-            0,
-            0,
-            0,
-            -16929906,
-            456,
-            123,
+            1, 6, 0, 0, 0, 0, -16929906, 456, 123,
         ]);
         expect(domain.asData()).toEqual(template);
 

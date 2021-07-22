@@ -78,8 +78,7 @@ type DataTypeMappingPrimitive = {
     [DataType.STRING]: string;
 };
 
-export type SchemaClass<T extends IComp = IComp> = T & { [SCHEME_KEY]: Schema };
-
+export type ISchema = { [SCHEME_KEY]: Schema };
 export function NetVar<DT extends number, R>(type: DT | { new (): R }) {
     return function <PK extends string | symbol>(
         t: ProtoOf<Record<PK, DataTypeMappingPrimitive[DT] & R>>,
@@ -128,7 +127,7 @@ export function fixupSerable<T extends Record<string, any>>(target: {
     new (): T;
 }) {
     target.prototype.ser = function (
-        this: SchemaClass & Record<string, any>,
+        this: ISchema & Record<string, any>,
         buffer: IDatabufferWriter
     ) {
         const schema = this[SCHEME_KEY];
@@ -186,7 +185,7 @@ export function fixupSerable<T extends Record<string, any>>(target: {
         }
     };
     target.prototype.deser = function (
-        this: SchemaClass & Record<string, any>,
+        this: ISchema & Record<string, any>,
         buffer: IDataBufferReader
     ) {
         const schema = this[SCHEME_KEY];
@@ -451,7 +450,12 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
 
         const privateName = "__" + name + "__";
         prototype[privateName] = prototype[name];
-        prototype[name] = function (domain: Domain, ...args: any[]) {
+        prototype[name] = function (...args: any[]) {
+            const domain = Domain.GetByEntity(this);
+            if (domain == null) {
+                console.warn("Domain is not valid!");
+                return;
+            }
             if (domain.type == ms.type) {
                 this[privateName](...args);
             } else {
