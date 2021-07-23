@@ -1,4 +1,5 @@
 export * from "./component-schema";
+export * from "./array-map";
 export * from "./macro";
 export * from "./misc";
 export * from "./component-variable";

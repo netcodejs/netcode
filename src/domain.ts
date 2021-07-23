@@ -1,8 +1,8 @@
 import { hash2RpcName } from "./component-rpc";
 import { RpcType } from "./component-schema";
-import { compName2ctr, hash2compName, ISchema } from "./component-variable";
+import { ISchema } from "./component-variable";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
-import { Entity } from "./base";
+import { Entity, IComp } from "./base";
 import { NULL_NUM } from "./macro";
 import { MessageManager } from "./message-manager";
 import { asSerable } from "./misc";
@@ -21,10 +21,6 @@ export type DomainConstructorParamters<TT extends new (...args: any) => any> =
     TT extends new (_: any, ...args: infer P) => Domain ? P : never;
 export class Domain<T extends SupportNetDataType = any> {
     private static _name2domainMap: ArrayMap<string, Domain> = new ArrayMap();
-    public static NULL = {} as Domain;
-    public static isNull(other: Domain) {
-        return this.NULL === other;
-    }
 
     static Create<T extends SupportNetDataType = any>(
         name: string,
@@ -171,7 +167,7 @@ export class Domain<T extends SupportNetDataType = any> {
                 compIdx < len;
                 compIdx++
             ) {
-                const comp = comps[compIdx] as ISchema;
+                const comp = comps[compIdx] as ISchema & IComp;
                 const serableComp = asSerable(comp);
                 if (!serableComp) {
                     console.warn(
@@ -208,7 +204,7 @@ export class Domain<T extends SupportNetDataType = any> {
 
             if (!ent) continue;
 
-            let comp = ent.comps[params.compIdx] as ISerable;
+            let comp = ent.comps[params.compIdx] as ISerable & IComp;
             if (comp) {
                 comp.deser(this._internalMsgMng.statebuffer);
             }

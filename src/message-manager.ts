@@ -1,6 +1,7 @@
 import { composeVersion, decomposeVersion } from "./misc";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
-import { IComponent, SchemaClass } from "./component-variable";
+import { Entity, IComp } from "./base";
+import { ISchema } from "./component-variable";
 
 export enum MessageType {
     UPDATE_COMPONENT,
@@ -29,7 +30,7 @@ export class MessageManager<T extends SupportNetDataType> {
         entityId: number,
         entityVersion: number,
         compIdx: number,
-        comp: ISerable & SchemaClass<any>,
+        comp: ISerable & IComp & ISchema,
         toDestory = false
     ): boolean {
         const buf = this.statebuffer;
@@ -86,19 +87,22 @@ export class MessageManager<T extends SupportNetDataType> {
         // this.rpcbuffer.reset();
     }
 
-    sendRpc(methodName: string, component: any, params: any[]) {
-        const comp = component as IComponent;
+    sendRpc(
+        methodName: string,
+        entity: Entity,
+        component: IComp & ISchema & Record<string, Function>,
+        params: any[]
+    ) {
+        const comp = component;
         const buf = this.rpcbuffer;
         // schema
         const s = comp.__schema__;
-        // entity
-        const entity = comp.entity;
         // method schema
         const ms = s.methods[methodName];
         // entity id
         buf.writeInt(entity.id);
         // comp index
-        buf.writeUshort(comp.index);
+        buf.writeUshort(entity.indexOf(component));
         // method hash
         buf.writeLong(ms.hash);
         // param

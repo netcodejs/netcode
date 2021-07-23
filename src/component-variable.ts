@@ -1,5 +1,3 @@
-import { Entity, IComp } from "./base";
-import { NULL_NUM, NULL_STR } from "./macro";
 import { ProtoOf } from "./misc";
 import { str as hash } from "./lib/crc-32";
 import { IDataBufferReader, IDatabufferWriter } from "./data/serializable";
@@ -15,6 +13,7 @@ import {
     SCHEME_KEY,
 } from "./component-schema";
 import { Domain } from "./domain";
+import { Entity } from "./base";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
 function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
@@ -113,14 +112,6 @@ export function NetArr<DT extends number, R>(type: DT | { new (): R }) {
             },
         });
     };
-}
-
-// export type ComponentType
-
-export interface IComponent {
-    entity: Entity;
-    index: number;
-    [SCHEME_KEY]: Readonly<Schema>;
 }
 
 export function fixupSerable<T extends Record<string, any>>(target: {

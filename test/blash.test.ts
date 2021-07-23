@@ -17,13 +17,8 @@ import {
     ISchema,
     getSchemaByPrototype,
     IComp,
+    StringDataBuffer,
 } from "../src";
-import {
-    IDataBufferReader,
-    IDatabufferWriter,
-    ISerable,
-} from "../src/data/serializable";
-import { StringDataBuffer } from "../src/data/string-databuffer";
 
 @NetComp("view")
 export class ViewComponent implements IComp {
@@ -312,8 +307,8 @@ describe("Domain-instance", () => {
 describe("Serable", () => {
     test("ser-deser", () => {
         // ser
-        const ent = new Entity();
-        const view = ent.add(ViewComponent)!;
+        const view = new ViewComponent();
+        const ent = new Entity(view);
         const domain = Domain.Create("main", StringDataBuffer, RpcType.SERVER);
         view.width = 123;
         view.height = 456;
@@ -347,9 +342,9 @@ describe("Serable", () => {
         );
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
-        const serEnt1 = new Entity();
+        const serArr = new ArrComp();
+        const serEnt1 = new Entity(serArr);
         serDomain.reg(serEnt1);
-        const serArr = serEnt1.add(ArrComp);
         serArr.arr.push(1, 2, 3, 4);
         const data = serDomain.asData();
 
@@ -377,9 +372,9 @@ describe("Serable", () => {
         );
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
-        const serEnt1 = new Entity();
+        const serLogic = new LogicComponent();
+        const serEnt1 = new Entity(serLogic);
         serDomain.reg(serEnt1);
-        const serLogic = serEnt1.add(LogicComponent);
         serLogic.pos.x = 123;
         serLogic.pos.y = 456;
 
@@ -428,8 +423,8 @@ describe("rpc", () => {
             StringDataBuffer,
             RpcType.SERVER
         );
-        const serverEnt0 = new Entity();
-        const serverLogic0 = serverEnt0.add(LogicComponent);
+        const serverLogic0 = new LogicComponent();
+        const serverEnt0 = new Entity(serverLogic0);
         server.reg(serverEnt0);
 
         serverLogic0.abcv();

@@ -1,5 +1,5 @@
 import { compName2ctr, ISchema } from "./component-variable";
-import { Domain } from "./domain";
+import type { Domain } from "./domain";
 import { NULL_NUM } from "./macro";
 
 class ComponentHasNotDecorated extends Error {}
@@ -131,7 +131,12 @@ export class Entity<ProxyObj extends Object = any> {
         }
     }
 
-    private _fixedUpdate(domain: Domain) {}
+    private _fixedUpdate(domain: Domain) {
+        for (let i = 0, len = this._comps.length; i < len; i++) {
+            const c = this._comps[i];
+            c.fixedUpdate && c.fixedUpdate(this, domain, i);
+        }
+    }
 
     private _destroy(domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
