@@ -1,22 +1,31 @@
-import { DataType, Int, NetComp, NetVar, Rpc, RpcType, RpcVar } from "../src";
+import {
+    DataType,
+    IComp,
+    Int,
+    NetComp,
+    NetVar,
+    Rpc,
+    RpcType,
+    RpcVar,
+} from "../src";
 
 @NetComp("vec")
-export class Vector {
-    @NetVar(DataType.int)
+export class Vector extends IComp {
+    @NetVar(DataType.INT)
     x: number = 0;
-    @NetVar(DataType.int)
+    @NetVar(DataType.INT)
     y: number = 0;
 }
 
 @NetComp("trans")
-export class Transform {
+export class Transform extends IComp {
     @NetVar(Vector)
     pos = new Vector();
 
     @Rpc(RpcType.SERVER)
     serverMove(
-        @RpcVar(DataType.int) x: number,
-        @RpcVar(DataType.int) y: number
+        @RpcVar(DataType.INT) x: number,
+        @RpcVar(DataType.INT) y: number
     ) {
         this.pos.x += x;
         this.pos.y += y;
@@ -24,19 +33,19 @@ export class Transform {
 }
 
 @NetComp("view")
-export class View {
-    @NetVar(DataType.int)
+export class View extends IComp {
+    @NetVar(DataType.INT)
     color = 0xffffff;
 
     @Rpc(RpcType.SERVER)
-    changeColor(@RpcVar(DataType.int) inColor: number) {
+    changeColor(@RpcVar(DataType.INT) inColor: number) {
         this.color = inColor;
     }
 }
 
 @NetComp("time")
-export class ServerTime {
-    @NetVar(DataType.int)
+export class ServerTime extends IComp {
+    @NetVar(DataType.INT)
     timestamp: number = 0;
 
     @NetVar(Int)

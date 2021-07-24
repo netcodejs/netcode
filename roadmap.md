@@ -5,10 +5,10 @@
 ### Roadmap
 
 -   基本框架大概完成。
-    -   Component 属性复制
-    -   Component Rpc
-    -   NetComp 支持继承
-    -   Domain、Entity 的实例获取。 所有 NetComp 必须继承 Comp 类
+    -   ✓ Component 属性复制
+    -   ✓ Component Rpc
+    -   ✓ NetComp 支持继承
+    -   ✓ Domain、Entity 的实例获取。 所有 NetComp 必须继承 Comp 类
     -   必须支持回滚。 Case: 回放系统
     -   Test
     -   对比单机和联网状态下的性能差距。

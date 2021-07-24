@@ -115,20 +115,19 @@ export abstract class Base {
     }
 
     initScene() {
-        const ent1 = new Entity();
-        const trans1 = ent1.add(Transform);
+        const trans1 = new Transform();
         trans1.pos.y = 35;
         trans1.pos.x = 50;
-        const view1 = ent1.add(View);
+        const view1 = new View();
+        const ent1 = new Entity(trans1, view1);
 
-        const ent2 = new Entity();
-        const trans2 = ent2.add(Transform);
-        const view2 = ent2.add(View);
+        const trans2 = new Transform();
         trans2.pos.y = 35;
         trans2.pos.x = 30;
+        const view2 = new View();
+        const ent2 = new Entity(trans2, view2);
 
-        const remote = new Entity();
-        remote.add(ServerTime);
+        const remote = new Entity(new ServerTime());
 
         this.c1 = ent1;
         this.c2 = ent2;

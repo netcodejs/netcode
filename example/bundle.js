@@ -80,64 +80,159 @@ var StateSync = (function (exports) {
         };
     }
 
-    /** @deprecated */
-    function __spreadArrays() {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++)
-            s += arguments[i].length;
-        for (var r = Array(s), k = 0, i = 0; i < il; i++)
-            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-                r[k] = a[j];
-        return r;
+    function __spreadArray(to, from) {
+        for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+            to[j] = from[i];
+        return to;
     }
 
     var NULL_NUM = -1;
     var NULL_STR = "";
 
+    var RpcType;
+    (function (RpcType) {
+        RpcType[(RpcType["SERVER"] = 0)] = "SERVER";
+        RpcType[(RpcType["CLIENT"] = 1)] = "CLIENT";
+    })(RpcType || (RpcType = {}));
     // prettier-ignore
     var DataType;
     (function (DataType) {
-        DataType[(DataType["none"] = 0)] = "none";
-        DataType[(DataType["i8"] = 1)] = "i8";
-        DataType[(DataType["u8"] = 2)] = "u8";
-        DataType[(DataType["i16"] = 3)] = "i16";
-        DataType[(DataType["u16"] = 4)] = "u16";
-        DataType[(DataType["i32"] = 5)] = "i32";
-        DataType[(DataType["u32"] = 6)] = "u32";
-        DataType[(DataType["f32"] = 7)] = "f32";
-        DataType[(DataType["f64"] = 8)] = "f64";
-        DataType[(DataType["short"] = 9)] = "short";
+        DataType[(DataType["NONE"] = 0)] = "NONE";
+        DataType[(DataType["I8"] = 1)] = "I8";
+        DataType[(DataType["U8"] = 2)] = "U8";
+        DataType[(DataType["I16"] = 3)] = "I16";
+        DataType[(DataType["U16"] = 4)] = "U16";
+        DataType[(DataType["I32"] = 5)] = "I32";
+        DataType[(DataType["U32"] = 6)] = "U32";
+        DataType[(DataType["F32"] = 7)] = "F32";
+        DataType[(DataType["F64"] = 8)] = "F64";
+        DataType[(DataType["SHORT"] = 9)] = "SHORT";
         DataType[(DataType["ushort"] = 10)] = "ushort";
-        DataType[(DataType["int"] = 11)] = "int";
+        DataType[(DataType["INT"] = 11)] = "INT";
         DataType[(DataType["uint"] = 12)] = "uint";
-        DataType[(DataType["long"] = 13)] = "long";
+        DataType[(DataType["LONG"] = 13)] = "LONG";
         DataType[(DataType["ulong"] = 14)] = "ulong";
-        DataType[(DataType["float"] = 15)] = "float";
-        DataType[(DataType["double"] = 16)] = "double";
-        DataType[(DataType["string"] = 17)] = "string";
-        DataType[(DataType["bool"] = 18)] = "bool";
+        DataType[(DataType["FLOAT"] = 15)] = "FLOAT";
+        DataType[(DataType["DOUBLE"] = 16)] = "DOUBLE";
+        DataType[(DataType["STRING"] = 17)] = "STRING";
+        DataType[(DataType["BOOL"] = 18)] = "BOOL";
     })(DataType || (DataType = {}));
     var DataTypeObect = 99;
     var DataTypeVoid = 98;
-    function genSchema() {
-        return {
-            hash: NULL_NUM,
-            name: NULL_STR,
-            count: 0,
-            props: Object.create(null),
-            methods: Object.create(null),
-            raw: [],
-        };
+    function genSchema(o) {
+        if (o === void 0) {
+            o = Object.create(null);
+        }
+        o.hash = NULL_NUM;
+        o.name = NULL_STR;
+        o.count = 0;
+        o.props = Object.create(null);
+        o.methods = Object.create(null);
+        o.raw = [];
+        return o;
     }
-    function genMethodSchema() {
-        return {
-            hash: NULL_NUM,
-            name: NULL_STR,
-            paramCount: 0,
-            paramTypes: [],
-            returnType: DataTypeVoid,
-            type: -1,
-        };
+    function genMethodSchema(o) {
+        if (o === void 0) {
+            o = Object.create(null);
+        }
+        o.hash = NULL_NUM;
+        o.name = NULL_STR;
+        o.paramCount = 0;
+        o.paramTypes = [];
+        o.returnType = DataTypeVoid;
+        o.type = -1;
+        return o;
     }
+    var SCHEME_KEY = "__schema__";
+    function getOrCreateScheme(prototype) {
+        if (prototype.hasOwnProperty(SCHEME_KEY)) {
+            return prototype[SCHEME_KEY];
+        }
+        var s = genSchema();
+        prototype[SCHEME_KEY] = s;
+        var superCtr = Object.getPrototypeOf(prototype);
+        var superSchema = superCtr[SCHEME_KEY];
+        if (superSchema) {
+            s.raw.push.apply(s.raw, superSchema.raw);
+        }
+        return s;
+    }
+
+    var ArrayMap = /** @class */ (function () {
+        function ArrayMap(source) {
+            this._name2indexRecord = Object.create(null);
+            this._values = [];
+            if (source != null) {
+                this._values.length = source.length;
+                for (var i = 0, len = source.length; i < len; i++) {
+                    var _a = source[i],
+                        key = _a[0],
+                        value = _a[1];
+                    this._name2indexRecord[key] = i;
+                    this._values[i] = value;
+                }
+            }
+        }
+        ArrayMap.prototype.get = function (key) {
+            var idx = this.getIndex(key);
+            if (idx > -1) {
+                return this._values[idx];
+            }
+            return null;
+        };
+        ArrayMap.prototype.getIndex = function (key) {
+            var _a;
+            return (_a = this._name2indexRecord[key]) !== null && _a !== void 0
+                ? _a
+                : -1;
+        };
+        ArrayMap.prototype.getByIndex = function (index) {
+            return this._values[index];
+        };
+        ArrayMap.prototype.has = function (key) {
+            var _a;
+            return (
+                ((_a = this._name2indexRecord[key]) !== null && _a !== void 0
+                    ? _a
+                    : -1) > -1
+            );
+        };
+        ArrayMap.prototype.set = function (key, value) {
+            var index = this._name2indexRecord[key];
+            if (index == null) {
+                index = this._values.length;
+                this._name2indexRecord[key] = index;
+            }
+            this._values[index] = value;
+            return index;
+        };
+        ArrayMap.prototype.delete = function (key) {
+            var index = this.getIndex(key);
+            if (index < 0) {
+                return [null, -1];
+            }
+            return [this._values[index], index];
+        };
+        ArrayMap.prototype.clear = function () {
+            this._name2indexRecord = Object.create(null);
+            this._values.length = 0;
+        };
+        Object.defineProperty(ArrayMap.prototype, "values", {
+            get: function () {
+                return Array.from(this._values);
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        Object.defineProperty(ArrayMap.prototype, "readonlyValues", {
+            get: function () {
+                return this._values;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        return ArrayMap;
+    })();
 
     var MAX_VERSION = (1 << 30) - 1;
     function composeVersion(num, destoryed) {
@@ -153,6 +248,11 @@ var StateSync = (function (exports) {
         return typeof obj.ser === "function" && typeof obj.deser === "function"
             ? obj
             : null;
+    }
+    function assert(b, errrorClass) {
+        if (!b) {
+            throw new errrorClass();
+        }
     }
 
     function createCommonjsModule(fn) {
@@ -285,348 +385,172 @@ var StateSync = (function (exports) {
         });
     });
 
-    var WhyPropertyKeyHasTheSameError = /** @class */ (function (_super) {
-        __extends(WhyPropertyKeyHasTheSameError, _super);
-        function WhyPropertyKeyHasTheSameError() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return WhyPropertyKeyHasTheSameError;
-    })(Error);
-    function sortComponentPropertyKey(a, b) {
-        var akey = a.propertyKey;
-        var bkey = b.propertyKey;
-        if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
-        return akey > bkey ? 1 : -1;
-    }
     var hash2compName = Object.create(null);
     var compName2ctr = Object.create(null);
-    function NetComp(name, genSerable) {
-        if (genSerable === void 0) {
-            genSerable = true;
-        }
-        return function (target) {
-            var s = target.prototype.__schema__;
-            if (!s) {
-                s = target.prototype.__schema__ = genSchema();
-                return;
-            }
-            s.name = name;
-            s.hash = crc32.str(name);
-            hash2compName[s.hash] = s.name;
-            compName2ctr[s.name] = target;
-            s.count = s.raw.length;
-            if (s.count > 0) {
-                s.raw.sort(sortComponentPropertyKey);
-                for (var paramIndex = 0; paramIndex < s.count; paramIndex++) {
-                    var v = s.raw[paramIndex];
-                    v.paramIndex = paramIndex;
-                    s.props[paramIndex] = v;
-                    s.props[v.propertyKey] = v;
-                }
-            }
-            if (genSerable) {
-                {
-                    fixupSerableJIT(target);
-                }
-            }
-        };
-    }
-    var NONE_CONTAINER = 0;
-    function NetVar(type) {
-        return function (t, propertyKey) {
-            var target = t;
-            if (!target.__schema__) target.__schema__ = genSchema();
-            var s = target.__schema__;
-            s.raw.push({
-                paramIndex: -1,
-                propertyKey: String(propertyKey),
-                type: {
-                    container: NONE_CONTAINER,
-                    dataType: typeof type === "number" ? type : DataTypeObect,
-                    refCtr: typeof type === "number" ? undefined : type,
-                },
-            });
-        };
-    }
-    function fixupSerableJIT(target) {
-        var schema = target.prototype.__schema__;
-        fixedupSerableStateJit(target, schema);
-        fixedupSerableRpc(target, schema);
-    }
-    function fixedupSerableStateJit(target, schema) {
-        var serJitStr = "";
-        for (var i = 0, count = schema.count; i < count; i++) {
-            var prop = schema.props[i];
-            var type = prop.type;
-            var key = prop.propertyKey;
-            if (type.container === NONE_CONTAINER) {
-                switch (type.dataType) {
-                    case DataType.int:
-                    case DataType.i32:
-                        serJitStr += "buffer.writeInt(this." + key + ");";
-                        break;
-                    case DataType.float:
-                    case DataType.f32:
-                        serJitStr += "buffer.writeFloat(this." + key + ");";
-                        break;
-                    case DataType.double:
-                    case DataType.f64:
-                        serJitStr += "buffer.writeDouble(this." + key + ");";
-                        break;
-                    case DataType.bool:
-                        serJitStr += "buffer.writeBoolean(this." + key + ");";
-                        break;
-                    case DataTypeObect:
-                        serJitStr += "this." + key + ".ser(buffer);";
-                        break;
-                }
-            } else {
-                serJitStr += "buffer.writeInt(this." + key + ".length);";
-                var itemSerFuncStr = "";
-                switch (type.dataType) {
-                    case DataType.int:
-                    case DataType.i32:
-                        itemSerFuncStr = "buffer.writeInt(arr[i]);";
-                        break;
-                    case DataType.float:
-                    case DataType.f32:
-                        itemSerFuncStr = "buffer.writeFloat(arr[i]);";
-                        break;
-                    case DataType.double:
-                    case DataType.f64:
-                        itemSerFuncStr = "buffer.writeDouble(arr[i]);";
-                        break;
-                    case DataType.bool:
-                        serJitStr += "buffer.writeBoolean(this." + key + ");";
-                        break;
-                    case DataTypeObect:
-                        itemSerFuncStr = "arr[i].ser(buffer);";
-                        break;
-                }
-                serJitStr +=
-                    "\n            var arr = this." +
-                    key +
-                    "\n            for (let i = 0, j = arr.length; i < j; i++) {\n                " +
-                    itemSerFuncStr +
-                    "\n            }\n            ";
-            }
-        }
-        target.prototype.ser = Function("buffer", serJitStr);
-        var deserJitStr = "";
-        for (var i = 0, count = schema.count; i < count; i++) {
-            var prop = schema.props[i];
-            var type = prop.type;
-            var key = prop.propertyKey;
-            if (type.container === NONE_CONTAINER) {
-                switch (type.dataType) {
-                    case DataType.int:
-                    case DataType.i32:
-                        deserJitStr += "this." + key + "=buffer.readInt();";
-                        break;
-                    case DataType.float:
-                    case DataType.f32:
-                        deserJitStr += "this." + key + "=buffer.readFloat();";
-                        break;
-                    case DataType.double:
-                    case DataType.f64:
-                        deserJitStr += "this." + key + "=buffer.readDouble();";
-                        break;
-                    case DataType.bool:
-                        deserJitStr += "this." + key + "=buffer.readBoolean();";
-                        break;
-                    case DataTypeObect:
-                        deserJitStr += "this." + key + ".deser(buffer);";
-                        break;
-                }
-            } else {
-                deserJitStr +=
-                    "\n            if(!this." +
-                    key +
-                    ")this." +
-                    key +
-                    "=[];\n            var arr=this." +
-                    key +
-                    ";\n            arr.length=buffer.readInt();";
-                var itemSerFuncStr = "";
-                switch (type.dataType) {
-                    case DataType.int:
-                    case DataType.i32:
-                        itemSerFuncStr = "arr[i]=buffer.readInt();";
-                        break;
-                    case DataType.float:
-                    case DataType.f32:
-                        itemSerFuncStr = "arr[i]=buffer.readFloat();";
-                        break;
-                    case DataType.double:
-                    case DataType.f64:
-                        itemSerFuncStr = "arr[i]=buffer.readDouble();";
-                        break;
-                    case DataType.bool:
-                        deserJitStr += "arr[i]=buffer.readBoolean();";
-                        break;
-                    case DataTypeObect:
-                        itemSerFuncStr = "arr[i].deser(buffer);";
-                        break;
-                }
-                deserJitStr +=
-                    "\n            for (let i = 0, j = arr.length; i < j; i++) {\n                " +
-                    itemSerFuncStr +
-                    "\n            }\n            ";
-            }
-        }
-        target.prototype.deser = Function("buffer", deserJitStr);
-    }
-    function fixedupSerableRpc(target, schema) {
-        var rpcNames = Object.keys(schema.methods);
-        var _loop_1 = function (i, len) {
-            var name_2 = rpcNames[i];
-            var ms = schema.methods[name_2];
-            target.prototype["ser" + ms.hash] = function (buffer, args) {
-                for (var j = 0, len_1 = ms.paramCount; j < len_1; j++) {
-                    var value = args[j];
-                    switch (ms.paramTypes[j]) {
-                        case DataType.int:
-                        case DataType.i32:
-                            buffer.writeInt(value);
-                            break;
-                        case DataType.float:
-                        case DataType.f32:
-                            buffer.writeFloat(value);
-                            break;
-                        case DataType.double:
-                        case DataType.f64:
-                            buffer.writeDouble(value);
-                            break;
-                        case DataTypeObect:
-                            value.ser(buffer);
-                            break;
-                    }
-                }
-            };
-            target.prototype["deser" + ms.hash] = function (buffer) {
-                var args = new Array(ms.paramCount);
-                for (var j = 0, len_2 = ms.paramCount; j < len_2; j++) {
-                    switch (ms.paramTypes[j]) {
-                        case DataType.int:
-                        case DataType.i32:
-                            args[j] = buffer.readInt();
-                            break;
-                        case DataType.float:
-                        case DataType.f32:
-                            args[j] = buffer.readFloat();
-                            break;
-                        case DataType.double:
-                        case DataType.f64:
-                            args[j] = buffer.readDouble();
-                            break;
-                        case DataTypeObect:
-                            args[j] = new ms.paramTypes[j]();
-                            args[j].ser(buffer);
-                            break;
-                    }
-                }
-                return args;
-            };
-            var privateName = "__" + name_2 + "__";
-            target.prototype[privateName] = target.prototype[name_2];
-            target.prototype[name_2] = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                var ent = this.entity;
-                var domain = ent.domain;
-                if (domain.type == ms.type) {
-                    this[privateName].apply(this, args);
-                } else {
-                    domain.readonlyInternalMsgMng.sendRpc(name_2, this, args);
-                }
-            };
-        };
-        for (var i = 0, len = rpcNames.length; i < len; i++) {
-            _loop_1(i);
-        }
-    }
-
-    var RpcType;
-    (function (RpcType) {
-        RpcType[(RpcType["SERVER"] = 0)] = "SERVER";
-        RpcType[(RpcType["CLIENT"] = 1)] = "CLIENT";
-    })(RpcType || (RpcType = {}));
     var hash2RpcName = {};
-    var Crc32PropertyKeyHashConflict = /** @class */ (function (_super) {
-        __extends(Crc32PropertyKeyHashConflict, _super);
-        function Crc32PropertyKeyHashConflict() {
+
+    var ComponentHasNotDecorated = /** @class */ (function (_super) {
+        __extends(ComponentHasNotDecorated, _super);
+        function ComponentHasNotDecorated() {
             return (_super !== null && _super.apply(this, arguments)) || this;
         }
-        return Crc32PropertyKeyHashConflict;
+        return ComponentHasNotDecorated;
     })(Error);
-    function Rpc(type, returnType) {
-        return function (t, propertyKey) {
-            // gen schema
-            var target = t;
-            if (!target.__schema__) target.__schema__ = genSchema();
-            var s = target.__schema__;
-            if (!s.methods[propertyKey]) {
-                s.methods[propertyKey] = genMethodSchema();
+    var IComp = /** @class */ (function () {
+        function IComp() {}
+        Object.defineProperty(IComp.prototype, "entity", {
+            get: function () {
+                return this._entity;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        return IComp;
+    })();
+    /**
+     * The unit in a network.It can manager some component.
+     * It include id and version, plz don't modify then if you are not undersanding!
+     * It is sealed, PLZ NOT implement!!!
+     * @example
+     ```js
+     // Must do decoration
+     @NetComp
+     class ViewComponent {
+         @Param(DataType.bool)
+         active = false
+     }
+     const ent = new Entity();
+     ent.add(ViewComponent);
+     ent.has(ViewComponent);
+     ent.get(ViewComponent);
+     Domain.ref(ent);
+     ent.rm(ViewComponent);
+     ```
+     */
+    var Entity = /** @class */ (function () {
+        function Entity() {
+            var _comps = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                _comps[_i] = arguments[_i];
             }
-            var ms = s.methods[propertyKey];
-            ms.hash = crc32.str(propertyKey);
-            ms.name = propertyKey;
-            ms.type = type;
-            if (hash2RpcName[ms.hash] && hash2RpcName[ms.hash] != ms.name) {
-                throw new Crc32PropertyKeyHashConflict();
-            }
-            hash2RpcName[ms.hash] = ms.name;
-            if (typeof returnType === "undefined") {
-                ms.returnType = DataTypeVoid;
-            } else {
-                ms.returnType = returnType;
-            }
-            ms.paramCount = ms.paramTypes.length;
-            for (var i = 0, len = ms.paramCount; i < len; i++) {
-                if (!ms.paramTypes[i]) {
-                    console.warn(
-                        "[Netcode]Rpc function " +
-                            propertyKey +
-                            " at paramIndex(" +
-                            i +
-                            ") set the default type DataType.double"
+            this._id = NULL_NUM;
+            this._version = NULL_NUM;
+            this.$comps = new Proxy(this, {
+                get: function (target, p, receiver) {
+                    return target.get(compName2ctr[String(p)]);
+                },
+            });
+            this._comps = _comps;
+            var map = new Map();
+            for (var i = 0, len = this._comps.length; i < len; i++) {
+                var c = this._comps[i];
+                c["_entity"] = this;
+                if (!c.__schema__ || c.__schema__.hash == NULL_NUM) {
+                    throw new ComponentHasNotDecorated(
+                        "Component must use @NetComp"
                     );
-                    ms.paramTypes[i] = DataType.double;
+                }
+                var hash = c.__schema__.hash;
+                if (map.has(hash)) {
+                    map.set(hash, [map.get(hash), c]);
+                } else {
+                    map.set(hash, c);
                 }
             }
+            this._compMap = map;
+        }
+        Object.defineProperty(Entity.prototype, "id", {
+            get: function () {
+                return this._id;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        Object.defineProperty(Entity.prototype, "version", {
+            get: function () {
+                return this._version;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        Object.defineProperty(Entity.prototype, "comps", {
+            get: function () {
+                return this._comps;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        Entity.prototype.toString = function () {
+            return "Entity: id=" + this._id + ",version=" + this._version;
         };
-    }
-    function RpcVar(type) {
-        return function (t, propertyKey, parameterIndex) {
-            // gen schema
-            var target = t;
-            if (!target.__schema__) target.__schema__ = genSchema();
-            var s = target.__schema__;
-            if (!s.methods[propertyKey]) {
-                s.methods[propertyKey] = genMethodSchema();
+        Entity.prototype.get = function (ctr) {
+            var schema = ctr.prototype.__schema__;
+            if (!(schema && schema.name)) {
+                console.error("Componrnt must use @NetComp");
+                return null;
             }
-            var ms = s.methods[propertyKey];
-            ms.paramTypes[parameterIndex] = type;
+            if (!this._compMap.has(schema.hash)) return null;
+            var insOrArr = this._compMap.get(schema.hash);
+            if (!Array.isArray(insOrArr)) return insOrArr;
+            return insOrArr[insOrArr.length - 1];
         };
-    }
-    // export function RpcArr(type: DataType) {
-    //     return function (
-    //         t: any,
-    //         propertyKey: string,
-    //         parameterIndex: number
-    //     ): void {
-    //         // gen schema
-    //         const target: ComponentConstructor = t as any;
-    //         if (!target.__schema__) target.__schema__ = genSchema();
-    //         const s = target.__schema__;
-    //         if (!s.methods[propertyKey]) {
-    //             s.methods[propertyKey] = genMethodSchema();
-    //         }
-    //         const ms = s.methods[propertyKey];
-    //     };
-    // }
+        Entity.prototype.mget = function (ctr) {
+            var _a;
+            var schema = ctr.prototype.__schema__;
+            if (!(schema && schema.name)) {
+                console.error("Componrnt must use @NetComp");
+                return [];
+            }
+            return (_a = this._compMap.get(schema.hash)) !== null &&
+                _a !== void 0
+                ? _a
+                : [];
+        };
+        Entity.prototype.has = function (ctr) {
+            var schema = ctr.prototype.__schema__;
+            if (!(schema && schema.name)) {
+                console.error("Componrnt must use @NetComp");
+                return false;
+            }
+            return this._compMap.has(schema.hash);
+        };
+        Entity.prototype.indexOf = function (ins) {
+            if (ins == null) return -1;
+            return this._comps.indexOf(ins);
+        };
+        Entity.prototype._init = function (domain) {
+            for (var i = 0, len = this._comps.length; i < len; i++) {
+                var c = this._comps[i];
+                c.init && c.init(domain, i);
+            }
+        };
+        Entity.prototype._update = function (domain) {
+            for (var i = 0, len = this._comps.length; i < len; i++) {
+                var c = this._comps[i];
+                c.update && c.update(domain, i);
+            }
+        };
+        Entity.prototype._fixedUpdate = function (domain) {
+            for (var i = 0, len = this._comps.length; i < len; i++) {
+                var c = this._comps[i];
+                c.fixedUpdate && c.fixedUpdate(domain, i);
+            }
+        };
+        Entity.prototype._destroy = function (domain) {
+            for (var i = 0, len = this._comps.length; i < len; i++) {
+                var c = this._comps[i];
+                c.destroy && c.destroy(domain, i);
+                c["_entity"] = null;
+            }
+            this._comps.length = 0;
+            this._compMap.clear();
+        };
+        Entity.Event = {
+            REG_ENTITY: "reg-entity",
+            UNREG_ENTITY: "unreg-entity",
+        };
+        return Entity;
+    })();
 
     var MessageType;
     (function (MessageType) {
@@ -640,25 +564,21 @@ var StateSync = (function (exports) {
             this.rpcbuffer = rpcbuffer;
             this._rpcCalls = [];
         }
-        MessageManager.prototype.startSendComp = function () {
+        MessageManager.prototype.startSendEntityAndComps = function () {
             this.statebuffer.reset();
         };
-        MessageManager.prototype.sendComp = function (
-            entityId,
-            entityVersion,
-            compIdx,
-            comp,
-            toDestory
-        ) {
-            if (toDestory === void 0) {
-                toDestory = false;
-            }
+        MessageManager.prototype.sendEntity = function (entity, toDestroy) {
+            var buf = this.statebuffer;
+            // entity id
+            buf.writeInt(entity.id);
+            // entity compuse version
+            buf.writeInt(composeVersion(entity.version, toDestroy));
+            // component count
+            buf.writeInt(entity.comps.length);
+        };
+        MessageManager.prototype.sendComp = function (compIdx, comp) {
             var buf = this.statebuffer;
             // msg type -> compoent
-            // entity id
-            buf.writeInt(entityId);
-            // entity compuse version
-            buf.writeInt(composeVersion(entityVersion, toDestory));
             // comp index
             buf.writeInt(compIdx);
             // comp hash
@@ -667,33 +587,45 @@ var StateSync = (function (exports) {
             comp.ser(buf);
             return true;
         };
-        MessageManager.prototype.endSendComp = function () {
+        MessageManager.prototype.endSendEntityAndComps = function () {
             this.statebuffer.reset();
         };
-        MessageManager.prototype.startRecvComp = function () {};
-        MessageManager.prototype.revcComp = function () {
-            if (!this.statebuffer.hasNext()) return null;
+        MessageManager.prototype.startRecvEntityAndComps = function () {};
+        MessageManager.prototype.recvEntity = function () {
             var buf = this.statebuffer;
+            if (!buf.hasNext()) return null;
             // entity id
             var entityId = buf.readInt();
             // entity compuse version
             var _a = decomposeVersion(buf.readInt()),
                 entityVersion = _a[0],
                 toDestory = _a[1];
+            // component length
+            var compCount = buf.readInt();
+            return {
+                entityId: entityId,
+                entityVersion: entityVersion,
+                toDestory: toDestory,
+                compCount: compCount,
+            };
+        };
+        MessageManager.prototype.recvCompHeader = function () {
+            var buf = this.statebuffer;
             // comp index
             var compIdx = buf.readInt();
             // comp hash
             var hash = buf.readLong();
             // deser comp
             return {
-                entityId: entityId,
-                entityVersion: entityVersion,
-                toDestory: toDestory,
                 compIdx: compIdx,
                 hash: hash,
             };
         };
-        MessageManager.prototype.endRecvComp = function () {};
+        MessageManager.prototype.recvCompBody = function (comp) {
+            var buf = this.statebuffer;
+            comp.deser(buf);
+        };
+        MessageManager.prototype.endRecvEntityAndComps = function () {};
         // callRpc(methodName: number, component: any, ...args: any) {
         //     this._rpcCalls.push({ methodName, component, args });
         // }
@@ -706,17 +638,16 @@ var StateSync = (function (exports) {
             params
         ) {
             var comp = component;
+            var entity = comp.entity;
             var buf = this.rpcbuffer;
             // schema
             var s = comp.__schema__;
-            // entity
-            var entity = comp.entity;
             // method schema
             var ms = s.methods[methodName];
             // entity id
             buf.writeInt(entity.id);
             // comp index
-            buf.writeUshort(comp.index);
+            buf.writeUshort(entity.indexOf(component));
             // method hash
             buf.writeLong(ms.hash);
             // param
@@ -775,6 +706,22 @@ var StateSync = (function (exports) {
         }
         return DomainDuplicated;
     })(Error);
+    var DomainLengthLimit = /** @class */ (function (_super) {
+        __extends(DomainLengthLimit, _super);
+        function DomainLengthLimit() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return DomainLengthLimit;
+    })(Error);
+    var DomainCompCountNotMatch = /** @class */ (function (_super) {
+        __extends(DomainCompCountNotMatch, _super);
+        function DomainCompCountNotMatch() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return DomainCompCountNotMatch;
+    })(Error);
+    var DOMAIN_INDEX_BITS = 2;
+    var DOMAIN_MAX_INDEX = (1 << DOMAIN_INDEX_BITS) - 1;
     var Domain = /** @class */ (function () {
         function Domain(dataBufCtr, type, capacity, autoResize) {
             if (capacity === void 0) {
@@ -787,6 +734,7 @@ var StateSync = (function (exports) {
             this.type = type;
             this.capacity = capacity;
             this.autoResize = autoResize;
+            this._index = -1;
             this._entityIdCursor = 0;
             this._entities = new Array(capacity);
             this._entityVersion = new Array(capacity);
@@ -799,31 +747,51 @@ var StateSync = (function (exports) {
             );
             this.readonlyInternalMsgMng = this._internalMsgMng;
         }
-        Domain.isNull = function (other) {
-            return this.NULL === other;
-        };
         Domain.Create = function (name, dataBufferType) {
             var args = [];
             for (var _i = 2; _i < arguments.length; _i++) {
                 args[_i - 2] = arguments[_i];
             }
-            if (this._domainMap[name]) {
+            if (this._name2domainMap.has(name)) {
                 throw new DomainDuplicated(name);
             }
-            return (this._domainMap[name] = new (Domain.bind.apply(
+            if (
+                this._name2domainMap.readonlyValues.length >= DOMAIN_MAX_INDEX
+            ) {
+                throw new DomainLengthLimit();
+            }
+            var news = new (Domain.bind.apply(
                 Domain,
-                __spreadArrays([void 0, dataBufferType], args)
-            ))());
+                __spreadArray([void 0, dataBufferType], args)
+            ))();
+            var domainIndex = this._name2domainMap.set(name, news);
+            news._index = domainIndex;
+            return news;
         };
         Domain.Get = function (name) {
             if (name === void 0) {
                 name = "main";
             }
-            return this._domainMap[name];
+            return this._name2domainMap.get(name);
+        };
+        Domain.GetByEntity = function (entity) {
+            var domainIndex = entity.id & DOMAIN_MAX_INDEX;
+            var domain = this._name2domainMap.values[domainIndex];
+            if (domain.isValid(entity)) {
+                return domain;
+            }
+            return null;
         };
         Domain.Clear = function () {
-            this._domainMap = Object.create(null);
+            this._name2domainMap.clear();
         };
+        Object.defineProperty(Domain.prototype, "index", {
+            get: function () {
+                return this._index;
+            },
+            enumerable: false,
+            configurable: true,
+        });
         Object.defineProperty(Domain.prototype, "entities", {
             get: function () {
                 return this._entities;
@@ -848,28 +816,41 @@ var StateSync = (function (exports) {
             var id = this._getEntityId();
             var version = this._entityVersion[id];
             this._reg(entity, id, version);
+            entity["_init"](this);
         };
         Domain.prototype._reg = function (entity, id, version) {
-            entity.id = id;
-            entity.version = version;
-            entity.domain = this;
-            this._entities[entity.id] = entity;
+            entity["_id"] = id;
+            entity["_version"] = version;
+            var index = this._getEntityIndexById(entity.id);
+            this._entities[index] = entity;
+        };
+        Domain.prototype.hasReg = function (entity) {
+            return this.isValid(entity);
+        };
+        Domain.prototype.unregWithoutValidation = function (entity) {
+            var index = this._getEntityIndexById(entity.id);
+            this._entityVersion[index]++;
+            this._unreg(entity);
+            this._destroyEntityId.push(entity.id);
+            this._entities[index] = null;
+            entity["_destroy"](this);
         };
         Domain.prototype.unreg = function (entity) {
             if (!this.isValid(entity))
                 throw new EntityNotValidError(entity.toString());
-            this._entityVersion[entity.id]++;
-            this._unreg(entity);
-            this._destroyEntityId.push(entity.id);
-            this._entities[entity.id] = null;
+            this.unregWithoutValidation(entity);
         };
         Domain.prototype._unreg = function (entity) {
-            entity.id = NULL_NUM;
-            entity.version = NULL_NUM;
-            entity.domain = Domain.NULL;
+            entity["_id"] = NULL_NUM;
+            entity["_version"] = NULL_NUM;
         };
         Domain.prototype.get = function (id) {
-            return this._entities[id];
+            var domainId = id & DOMAIN_MAX_INDEX;
+            if (domainId != this._index) return null;
+            return this.getWithoutCheck(id);
+        };
+        Domain.prototype.getWithoutCheck = function (id) {
+            return this._entities[this._getEntityIndexById(id)];
         };
         Domain.prototype.resize = function (newSize) {
             var oldSize = this.capacity;
@@ -882,13 +863,15 @@ var StateSync = (function (exports) {
             return (
                 entity.id != NULL_NUM &&
                 entity.version != NULL_NUM &&
-                entity.version == this._entityVersion[entity.id]
+                entity.version ==
+                    this._entityVersion[this._getEntityIndexById(entity.id)]
             );
         };
-        Domain.prototype._serComps = function () {
+        Domain.prototype._serEntityAndComps = function () {
             for (var _i = 0, _a = this._entities; _i < _a.length; _i++) {
                 var ent = _a[_i];
                 if (!ent) continue;
+                this._internalMsgMng.sendEntity(ent, false);
                 var comps = ent.comps;
                 for (
                     var compIdx = 0, len = comps.length;
@@ -907,52 +890,62 @@ var StateSync = (function (exports) {
                         );
                         continue;
                     }
-                    this._internalMsgMng.sendComp(
-                        ent.id,
-                        ent.version,
-                        compIdx,
-                        comp,
-                        false
-                    );
+                    this._internalMsgMng.sendComp(compIdx, serableComp);
                 }
             }
         };
-        Domain.prototype._derComps = function () {
+        Domain.prototype._derEntityAndComps = function () {
             var params;
-            while ((params = this._internalMsgMng.revcComp())) {
-                var ent = this._entities[params.entityId];
-                if (
-                    ent &&
-                    (params.toDestory || ent.version !== params.entityVersion)
-                ) {
+            while ((params = this._internalMsgMng.recvEntity())) {
+                var ent =
+                    this._entities[this._getEntityIndexById(params.entityId)];
+                if (ent && ent.version != params.entityVersion) {
                     this.unreg(ent);
+                    ent = null;
                 }
-                if (!ent && !params.toDestory) {
-                    ent = new Entity();
-                    this._reg(ent, params.entityId, params.entityVersion);
-                }
-                if (!ent) continue;
-                var comp = ent.comps[params.compIdx];
-                if (!comp) {
-                    var compName = hash2compName[params.hash];
-                    if (!compName) {
-                        console.warn(
-                            "[Domain#_deser]Cannot find compName by hash(" +
-                                params.hash +
-                                ")!"
-                        );
-                        continue;
-                    }
-                    var ctr = compName2ctr[compName];
-                    comp = ent.add(ctr, params.compIdx);
-                }
-                comp.deser(this._internalMsgMng.statebuffer);
+                ent = ent
+                    ? this._derEntityAndCompsUnderExisted(params, ent)
+                    : this._derEntityAndCompsUnderUnExsited(params);
             }
+        };
+        Domain.prototype._derEntityAndCompsUnderExisted = function (
+            params,
+            entity
+        ) {
+            var entComps = entity.comps;
+            assert(
+                params.compCount == entComps.length,
+                DomainCompCountNotMatch
+            );
+            for (var i = 0, len = params.compCount; i < len; i++) {
+                var compHeaderInfo = this._internalMsgMng.recvCompHeader();
+                var comp = asSerable(entComps[compHeaderInfo.compIdx]);
+                if (!comp) continue;
+                this._internalMsgMng.recvCompBody(comp);
+            }
+            return entity;
+        };
+        Domain.prototype._derEntityAndCompsUnderUnExsited = function (params) {
+            var compArr = new Array(params.compCount);
+            for (var i = 0, len = params.compCount; i < len; i++) {
+                var compHeaderInfo = this._internalMsgMng.recvCompHeader();
+                var compName = hash2compName[compHeaderInfo.hash];
+                var CompCtr = compName2ctr[compName];
+                var comp = new CompCtr();
+                this._internalMsgMng.recvCompBody(comp);
+                compArr[compHeaderInfo.compIdx] = comp;
+            }
+            var e = new (Entity.bind.apply(
+                Entity,
+                __spreadArray([void 0], compArr)
+            ))();
+            this.reg(e);
+            return e;
         };
         Domain.prototype._deserRpcs = function () {
             var param;
             while ((param = this._internalMsgMng.recvRpc())) {
-                var ent = this._entities[param.entityId];
+                var ent = this.getWithoutCheck(param.entityId);
                 if (!ent) continue;
                 var comp = ent.comps[param.compIdx];
                 if (!comp) continue;
@@ -970,9 +963,9 @@ var StateSync = (function (exports) {
             var rpcBuf = this._internalMsgMng.rpcbuffer;
             outBuf.reset();
             if (isServer) {
-                this._internalMsgMng.startSendComp();
+                this._internalMsgMng.startSendEntityAndComps();
                 this._internalMsgMng.startSendRpc();
-                this._serComps();
+                this._serEntityAndComps();
                 var stateLen = stateBuf.writerCursor;
                 var rpcLen = rpcBuf.writerCursor;
                 outBuf
@@ -981,7 +974,7 @@ var StateSync = (function (exports) {
                     .writeUlong(rpcLen)
                     .append(stateBuf)
                     .append(rpcBuf);
-                this._internalMsgMng.endSendComp();
+                this._internalMsgMng.endSendEntityAndComps();
                 this._internalMsgMng.endSendRpc();
             } else {
                 this._internalMsgMng.startSendRpc();
@@ -1006,9 +999,9 @@ var StateSync = (function (exports) {
                 var rpcEnd = rpcStart + rpcLen;
                 stateBuf.set(source, stateStart, stateEnd);
                 rpcBuf.set(source, rpcStart, rpcEnd);
-                this._internalMsgMng.startRecvComp();
-                this._derComps();
-                this._internalMsgMng.endRecvComp();
+                this._internalMsgMng.startRecvEntityAndComps();
+                this._derEntityAndComps();
+                this._internalMsgMng.endRecvEntityAndComps();
                 this._internalMsgMng.startRecvRpc();
                 this._deserRpcs();
                 this._internalMsgMng.endRecvRpc();
@@ -1022,208 +1015,328 @@ var StateSync = (function (exports) {
                 this._internalMsgMng.endRecvRpc();
             }
         };
+        Domain.prototype._getEntityIndexById = function (id) {
+            return id >> DOMAIN_INDEX_BITS;
+        };
         Domain.prototype._getEntityId = function () {
             return this._destroyEntityId.length > 0
                 ? this._destroyEntityId.unshift()
-                : this._entityIdCursor++;
+                : (this._entityIdCursor++ << DOMAIN_INDEX_BITS) + this._index;
         };
-        Domain._domainMap = Object.create(null);
-        Domain.NULL = {};
+        Domain._name2domainMap = new ArrayMap();
         return Domain;
     })();
 
-    // import { fastRemove } from "./misc";
-    var ComponentHasNotDecorated = /** @class */ (function (_super) {
-        __extends(ComponentHasNotDecorated, _super);
-        function ComponentHasNotDecorated() {
+    var WhyPropertyKeyHasTheSameError = /** @class */ (function (_super) {
+        __extends(WhyPropertyKeyHasTheSameError, _super);
+        function WhyPropertyKeyHasTheSameError() {
             return (_super !== null && _super.apply(this, arguments)) || this;
         }
-        return ComponentHasNotDecorated;
+        return WhyPropertyKeyHasTheSameError;
     })(Error);
-    var ComponentNotMatchedWhenSetIndex = /** @class */ (function (_super) {
-        __extends(ComponentNotMatchedWhenSetIndex, _super);
-        function ComponentNotMatchedWhenSetIndex() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
+    function sortComponentPropertyKey(a, b) {
+        var akey = a.propertyKey;
+        var bkey = b.propertyKey;
+        if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
+        return akey > bkey ? 1 : -1;
+    }
+    function NetComp(name, genSerable) {
+        if (genSerable === void 0) {
+            genSerable = true;
         }
-        return ComponentNotMatchedWhenSetIndex;
-    })(Error);
-    /**
-     * The unit in a network.It can manager some component.
-     * It include id and version, plz don't modify then if you are not undersanding!
-     * It is sealed, PLZ NOT implement!!!
-     * @example
-     ```js
-     // Must do decoration
-     @NetComp
-     class ViewComponent {
-         @Param(DataType.bool)
-         active = false
-     }
-     const ent = new Entity();
-     ent.add(ViewComponent);
-     ent.has(ViewComponent);
-     ent.get(ViewComponent);
-     Domain.ref(ent);
-     ent.rm(ViewComponent);
-     ```
-     */
-    var Entity = /** @class */ (function () {
-        function Entity() {
-            this.id = NULL_NUM;
-            this.version = NULL_NUM;
-            this.domain = Domain.NULL;
-            this.compMap = new Map();
-            this.$comps = new Proxy(this, {
-                get: function (target, p, receiver) {
-                    return target.get(compName2ctr[String(p)]);
+        return function (target) {
+            var s = getOrCreateScheme(target.prototype);
+            s.name = name;
+            s.hash = crc32.str(name);
+            hash2compName[s.hash] = s.name;
+            compName2ctr[s.name] = target;
+            s.count = s.raw.length;
+            if (s.count > 0) {
+                s.raw.sort(sortComponentPropertyKey);
+                for (var paramIndex = 0; paramIndex < s.count; paramIndex++) {
+                    var v = s.raw[paramIndex];
+                    v.paramIndex = paramIndex;
+                    s.props[paramIndex] = v;
+                    s.props[v.propertyKey] = v;
+                }
+            }
+            if (genSerable) {
+                {
+                    fixupSerableJIT(target.prototype);
+                }
+            }
+        };
+    }
+    var NONE_CONTAINER = 0;
+    function NetVar(type) {
+        return function (t, propertyKey) {
+            var s = getOrCreateScheme(t);
+            s.raw.push({
+                paramIndex: -1,
+                propertyKey: String(propertyKey),
+                type: {
+                    container: NONE_CONTAINER,
+                    dataType: typeof type === "number" ? type : DataTypeObect,
+                    refCtr: typeof type === "number" ? undefined : type,
                 },
             });
-            this._comps = [];
-            Object.seal(this);
+        };
+    }
+    function fixupSerableJIT(prototype) {
+        var schema = prototype[SCHEME_KEY];
+        fixedupSerableStateJit(prototype, schema);
+        fixedupSerableRpc(prototype, schema);
+    }
+    function fixedupSerableStateJit(prototype, schema) {
+        var serJitStr = "";
+        for (var i = 0, count = schema.count; i < count; i++) {
+            var prop = schema.props[i];
+            var type = prop.type;
+            var key = prop.propertyKey;
+            if (type.container === NONE_CONTAINER) {
+                switch (type.dataType) {
+                    case DataType.INT:
+                    case DataType.I32:
+                        serJitStr += "buffer.writeInt(this." + key + ");";
+                        break;
+                    case DataType.FLOAT:
+                    case DataType.F32:
+                        serJitStr += "buffer.writeFloat(this." + key + ");";
+                        break;
+                    case DataType.DOUBLE:
+                    case DataType.F64:
+                        serJitStr += "buffer.writeDouble(this." + key + ");";
+                        break;
+                    case DataType.BOOL:
+                        serJitStr += "buffer.writeBoolean(this." + key + ");";
+                        break;
+                    case DataTypeObect:
+                        serJitStr += "this." + key + ".ser(buffer);";
+                        break;
+                }
+            } else {
+                serJitStr += "buffer.writeInt(this." + key + ".length);";
+                var itemSerFuncStr = "";
+                switch (type.dataType) {
+                    case DataType.INT:
+                    case DataType.I32:
+                        itemSerFuncStr = "buffer.writeInt(arr[i]);";
+                        break;
+                    case DataType.FLOAT:
+                    case DataType.F32:
+                        itemSerFuncStr = "buffer.writeFloat(arr[i]);";
+                        break;
+                    case DataType.DOUBLE:
+                    case DataType.F64:
+                        itemSerFuncStr = "buffer.writeDouble(arr[i]);";
+                        break;
+                    case DataType.BOOL:
+                        serJitStr += "buffer.writeBoolean(this." + key + ");";
+                        break;
+                    case DataTypeObect:
+                        itemSerFuncStr = "arr[i].ser(buffer);";
+                        break;
+                }
+                serJitStr +=
+                    "\n            var arr = this." +
+                    key +
+                    "\n            for (let i = 0, j = arr.length; i < j; i++) {\n                " +
+                    itemSerFuncStr +
+                    "\n            }\n            ";
+            }
         }
-        Object.defineProperty(Entity.prototype, "comps", {
-            get: function () {
-                return this._comps;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Entity.prototype.toString = function () {
-            return "Entity: id=" + this.id + ",version=" + this.version;
-        };
-        Entity.prototype.add = function (ctr, index) {
-            if (index === void 0) {
-                index = -1;
-            }
-            var schema = ctr.prototype.__schema__;
-            if (!(schema && schema.name)) {
-                throw new ComponentHasNotDecorated(
-                    "Component must use @NetComp"
-                );
-            }
-            if (index >= 0 && this._comps[index]) {
-                throw new ComponentNotMatchedWhenSetIndex();
-            }
-            var ins = new ctr();
-            if (this.compMap.has(schema.hash)) {
-                var insOrArr = this.compMap.get(schema.hash);
-                if (Array.isArray(insOrArr)) {
-                    insOrArr.push(ins);
-                } else {
-                    this.compMap.set(schema.hash, [insOrArr, ins]);
+        prototype.ser = Function("buffer", serJitStr);
+        var deserJitStr = "";
+        for (var i = 0, count = schema.count; i < count; i++) {
+            var prop = schema.props[i];
+            var type = prop.type;
+            var key = prop.propertyKey;
+            if (type.container === NONE_CONTAINER) {
+                switch (type.dataType) {
+                    case DataType.INT:
+                    case DataType.I32:
+                        deserJitStr += "this." + key + "=buffer.readInt();";
+                        break;
+                    case DataType.FLOAT:
+                    case DataType.F32:
+                        deserJitStr += "this." + key + "=buffer.readFloat();";
+                        break;
+                    case DataType.DOUBLE:
+                    case DataType.F64:
+                        deserJitStr += "this." + key + "=buffer.readDouble();";
+                        break;
+                    case DataType.BOOL:
+                        deserJitStr += "this." + key + "=buffer.readBoolean();";
+                        break;
+                    case DataTypeObect:
+                        deserJitStr += "this." + key + ".deser(buffer);";
+                        break;
                 }
             } else {
-                this.compMap.set(schema.hash, ins);
-            }
-            if (index < 0) {
-                index = this._comps.push(ins) - 1;
-            } else {
-                this._comps[index] = ins;
-            }
-            ins.entity = this;
-            ins.index = index;
-            return ins;
-        };
-        Entity.prototype.addIns = function (ctr, ins, index) {
-            if (index === void 0) {
-                index = -1;
-            }
-            var schema = ctr.prototype.__schema__;
-            if (!(schema && schema.name)) {
-                console.error("Componrnt must use @NetComp");
-                return null;
-            }
-            if (index >= 0 && this._comps[index]) {
-                throw new ComponentNotMatchedWhenSetIndex();
-            }
-            if (this.compMap.has(schema.hash)) {
-                var insOrArr = this.compMap.get(schema.hash);
-                if (Array.isArray(insOrArr)) {
-                    insOrArr.push(ins);
-                } else {
-                    this.compMap.set(schema.hash, [insOrArr, ins]);
+                deserJitStr +=
+                    "\n            if(!this." +
+                    key +
+                    ")this." +
+                    key +
+                    "=[];\n            var arr=this." +
+                    key +
+                    ";\n            arr.length=buffer.readInt();";
+                var itemSerFuncStr = "";
+                switch (type.dataType) {
+                    case DataType.INT:
+                    case DataType.I32:
+                        itemSerFuncStr = "arr[i]=buffer.readInt();";
+                        break;
+                    case DataType.FLOAT:
+                    case DataType.F32:
+                        itemSerFuncStr = "arr[i]=buffer.readFloat();";
+                        break;
+                    case DataType.DOUBLE:
+                    case DataType.F64:
+                        itemSerFuncStr = "arr[i]=buffer.readDouble();";
+                        break;
+                    case DataType.BOOL:
+                        deserJitStr += "arr[i]=buffer.readBoolean();";
+                        break;
+                    case DataTypeObect:
+                        itemSerFuncStr = "arr[i].deser(buffer);";
+                        break;
                 }
+                deserJitStr +=
+                    "\n            for (let i = 0, j = arr.length; i < j; i++) {\n                " +
+                    itemSerFuncStr +
+                    "\n            }\n            ";
+            }
+        }
+        prototype.deser = Function("buffer", deserJitStr);
+    }
+    function fixedupSerableRpc(prototype, schema) {
+        var rpcNames = Object.keys(schema.methods);
+        var _loop_1 = function (i, len) {
+            var name_2 = rpcNames[i];
+            var ms = schema.methods[name_2];
+            prototype["ser" + ms.hash] = function (buffer, args) {
+                for (var j = 0, len_1 = ms.paramCount; j < len_1; j++) {
+                    var value = args[j];
+                    switch (ms.paramTypes[j]) {
+                        case DataType.INT:
+                        case DataType.I32:
+                            buffer.writeInt(value);
+                            break;
+                        case DataType.FLOAT:
+                        case DataType.F32:
+                            buffer.writeFloat(value);
+                            break;
+                        case DataType.DOUBLE:
+                        case DataType.F64:
+                            buffer.writeDouble(value);
+                            break;
+                        case DataTypeObect:
+                            value.ser(buffer);
+                            break;
+                    }
+                }
+            };
+            prototype["deser" + ms.hash] = function (buffer) {
+                var args = new Array(ms.paramCount);
+                for (var j = 0, len_2 = ms.paramCount; j < len_2; j++) {
+                    switch (ms.paramTypes[j]) {
+                        case DataType.INT:
+                        case DataType.I32:
+                            args[j] = buffer.readInt();
+                            break;
+                        case DataType.FLOAT:
+                        case DataType.F32:
+                            args[j] = buffer.readFloat();
+                            break;
+                        case DataType.DOUBLE:
+                        case DataType.F64:
+                            args[j] = buffer.readDouble();
+                            break;
+                        case DataTypeObect:
+                            args[j] = new ms.paramTypes[j]();
+                            args[j].ser(buffer);
+                            break;
+                    }
+                }
+                return args;
+            };
+            var privateName = "__" + name_2 + "__";
+            prototype[privateName] = prototype[name_2];
+            prototype[name_2] = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                var domain = Domain.GetByEntity(this.entity);
+                if (domain == null) {
+                    console.warn("Domain is not valid!");
+                    return;
+                }
+                if (domain.type == ms.type) {
+                    this[privateName].apply(this, args);
+                } else {
+                    domain.readonlyInternalMsgMng.sendRpc(name_2, this, args);
+                }
+            };
+        };
+        for (var i = 0, len = rpcNames.length; i < len; i++) {
+            _loop_1(i);
+        }
+    }
+
+    var Crc32PropertyKeyHashConflict = /** @class */ (function (_super) {
+        __extends(Crc32PropertyKeyHashConflict, _super);
+        function Crc32PropertyKeyHashConflict() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return Crc32PropertyKeyHashConflict;
+    })(Error);
+    function Rpc(type, returnType) {
+        return function (t, propertyKey) {
+            // gen schema
+            var s = getOrCreateScheme(t);
+            if (!s.methods[propertyKey]) {
+                s.methods[propertyKey] = genMethodSchema();
+            }
+            var ms = s.methods[propertyKey];
+            ms.hash = crc32.str(propertyKey);
+            ms.name = propertyKey;
+            ms.type = type;
+            if (hash2RpcName[ms.hash] && hash2RpcName[ms.hash] != ms.name) {
+                throw new Crc32PropertyKeyHashConflict();
+            }
+            hash2RpcName[ms.hash] = ms.name;
+            if (typeof returnType === "undefined") {
+                ms.returnType = DataTypeVoid;
             } else {
-                this.compMap.set(schema.hash, ins);
+                ms.returnType = returnType;
             }
-            if (index < 0) {
-                index = this._comps.push(ins) - 1;
-            } else {
-                this._comps[index] = ins;
+            ms.paramCount = ms.paramTypes.length;
+            for (var i = 0, len = ms.paramCount; i < len; i++) {
+                if (!ms.paramTypes[i]) {
+                    console.warn(
+                        "[Netcode]Rpc function " +
+                            propertyKey +
+                            " at paramIndex(" +
+                            i +
+                            ") set the default type DataType.double"
+                    );
+                    ms.paramTypes[i] = DataType.DOUBLE;
+                }
             }
-            ins.entity = this;
-            ins.index = index;
-            return ins;
         };
-        // rm(comp: any): boolean {
-        //     const schema = comp.__schema__;
-        //     if (!(schema && schema.name)) {
-        //         console.error("Componrnt must use @NetComp");
-        //         return false;
-        //     }
-        //     if (this.compMap.has(schema.hash)) {
-        //         const comps = this.compMap.get(schema.hash);
-        //         if (Array.isArray(comps)) {
-        //             const index = comps.lastIndexOf(comp);
-        //             if (index > -1) {
-        //                 fastRemove(comps, index);
-        //                 return true;
-        //             } else {
-        //                 console.warn("Cannot find the comp: ", comp);
-        //                 return false;
-        //             }
-        //         } else if (comp === comps) {
-        //             return this.compMap.delete(schema.hash);
-        //         }
-        //     }
-        //     return false;
-        // }
-        // mrm<T>(ctr: { new (): T }): boolean {
-        //     const schema = ctr.prototype.__schema__;
-        //     if (!(schema && schema.name)) {
-        //         console.error("Componrnt must use @NetComp");
-        //         return false;
-        //     }
-        //     return this.compMap.delete(schema.hash);
-        // }
-        Entity.prototype.get = function (ctr) {
-            var schema = ctr.prototype.__schema__;
-            if (!(schema && schema.name)) {
-                console.error("Componrnt must use @NetComp");
-                return null;
+    }
+    function RpcVar(type) {
+        return function (t, propertyKey, parameterIndex) {
+            var s = getOrCreateScheme(t);
+            if (!s.methods[propertyKey]) {
+                s.methods[propertyKey] = genMethodSchema();
             }
-            if (!this.compMap.has(schema.hash)) return null;
-            var insOrArr = this.compMap.get(schema.hash);
-            if (!Array.isArray(insOrArr)) return insOrArr;
-            return insOrArr[insOrArr.length - 1];
+            var ms = s.methods[propertyKey];
+            ms.paramTypes[parameterIndex] = type;
         };
-        Entity.prototype.mget = function (ctr) {
-            var _a;
-            var schema = ctr.prototype.__schema__;
-            if (!(schema && schema.name)) {
-                console.error("Componrnt must use @NetComp");
-                return [];
-            }
-            return (_a = this.compMap.get(schema.hash)) !== null &&
-                _a !== void 0
-                ? _a
-                : [];
-        };
-        Entity.prototype.has = function (ctr) {
-            var schema = ctr.prototype.__schema__;
-            if (!(schema && schema.name)) {
-                console.error("Componrnt must use @NetComp");
-                return false;
-            }
-            return this.compMap.has(schema.hash);
-        };
-        Entity.Event = {
-            ADD_COMP: "add-comp",
-            REG_ENTITY: "reg-entity",
-            UNREG_ENTITY: "unreg-entity",
-        };
-        return Entity;
-    })();
+    }
 
     var ADirty = /** @class */ (function () {
         function ADirty() {}
@@ -1272,8 +1385,8 @@ var StateSync = (function (exports) {
                 this._value = buffer.readInt();
             }
         };
-        __decorate([NetVar(DataType.bool)], Int.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.int)], Int.prototype, "value", null);
+        __decorate([NetVar(DataType.BOOL)], Int.prototype, "dirty", void 0);
+        __decorate([NetVar(DataType.INT)], Int.prototype, "value", null);
         Int = __decorate([NetComp("Int")], Int);
         return Int;
     })(ADirty);
@@ -1315,8 +1428,8 @@ var StateSync = (function (exports) {
                 this._value = buffer.readFloat();
             }
         };
-        __decorate([NetVar(DataType.bool)], Float.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.float)], Float.prototype, "value", null);
+        __decorate([NetVar(DataType.BOOL)], Float.prototype, "dirty", void 0);
+        __decorate([NetVar(DataType.FLOAT)], Float.prototype, "value", null);
         Float = __decorate([NetComp("Float")], Float);
         return Float;
     })(ADirty);
@@ -1358,8 +1471,8 @@ var StateSync = (function (exports) {
                 this._value = buffer.readLong();
             }
         };
-        __decorate([NetVar(DataType.bool)], Long.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.long)], Long.prototype, "value", null);
+        __decorate([NetVar(DataType.BOOL)], Long.prototype, "dirty", void 0);
+        __decorate([NetVar(DataType.LONG)], Long.prototype, "value", null);
         Long = __decorate([NetComp("Long")], Long);
         return Long;
     })(ADirty);
@@ -1401,7 +1514,7 @@ var StateSync = (function (exports) {
                 this._value = buffer.readUint();
             }
         };
-        __decorate([NetVar(DataType.bool)], Uint.prototype, "dirty", void 0);
+        __decorate([NetVar(DataType.BOOL)], Uint.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.uint)], Uint.prototype, "value", null);
         Uint = __decorate([NetComp("Uint")], Uint);
         return Uint;
@@ -1444,8 +1557,8 @@ var StateSync = (function (exports) {
                 this._value = buffer.readDouble();
             }
         };
-        __decorate([NetVar(DataType.bool)], Double.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.double)], Double.prototype, "value", null);
+        __decorate([NetVar(DataType.BOOL)], Double.prototype, "dirty", void 0);
+        __decorate([NetVar(DataType.DOUBLE)], Double.prototype, "value", null);
         Double = __decorate([NetComp("Double")], Double);
         return Double;
     })(ADirty);
@@ -1487,7 +1600,7 @@ var StateSync = (function (exports) {
                 this._value = buffer.readUlong();
             }
         };
-        __decorate([NetVar(DataType.bool)], Ulong.prototype, "dirty", void 0);
+        __decorate([NetVar(DataType.BOOL)], Ulong.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.ulong)], Ulong.prototype, "value", null);
         Ulong = __decorate([NetComp("Ulong")], Ulong);
         return Ulong;
@@ -1530,8 +1643,8 @@ var StateSync = (function (exports) {
                 this._value = buffer.readShort();
             }
         };
-        __decorate([NetVar(DataType.bool)], Short.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.short)], Short.prototype, "value", null);
+        __decorate([NetVar(DataType.BOOL)], Short.prototype, "dirty", void 0);
+        __decorate([NetVar(DataType.SHORT)], Short.prototype, "value", null);
         Short = __decorate([NetComp("Short")], Short);
         return Short;
     })(ADirty);
@@ -1573,7 +1686,7 @@ var StateSync = (function (exports) {
                 this._value = buffer.readUshort();
             }
         };
-        __decorate([NetVar(DataType.bool)], Ushort.prototype, "dirty", void 0);
+        __decorate([NetVar(DataType.BOOL)], Ushort.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.ushort)], Ushort.prototype, "value", null);
         Ushort = __decorate([NetComp("Ulong")], Ushort);
         return Ushort;
@@ -1791,19 +1904,27 @@ var StateSync = (function (exports) {
         return Net;
     })();
 
-    var Vector = /** @class */ (function () {
+    var Vector = /** @class */ (function (_super) {
+        __extends(Vector, _super);
         function Vector() {
-            this.x = 0;
-            this.y = 0;
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.x = 0;
+            _this.y = 0;
+            return _this;
         }
-        __decorate([NetVar(DataType.int)], Vector.prototype, "x", void 0);
-        __decorate([NetVar(DataType.int)], Vector.prototype, "y", void 0);
+        __decorate([NetVar(DataType.INT)], Vector.prototype, "x", void 0);
+        __decorate([NetVar(DataType.INT)], Vector.prototype, "y", void 0);
         Vector = __decorate([NetComp("vec")], Vector);
         return Vector;
-    })();
-    var Transform = /** @class */ (function () {
+    })(IComp);
+    var Transform = /** @class */ (function (_super) {
+        __extends(Transform, _super);
         function Transform() {
-            this.pos = new Vector();
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.pos = new Vector();
+            return _this;
         }
         Transform.prototype.serverMove = function (x, y) {
             this.pos.x += x;
@@ -1813,8 +1934,8 @@ var StateSync = (function (exports) {
         __decorate(
             [
                 Rpc(RpcType.SERVER),
-                __param(0, RpcVar(DataType.int)),
-                __param(1, RpcVar(DataType.int)),
+                __param(0, RpcVar(DataType.INT)),
+                __param(1, RpcVar(DataType.INT)),
             ],
             Transform.prototype,
             "serverMove",
@@ -1822,31 +1943,39 @@ var StateSync = (function (exports) {
         );
         Transform = __decorate([NetComp("trans")], Transform);
         return Transform;
-    })();
-    var View = /** @class */ (function () {
+    })(IComp);
+    var View = /** @class */ (function (_super) {
+        __extends(View, _super);
         function View() {
-            this.color = 0xffffff;
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.color = 0xffffff;
+            return _this;
         }
         View.prototype.changeColor = function (inColor) {
             this.color = inColor;
         };
-        __decorate([NetVar(DataType.int)], View.prototype, "color", void 0);
+        __decorate([NetVar(DataType.INT)], View.prototype, "color", void 0);
         __decorate(
-            [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.int))],
+            [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.INT))],
             View.prototype,
             "changeColor",
             null
         );
         View = __decorate([NetComp("view")], View);
         return View;
-    })();
-    var ServerTime = /** @class */ (function () {
+    })(IComp);
+    var ServerTime = /** @class */ (function (_super) {
+        __extends(ServerTime, _super);
         function ServerTime() {
-            this.timestamp = 0;
-            this.deltaTime = new Int();
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.timestamp = 0;
+            _this.deltaTime = new Int();
+            return _this;
         }
         __decorate(
-            [NetVar(DataType.int)],
+            [NetVar(DataType.INT)],
             ServerTime.prototype,
             "timestamp",
             void 0
@@ -1854,7 +1983,7 @@ var StateSync = (function (exports) {
         __decorate([NetVar(Int)], ServerTime.prototype, "deltaTime", void 0);
         ServerTime = __decorate([NetComp("time")], ServerTime);
         return ServerTime;
-    })();
+    })(IComp);
 
     var Time = /** @class */ (function () {
         function Time() {
@@ -1873,6 +2002,9 @@ var StateSync = (function (exports) {
             this.whiteBall = 0xf8c3cd;
             this.time = new Time();
             this.doInterpolating = false;
+            this.isPrediction = false;
+            this.isInterpolation = false;
+            this.isRollback = false;
             this._preTimestamp = 0;
             this._fixedTimeAccumulator = 0;
             this.domain = Domain.Create(name, StringDataBuffer, rpcType);
@@ -1940,27 +2072,30 @@ var StateSync = (function (exports) {
             ctx.fill();
         };
         Base.prototype.initScene = function () {
-            var ent1 = new Entity();
-            var trans1 = ent1.add(Transform);
+            var trans1 = new Transform();
             trans1.pos.y = 35;
             trans1.pos.x = 50;
-            ent1.add(View);
-            var ent2 = new Entity();
-            var trans2 = ent2.add(Transform);
-            ent2.add(View);
+            var view1 = new View();
+            var ent1 = new Entity(trans1, view1);
+            var trans2 = new Transform();
             trans2.pos.y = 35;
             trans2.pos.x = 30;
-            var server = new Entity();
-            server.add(ServerTime);
+            var view2 = new View();
+            var ent2 = new Entity(trans2, view2);
+            var remote = new Entity(new ServerTime());
             this.c1 = ent1;
             this.c2 = ent2;
-            this.server = server;
-            this.domain.reg(server);
+            this.remote = remote;
+            this.domain.reg(remote);
             this.domain.reg(ent1);
             this.domain.reg(ent2);
         };
         Base.prototype.onKeyDown = function (ev) {};
         Base.prototype.onKeyUp = function (ev) {};
+        Base.prototype.receive = function (data) {
+            if (this.isPrediction) return;
+            this.domain.setData(data);
+        };
         return Base;
     })();
     var Server = /** @class */ (function (_super) {
@@ -1978,13 +2113,13 @@ var StateSync = (function (exports) {
         };
         Server.prototype.fixedUpdate = function () {
             var Time = this.time;
-            var serverTime = this.server.get(ServerTime);
+            var serverTime = this.remote.get(ServerTime);
             serverTime.timestamp = Time.fixedTimestamp;
             var c1 = Net.client1;
             var c2 = Net.client2;
             var data = this.domain.asData();
-            Net.send(data).recv(c1.domain.setData, c1.domain);
-            Net.send(data).recv(c2.domain.setData, c2.domain);
+            Net.send(data).recv(c1.receive, c1);
+            Net.send(data).recv(c2.receive, c2);
         };
         return Server;
     })(Base);
@@ -2039,11 +2174,11 @@ var StateSync = (function (exports) {
             var dirX = (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0);
             trans.serverMove(dirX * this.time.fixedDeltaTime * 0.1, 0);
             var data = this.domain.asData();
-            Net.send(data).recv(Net.server.domain.setData, Net.server.domain);
-            var serverTime = this.server.get(ServerTime);
+            Net.send(data).recv(Net.server.receive, Net.server);
+            var serverTime = this.remote.get(ServerTime);
             this.time.timestamp =
                 this.time.timestamp * 0.5 + serverTime.timestamp * 0.5;
-            console.log(serverTime.timestamp, this.time.timestamp);
+            console.log(serverTime.timestamp - this.time.timestamp);
         };
         return Client;
     })(Base);
