@@ -59,4 +59,13 @@ export function asSerable<T extends {}>(obj: T): (ISerable & T) | null {
         : null;
 }
 
+export function assert(
+    b: boolean | Object | null,
+    errrorClass: new (...args: any[]) => Error
+) {
+    if (!b) {
+        throw new errrorClass();
+    }
+}
+
 export type ProtoOf<T> = Pick<T, keyof T>;

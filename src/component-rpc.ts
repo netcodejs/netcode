@@ -1,15 +1,13 @@
 import {
-    ComponentConstructor,
     DataType,
     DataTypeVoid,
     genMethodSchema,
-    genSchema,
     getOrCreateScheme,
     RpcType,
 } from "./component-schema";
+import { hash2RpcName } from "./global-record";
 import { str as hash } from "./lib/crc-32";
 
-export const hash2RpcName = {} as Record<number, string>;
 export class Crc32PropertyKeyHashConflict extends Error {}
 export function Rpc<RpcReturnType extends void | DataType = void>(
     type: RpcType,

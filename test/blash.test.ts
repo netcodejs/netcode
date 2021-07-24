@@ -1,44 +1,33 @@
 import {
     ARR_CONTAINER,
-    compName2ctr,
     composeVersion,
     DataType,
     DataTypeObect,
     decomposeVersion,
     Domain,
     Entity,
-    hash2compName,
     NetArr,
     NetComp,
     NetVar,
     NONE_CONTAINER,
     Rpc,
     RpcType,
-    SchemaClass,
+    ISchema,
     getSchemaByPrototype,
+    IComp,
+    StringDataBuffer,
 } from "../src";
-import {
-    IDataBufferReader,
-    IDatabufferWriter,
-    ISerable,
-} from "../src/data/serializable";
-import { StringDataBuffer } from "../src/data/string-databuffer";
 
 @NetComp("view")
-export class ViewComponent /*  implements IComponent */ {
-    // __schema__!: Readonly<Schema>;
-    // entity!: Entity;
-
+export class ViewComponent extends IComp {
     @NetVar(DataType.INT)
     width: number = 0;
     @NetVar(DataType.INT)
     height: number = 0;
-
-    // onLoad() {}
 }
 
 @NetComp("reverseView")
-export class ReverseViewComponent {
+export class ReverseViewComponent extends IComp {
     @NetVar(DataType.INT)
     height: number = 0;
     @NetVar(DataType.INT)
@@ -46,17 +35,15 @@ export class ReverseViewComponent {
 }
 
 //@Component
-export class ViewComponentNoDecoration /* implements IComponent */ {
+export class ViewComponentNoDecoration extends IComp {
     @NetVar(DataType.INT)
     width: number = 0;
     @NetVar(DataType.INT)
     height: number = 0;
-
-    // onLoad() {}
 }
 
 @NetComp("vec")
-export class VectorComponent {
+export class VectorComponent extends IComp {
     @NetVar(DataType.FLOAT)
     x: number = 0;
     @NetVar(DataType.FLOAT)
@@ -64,7 +51,7 @@ export class VectorComponent {
 }
 
 @NetComp("logic")
-export class LogicComponent {
+export class LogicComponent extends IComp {
     @NetVar(DataType.BOOL)
     alive: boolean = false;
     @NetVar(VectorComponent)
@@ -79,7 +66,7 @@ export class LogicComponent {
 }
 
 @NetComp("arr")
-class ArrComp {
+class ArrComp extends IComp {
     @NetArr(DataType.FLOAT)
     arr: number[] = [];
 }
@@ -102,10 +89,10 @@ beforeEach(() => {
 
 describe("SchemaAndClassId", () => {
     test("basic", () => {
-        let v1 = new ViewComponent() as SchemaClass<ViewComponent>;
-        let v2 = new ViewComponent() as SchemaClass<ViewComponent>;
+        let v1 = new ViewComponent() as ISchema & ViewComponent;
+        let v2 = new ViewComponent() as ISchema & ViewComponent;
 
-        let l1 = new LogicComponent() as SchemaClass<LogicComponent>;
+        let l1 = new LogicComponent() as ISchema & LogicComponent;
         expect(v1.__schema__).toStrictEqual(v2.__schema__);
         expect((ReverseViewComponent.prototype as any).__schema__.name).toEqual(
             "reverseView"
@@ -163,30 +150,11 @@ describe("SchemaAndClassId", () => {
 });
 
 describe("entity-componrnt", () => {
-    test("addComp-black", () => {
-        const ent = new Entity();
-        const view = ent.add(ViewComponent)!;
-        const logic = ent.add(LogicComponent)!;
-
-        expect(view).toBeTruthy();
-        expect(logic).toBeTruthy();
-
-        expect(ent.comps.length).toEqual(2);
-        expect(ent.comps.indexOf(view)).toBeGreaterThan(-1);
-        expect(ent.comps.indexOf(logic)).toBeGreaterThan(-1);
-
-        const view2 = ent.add(ViewComponent)!;
-        expect(view2).toBeTruthy();
-        expect(ent.comps.indexOf(view2)).toBeGreaterThan(-1);
-    });
     test("rmComp/hasComp/getComp-black", () => {
-        const ent = new Entity();
-        const view = ent.add(ViewComponent)!;
-        const logic = ent.add(LogicComponent)!;
-
-        // ent.rm(view);
-        // ent.rm(logic);
-        const newLogic = ent.add(LogicComponent);
+        const view = new ViewComponent();
+        const logic = new LogicComponent();
+        const newLogic = new LogicComponent();
+        const ent = new Entity(view, logic, newLogic);
         const hasView = ent.has(ViewComponent);
         const getView = ent.get(ViewComponent);
 
@@ -198,9 +166,8 @@ describe("entity-componrnt", () => {
         expect(getView).toBeTruthy();
     });
     test("addComp-white-no-decoration", () => {
-        const entity = new Entity();
         expect(() => {
-            entity.add(ViewComponentNoDecoration);
+            new Entity(new ViewComponentNoDecoration());
         }).toThrowError();
     });
 });
@@ -211,9 +178,8 @@ describe("Quick-Access", () => {
         view: ViewComponent;
     }
     test("basic", () => {
-        const ent = new Entity<QuickAccess>();
-        expect(ent.$comps.logic).not.toBeTruthy();
-        const logic = ent.add(LogicComponent);
+        const logic = new LogicComponent();
+        const ent = new Entity<QuickAccess>(logic);
         expect(ent.$comps.logic).toBeTruthy();
         expect(logic === ent.$comps.logic).toBeTruthy();
     });
@@ -271,7 +237,7 @@ describe("Domain-instance", () => {
             RpcType.CLIENT
         );
         const domain2 = Domain.Get("other");
-        expect(domain1 === domain2).toBeTruthy();
+        expect(domain1).toStrictEqual(domain2);
     });
 
     test("Domain-create-duplicate", () => {
@@ -295,23 +261,15 @@ describe("Domain-instance", () => {
 describe("Serable", () => {
     test("ser-deser", () => {
         // ser
-        const ent = new Entity();
-        const view = ent.add(ViewComponent)!;
+        const view = new ViewComponent();
+        const ent = new Entity(view);
         const domain = Domain.Create("main", StringDataBuffer, RpcType.SERVER);
         view.width = 123;
         view.height = 456;
         domain.reg(ent);
 
         const template = JSON.stringify([
-            1,
-            6,
-            0,
-            0,
-            0,
-            0,
-            -16929906,
-            456,
-            123,
+            1, 7, 0, 0, 0, 1, 0, -16929906, 456, 123,
         ]);
         expect(domain.asData()).toEqual(template);
 
@@ -322,10 +280,11 @@ describe("Serable", () => {
             RpcType.CLIENT
         );
         otherDomain.setData(template);
-        const otherEnt = otherDomain.get(0)!!;
+        const otherEnt = otherDomain.getWithoutCheck(0)!!;
         expect(otherEnt).toBeTruthy();
         const otherView = otherEnt.get(ViewComponent);
         expect(otherView).toBeTruthy();
+        expect(otherView !== view);
         expect(otherView!.width).toEqual(view!.width);
         expect(otherView!.height).toEqual(view!.height);
     });
@@ -338,9 +297,9 @@ describe("Serable", () => {
         );
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
-        const serEnt1 = new Entity();
+        const serArr = new ArrComp();
+        const serEnt1 = new Entity(serArr);
         serDomain.reg(serEnt1);
-        const serArr = serEnt1.add(ArrComp);
         serArr.arr.push(1, 2, 3, 4);
         const data = serDomain.asData();
 
@@ -350,7 +309,7 @@ describe("Serable", () => {
             RpcType.CLIENT
         );
         deserDomain.setData(data);
-        const deserEnt1 = deserDomain.get(serEnt1.id)!;
+        const deserEnt1 = deserDomain.getWithoutCheck(serEnt1.id)!;
         expect(deserEnt1.$comps.arr.arr).toMatchObject(serArr.arr);
         expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4]);
 
@@ -368,9 +327,9 @@ describe("Serable", () => {
         );
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
-        const serEnt1 = new Entity();
+        const serLogic = new LogicComponent();
+        const serEnt1 = new Entity(serLogic);
         serDomain.reg(serEnt1);
-        const serLogic = serEnt1.add(LogicComponent);
         serLogic.pos.x = 123;
         serLogic.pos.y = 456;
 
@@ -382,7 +341,7 @@ describe("Serable", () => {
             RpcType.CLIENT
         );
         deserDomain.setData(data);
-        const deserEnt1 = deserDomain.get(serEnt1.id)!;
+        const deserEnt1 = deserDomain.getWithoutCheck(serEnt1.id)!;
         expect(deserEnt1.$comps.logic.alive).toEqual(serLogic.alive);
         expect(deserEnt1.$comps.logic.pos).toMatchObject(serLogic.pos);
         expect(deserEnt1.$comps.logic.ze).toEqual(serLogic.ze);
@@ -395,23 +354,6 @@ describe("Serable", () => {
     });
 });
 
-// describe("benchmark", () => {
-//     const serDomain = Domain.Create("ser-domain", StringDataBuffer);
-//     const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
-//     const serEnt0 = new Entity();
-//     serDomain.reg(serEnt0);
-//     const serEnt1 = new Entity();
-//     serDomain.reg(serEnt1);
-//     const serArr = serEnt1.add(ArrComp);
-//     serArr.arr.push(1, 2, 3, 4);
-
-//     const start = Date.now();
-//     for (let i = 0; i < 1000000; i++) {
-//         deserDomain.setData(serDomain.asData());
-//     }
-//     expect(Date.now() - start).toBeLessThan(2000);
-// });
-
 describe("rpc", () => {
     test("valid", () => {
         const server = Domain.Create(
@@ -419,8 +361,8 @@ describe("rpc", () => {
             StringDataBuffer,
             RpcType.SERVER
         );
-        const serverEnt0 = new Entity();
-        const serverLogic0 = serverEnt0.add(LogicComponent);
+        const serverLogic0 = new LogicComponent();
+        const serverEnt0 = new Entity(serverLogic0);
         server.reg(serverEnt0);
 
         serverLogic0.abcv();
@@ -431,7 +373,7 @@ describe("rpc", () => {
             RpcType.CLIENT
         );
         client.setData(server.asData());
-        const clientEnt0 = client.get(0)!;
+        const clientEnt0 = client.getWithoutCheck(0)!;
         const clientLogic0 = clientEnt0.get(LogicComponent)!;
         expect(clientLogic0.alive).toEqual(serverLogic0.alive);
 

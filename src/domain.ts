@@ -1,49 +1,70 @@
-import { hash2RpcName } from "./component-rpc";
 import { RpcType } from "./component-schema";
-import { compName2ctr, hash2compName, SchemaClass } from "./component-variable";
+import { ISchema } from "./component-variable";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
-import { Entity } from "./entity";
+import { Entity, IComp } from "./base";
 import { NULL_NUM } from "./macro";
-import { MessageManager } from "./message-manager";
-import { asSerable } from "./misc";
+import {
+    MessageEntityInfo,
+    MessageManager,
+    MessageRpcInfo,
+} from "./message-manager";
+import { asSerable, assert } from "./misc";
+import { ArrayMap } from "./array-map";
+import { compName2ctr, hash2compName, hash2RpcName } from "./global-record";
 
 class EntityNotValidError extends Error {}
 class EntityRepeatRegisteredError extends Error {}
 class EntityGroupOutOfRangeYouCanOpenAutoResize extends Error {}
 class DomainDuplicated extends Error {}
+class DomainLengthLimit extends Error {}
+class DomainCompCountNotMatch extends Error {}
 
-export type DomainConstructorParamters<
-    TT extends new (...args: any) => any
-> = TT extends new (_: any, ...args: infer P) => Domain ? P : never;
+const DOMAIN_INDEX_BITS = 2;
+const DOMAIN_MAX_INDEX = (1 << DOMAIN_INDEX_BITS) - 1;
+
+export type DomainConstructorParamters<TT extends new (...args: any) => any> =
+    TT extends new (_: any, ...args: infer P) => Domain ? P : never;
 export class Domain<T extends SupportNetDataType = any> {
-    private static _domainMap: Record<string, Domain> = Object.create(null);
-    public static NULL = {} as Domain;
-    public static isNull(other: Domain) {
-        return this.NULL === other;
-    }
+    private static _name2domainMap: ArrayMap<string, Domain> = new ArrayMap();
 
     static Create<T extends SupportNetDataType = any>(
         name: string,
         dataBufferType: new (...args: any) => IDataBuffer<T>,
         ...args: DomainConstructorParamters<typeof Domain>
     ) {
-        if (this._domainMap[name]) {
+        if (this._name2domainMap.has(name)) {
             throw new DomainDuplicated(name);
         }
-        return (this._domainMap[name] = new Domain(
-            dataBufferType,
-            ...args
-        )) as Domain<T>;
+        if (this._name2domainMap.readonlyValues.length >= DOMAIN_MAX_INDEX) {
+            throw new DomainLengthLimit();
+        }
+        const news: Domain<T> = new Domain(dataBufferType, ...args);
+        const domainIndex = this._name2domainMap.set(name, news);
+        news._index = domainIndex;
+        return news;
     }
 
     static Get<T extends SupportNetDataType>(name: string = "main") {
-        return this._domainMap[name] as Domain<T>;
+        return this._name2domainMap.get(name) as Domain<T>;
+    }
+
+    static GetByEntity(entity: Entity) {
+        const domainIndex = entity.id & DOMAIN_MAX_INDEX;
+        const domain = this._name2domainMap.values[domainIndex];
+        if (domain.isValid(entity)) {
+            return domain;
+        }
+        return null;
     }
 
     static Clear() {
-        this._domainMap = Object.create(null);
+        this._name2domainMap.clear();
     }
 
+    get index() {
+        return this._index;
+    }
+    private _index = -1;
     private _entities: (Entity | null)[];
     public get entities() {
         return this._entities;
@@ -87,32 +108,48 @@ export class Domain<T extends SupportNetDataType = any> {
         const id = this._getEntityId();
         const version = this._entityVersion[id];
         this._reg(entity, id, version);
+        entity["_init"](this);
     }
 
     private _reg(entity: Entity, id: number, version: number) {
-        entity.id = id;
-        entity.version = version;
-        entity.domain = this;
-        this._entities[entity.id] = entity;
+        entity["_id"] = id;
+        entity["_version"] = version;
+        const index = this._getEntityIndexById(entity.id);
+        this._entities[index] = entity;
+    }
+
+    hasReg(entity: Entity) {
+        return this.isValid(entity);
+    }
+
+    unregWithoutValidation(entity: Entity) {
+        const index = this._getEntityIndexById(entity.id);
+        this._entityVersion[index]++;
+        this._unreg(entity);
+        this._destroyEntityId.push(entity.id);
+        this._entities[index] = null;
+        entity["_destroy"](this);
     }
 
     unreg(entity: Entity) {
         if (!this.isValid(entity))
             throw new EntityNotValidError(entity.toString());
-        this._entityVersion[entity.id]++;
-        this._unreg(entity);
-        this._destroyEntityId.push(entity.id);
-        this._entities[entity.id] = null;
+        this.unregWithoutValidation(entity);
     }
 
     private _unreg(entity: Entity) {
-        entity.id = NULL_NUM;
-        entity.version = NULL_NUM;
-        entity.domain = Domain.NULL;
+        entity["_id"] = NULL_NUM;
+        entity["_version"] = NULL_NUM;
     }
 
     get(id: number) {
-        return this._entities[id];
+        const domainId = id & DOMAIN_MAX_INDEX;
+        if (domainId != this._index) return null;
+        return this.getWithoutCheck(id);
+    }
+
+    getWithoutCheck(id: number) {
+        return this._entities[this._getEntityIndexById(id)];
     }
 
     resize(newSize: number) {
@@ -127,20 +164,22 @@ export class Domain<T extends SupportNetDataType = any> {
         return (
             entity.id != NULL_NUM &&
             entity.version != NULL_NUM &&
-            entity.version == this._entityVersion[entity.id]
+            entity.version ==
+                this._entityVersion[this._getEntityIndexById(entity.id)]
         );
     }
 
-    protected _serComps() {
+    protected _serEntityAndComps() {
         for (let ent of this._entities) {
             if (!ent) continue;
+            this._internalMsgMng.sendEntity(ent, false);
             const comps = ent.comps;
             for (
                 let compIdx = 0, len = comps.length;
                 compIdx < len;
                 compIdx++
             ) {
-                const comp = comps[compIdx] as SchemaClass<{}>;
+                const comp = comps[compIdx] as ISchema & IComp;
                 const serableComp = asSerable(comp);
                 if (!serableComp) {
                     console.warn(
@@ -148,55 +187,59 @@ export class Domain<T extends SupportNetDataType = any> {
                     );
                     continue;
                 }
-                this._internalMsgMng.sendComp(
-                    ent.id,
-                    ent.version,
-                    compIdx,
-                    comp,
-                    false
-                );
+                this._internalMsgMng.sendComp(compIdx, serableComp);
             }
         }
     }
 
-    protected _derComps() {
-        let params: ReturnType<MessageManager<T>["revcComp"]>;
-        while ((params = this._internalMsgMng.revcComp())) {
-            let ent = this._entities[params.entityId];
-            if (
-                ent &&
-                (params.toDestory || ent.version !== params.entityVersion)
-            ) {
+    protected _derEntityAndComps() {
+        let params: MessageEntityInfo | null;
+        while ((params = this._internalMsgMng.recvEntity())) {
+            let ent = this._entities[this._getEntityIndexById(params.entityId)];
+            if (ent && ent.version != params.entityVersion) {
                 this.unreg(ent);
+                ent = null;
             }
-
-            if (!ent && !params.toDestory) {
-                ent = new Entity();
-                this._reg(ent, params.entityId, params.entityVersion);
-            }
-
-            if (!ent) continue;
-
-            let comp = ent.comps[params.compIdx] as ISerable;
-            if (!comp) {
-                const compName = hash2compName[params.hash];
-                if (!compName) {
-                    console.warn(
-                        `[Domain#_deser]Cannot find compName by hash(${params.hash})!`
-                    );
-                    continue;
-                }
-                const ctr = compName2ctr[compName];
-                comp = ent.add(ctr, params.compIdx);
-            }
-            comp.deser(this._internalMsgMng.statebuffer);
+            ent = ent
+                ? this._derEntityAndCompsUnderExisted(params, ent)
+                : this._derEntityAndCompsUnderUnExsited(params);
         }
+    }
+
+    protected _derEntityAndCompsUnderExisted(
+        params: MessageEntityInfo,
+        entity: Entity
+    ) {
+        const entComps = entity.comps;
+        assert(params.compCount == entComps.length, DomainCompCountNotMatch);
+        for (let i = 0, len = params.compCount; i < len; i++) {
+            const compHeaderInfo = this._internalMsgMng.recvCompHeader();
+            const comp = asSerable(entComps[compHeaderInfo.compIdx]);
+            if (!comp) continue;
+            this._internalMsgMng.recvCompBody(comp);
+        }
+        return entity;
+    }
+
+    protected _derEntityAndCompsUnderUnExsited(params: MessageEntityInfo) {
+        const compArr = new Array<IComp>(params.compCount);
+        for (let i = 0, len = params.compCount; i < len; i++) {
+            const compHeaderInfo = this._internalMsgMng.recvCompHeader();
+            const compName = hash2compName[compHeaderInfo.hash];
+            const CompCtr = compName2ctr[compName];
+            const comp = new CompCtr();
+            this._internalMsgMng.recvCompBody(comp);
+            compArr[compHeaderInfo.compIdx] = comp;
+        }
+        const e = new Entity(...compArr);
+        this.reg(e);
+        return e;
     }
 
     protected _deserRpcs() {
-        let param: ReturnType<MessageManager<T>["recvRpc"]>;
+        let param: MessageRpcInfo | null;
         while ((param = this._internalMsgMng.recvRpc())) {
-            const ent = this._entities[param.entityId];
+            const ent = this.getWithoutCheck(param.entityId);
             if (!ent) continue;
             const comp = ent.comps[param.compIdx] as any;
             if (!comp) continue;
@@ -217,10 +260,10 @@ export class Domain<T extends SupportNetDataType = any> {
         outBuf.reset();
 
         if (isServer) {
-            this._internalMsgMng.startSendComp();
+            this._internalMsgMng.startSendEntityAndComps();
             this._internalMsgMng.startSendRpc();
 
-            this._serComps();
+            this._serEntityAndComps();
             const stateLen = stateBuf.writerCursor;
             const rpcLen = rpcBuf.writerCursor;
 
@@ -231,7 +274,7 @@ export class Domain<T extends SupportNetDataType = any> {
                 .append(stateBuf)
                 .append(rpcBuf);
 
-            this._internalMsgMng.endSendComp();
+            this._internalMsgMng.endSendEntityAndComps();
             this._internalMsgMng.endSendRpc();
         } else {
             this._internalMsgMng.startSendRpc();
@@ -267,9 +310,9 @@ export class Domain<T extends SupportNetDataType = any> {
             stateBuf.set(source, stateStart, stateEnd);
             rpcBuf.set(source, rpcStart, rpcEnd);
 
-            this._internalMsgMng.startRecvComp();
-            this._derComps();
-            this._internalMsgMng.endRecvComp();
+            this._internalMsgMng.startRecvEntityAndComps();
+            this._derEntityAndComps();
+            this._internalMsgMng.endRecvEntityAndComps();
 
             this._internalMsgMng.startRecvRpc();
             this._deserRpcs();
@@ -288,9 +331,13 @@ export class Domain<T extends SupportNetDataType = any> {
         }
     }
 
+    private _getEntityIndexById(id: number) {
+        return id >> DOMAIN_INDEX_BITS;
+    }
+
     private _getEntityId() {
         return this._destroyEntityId.length > 0
             ? this._destroyEntityId.unshift()
-            : this._entityIdCursor++;
+            : (this._entityIdCursor++ << DOMAIN_INDEX_BITS) + this._index;
     }
 }
