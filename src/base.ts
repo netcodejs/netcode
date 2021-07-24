@@ -1,14 +1,18 @@
-import { compName2ctr, ISchema } from "./component-variable";
+import { ISchema } from "./component-variable";
 import type { Domain } from "./domain";
+import { compName2ctr } from "./global-record";
 import { NULL_NUM } from "./macro";
 
 class ComponentHasNotDecorated extends Error {}
-class ComponentNotMatchedWhenSetIndex extends Error {}
-export interface IComp {
-    init?(entity: Entity, domain: Domain, compIdx: number): void;
-    update?(entity: Entity, domain: Domain, compIdx: number): void;
-    fixedUpdate(entity: Entity, domain: Domain, compIdx: number): void;
-    destroy?(entity: Entity, domain: Domain, compIdx: number): void;
+export abstract class IComp {
+    private _entity?: Entity | null;
+    get entity() {
+        return this._entity!;
+    }
+    init?(domain: Domain, compIdx: number): void;
+    update?(domain: Domain, compIdx: number): void;
+    fixedUpdate?(domain: Domain, compIdx: number): void;
+    destroy?(domain: Domain, compIdx: number): void;
 }
 /**
  * The unit in a network.It can manager some component.
@@ -52,7 +56,7 @@ export class Entity<ProxyObj extends Object = any> {
 
     private readonly _compMap: Map<number, IComp | IComp[]>;
     private readonly _comps: IComp[];
-    get comps() {
+    get comps(): readonly IComp[] {
         return this._comps;
     }
 
@@ -61,6 +65,7 @@ export class Entity<ProxyObj extends Object = any> {
         const map = new Map();
         for (let i = 0, len = this._comps.length; i < len; i++) {
             let c = this._comps[i] as ISchema & IComp;
+            c["_entity"] = this;
             if (!c.__schema__ || c.__schema__.hash == NULL_NUM) {
                 throw new ComponentHasNotDecorated(
                     "Component must use @NetComp"
@@ -120,28 +125,29 @@ export class Entity<ProxyObj extends Object = any> {
     private _init(domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.init && c.init(this, domain, i);
+            c.init && c.init(domain, i);
         }
     }
 
     private _update(domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.update && c.update(this, domain, i);
+            c.update && c.update(domain, i);
         }
     }
 
     private _fixedUpdate(domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.fixedUpdate && c.fixedUpdate(this, domain, i);
+            c.fixedUpdate && c.fixedUpdate(domain, i);
         }
     }
 
     private _destroy(domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.destroy && c.destroy(this, domain, i);
+            c.destroy && c.destroy(domain, i);
+            c["_entity"] = null;
         }
         this._comps.length = 0;
         this._compMap.clear();

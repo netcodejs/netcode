@@ -14,6 +14,19 @@ export interface RpcCall {
     args: any[];
 }
 
+export interface MessageEntityInfo {
+    entityId: number;
+    entityVersion: number;
+    toDestory: boolean;
+    compCount: number;
+}
+
+export interface MessageRpcInfo {
+    entityId: number;
+    compIdx: number;
+    methodHash: number;
+}
+
 export class MessageManager<T extends SupportNetDataType> {
     protected _rpcCalls: RpcCall[] = [];
     constructor(
@@ -22,24 +35,24 @@ export class MessageManager<T extends SupportNetDataType> {
         readonly rpcbuffer: IDataBuffer<T>
     ) {}
 
-    startSendComp() {
+    startSendEntityAndComps() {
         this.statebuffer.reset();
     }
 
-    sendComp(
-        entityId: number,
-        entityVersion: number,
-        compIdx: number,
-        comp: ISerable & IComp & ISchema,
-        toDestory = false
-    ): boolean {
+    sendEntity(entity: Entity, toDestroy: boolean) {
+        const buf = this.statebuffer;
+        // entity id
+        buf.writeInt(entity.id);
+        // entity compuse version
+        buf.writeInt(composeVersion(entity.version, toDestroy));
+        // component count
+        buf.writeInt(entity.comps.length);
+    }
+
+    sendComp(compIdx: number, comp: ISerable & IComp & ISchema): boolean {
         const buf = this.statebuffer;
         // msg type -> compoent
 
-        // entity id
-        buf.writeInt(entityId);
-        // entity compuse version
-        buf.writeInt(composeVersion(entityVersion, toDestory));
         // comp index
         buf.writeInt(compIdx);
         // comp hash
@@ -50,34 +63,49 @@ export class MessageManager<T extends SupportNetDataType> {
         return true;
     }
 
-    endSendComp() {
+    endSendEntityAndComps() {
         this.statebuffer.reset();
     }
 
-    startRecvComp() {}
+    startRecvEntityAndComps() {}
 
-    revcComp() {
-        if (!this.statebuffer.hasNext()) return null;
+    recvEntity(): MessageEntityInfo | null {
         const buf = this.statebuffer;
+        if (!buf.hasNext()) return null;
         // entity id
         const entityId = buf.readInt();
         // entity compuse version
         const [entityVersion, toDestory] = decomposeVersion(buf.readInt());
+        // component length
+        const compCount = buf.readInt();
+        return {
+            entityId,
+            entityVersion,
+            toDestory,
+            compCount,
+        };
+    }
+
+    recvCompHeader() {
+        const buf = this.statebuffer;
+
         // comp index
         const compIdx = buf.readInt();
         // comp hash
         const hash = buf.readLong();
         // deser comp
         return {
-            entityId,
-            entityVersion,
-            toDestory,
             compIdx,
             hash,
         };
     }
 
-    endRecvComp() {}
+    recvCompBody(comp: ISerable & IComp) {
+        const buf = this.statebuffer;
+        comp.deser(buf);
+    }
+
+    endRecvEntityAndComps() {}
 
     // callRpc(methodName: number, component: any, ...args: any) {
     //     this._rpcCalls.push({ methodName, component, args });
@@ -89,11 +117,11 @@ export class MessageManager<T extends SupportNetDataType> {
 
     sendRpc(
         methodName: string,
-        entity: Entity,
         component: IComp & ISchema & Record<string, Function>,
         params: any[]
     ) {
         const comp = component;
+        const entity = comp.entity;
         const buf = this.rpcbuffer;
         // schema
         const s = comp.__schema__;
@@ -115,7 +143,7 @@ export class MessageManager<T extends SupportNetDataType> {
 
     startRecvRpc() {}
 
-    recvRpc() {
+    recvRpc(): MessageRpcInfo | null {
         if (!this.rpcbuffer.hasNext()) return null;
         const buf = this.rpcbuffer;
         // entity id

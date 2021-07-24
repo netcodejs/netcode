@@ -36,7 +36,11 @@ export class ArrayMap<k extends string | number, v> {
     }
 
     set(key: k, value: v) {
-        const index = this._name2indexRecord[key] ?? this._values.length;
+        let index = this._name2indexRecord[key];
+        if (index == null) {
+            index = this._values.length;
+            this._name2indexRecord[key] = index;
+        }
         this._values[index] = value;
         return index;
     }
@@ -47,6 +51,11 @@ export class ArrayMap<k extends string | number, v> {
             return [null, -1];
         }
         return [this._values[index], index];
+    }
+
+    clear() {
+        this._name2indexRecord = Object.create(null);
+        this._values.length = 0;
     }
 
     get values(): v[] {

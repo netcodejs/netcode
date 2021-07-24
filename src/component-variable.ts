@@ -13,7 +13,8 @@ import {
     SCHEME_KEY,
 } from "./component-schema";
 import { Domain } from "./domain";
-import { Entity } from "./base";
+import { IComp } from "./base";
+import { hash2compName, compName2ctr } from "./global-record";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
 function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
@@ -22,10 +23,6 @@ function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
     if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
     return akey > bkey ? 1 : -1;
 }
-
-export const hash2compName: Record<number, string> = Object.create(null);
-export const compName2ctr: Record<string, { new (): any }> =
-    Object.create(null);
 
 export function NetComp(name: string, genSerable = true) {
     return function <T>(target: { new (): T }) {
@@ -441,8 +438,11 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
 
         const privateName = "__" + name + "__";
         prototype[privateName] = prototype[name];
-        prototype[name] = function (...args: any[]) {
-            const domain = Domain.GetByEntity(this);
+        prototype[name] = function (
+            this: IComp & ISchema & Record<string, Function>,
+            ...args: any[]
+        ) {
+            const domain = Domain.GetByEntity(this.entity);
             if (domain == null) {
                 console.warn("Domain is not valid!");
                 return;

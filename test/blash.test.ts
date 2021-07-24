@@ -1,13 +1,11 @@
 import {
     ARR_CONTAINER,
-    compName2ctr,
     composeVersion,
     DataType,
     DataTypeObect,
     decomposeVersion,
     Domain,
     Entity,
-    hash2compName,
     NetArr,
     NetComp,
     NetVar,
@@ -21,62 +19,39 @@ import {
 } from "../src";
 
 @NetComp("view")
-export class ViewComponent implements IComp {
+export class ViewComponent extends IComp {
     @NetVar(DataType.INT)
     width: number = 0;
     @NetVar(DataType.INT)
     height: number = 0;
-
-    fixedUpdate(
-        entity: Entity<any>,
-        domain: Domain<any>,
-        compIdx: number
-    ): void {}
 }
 
 @NetComp("reverseView")
-export class ReverseViewComponent implements IComp {
+export class ReverseViewComponent extends IComp {
     @NetVar(DataType.INT)
     height: number = 0;
     @NetVar(DataType.INT)
     width: number = 0;
-
-    fixedUpdate(
-        entity: Entity<any>,
-        domain: Domain<any>,
-        compIdx: number
-    ): void {}
 }
 
 //@Component
-export class ViewComponentNoDecoration implements IComp {
+export class ViewComponentNoDecoration extends IComp {
     @NetVar(DataType.INT)
     width: number = 0;
     @NetVar(DataType.INT)
     height: number = 0;
-
-    fixedUpdate(
-        entity: Entity<any>,
-        domain: Domain<any>,
-        compIdx: number
-    ): void {}
 }
 
 @NetComp("vec")
-export class VectorComponent implements IComp {
+export class VectorComponent extends IComp {
     @NetVar(DataType.FLOAT)
     x: number = 0;
     @NetVar(DataType.FLOAT)
     y: number = 0;
-    fixedUpdate(
-        entity: Entity<any>,
-        domain: Domain<any>,
-        compIdx: number
-    ): void {}
 }
 
 @NetComp("logic")
-export class LogicComponent implements IComp {
+export class LogicComponent extends IComp {
     @NetVar(DataType.BOOL)
     alive: boolean = false;
     @NetVar(VectorComponent)
@@ -88,45 +63,24 @@ export class LogicComponent implements IComp {
     abcv() {
         this.alive = true;
     }
-
-    fixedUpdate(
-        entity: Entity<any>,
-        domain: Domain<any>,
-        compIdx: number
-    ): void {}
 }
 
 @NetComp("arr")
-class ArrComp implements IComp {
+class ArrComp extends IComp {
     @NetArr(DataType.FLOAT)
     arr: number[] = [];
-    fixedUpdate(
-        entity: Entity<any>,
-        domain: Domain<any>,
-        compIdx: number
-    ): void {}
 }
 
 @NetComp("lenArr")
-class LengthArrComp extends ArrComp implements IComp {
+class LengthArrComp extends ArrComp {
     @NetVar(DataType.INT)
     length: number = 0;
-    fixedUpdate(
-        entity: Entity<any>,
-        domain: Domain<any>,
-        compIdx: number
-    ): void {}
 }
 
 @NetComp("lenArr")
-class DynamicArrComp extends LengthArrComp implements IComp {
+class DynamicArrComp extends LengthArrComp {
     @NetVar(DataType.INT)
     opcaity: number = 10;
-    fixedUpdate(
-        entity: Entity<any>,
-        domain: Domain<any>,
-        compIdx: number
-    ): void {}
 }
 
 beforeEach(() => {
@@ -283,7 +237,7 @@ describe("Domain-instance", () => {
             RpcType.CLIENT
         );
         const domain2 = Domain.Get("other");
-        expect(domain1 === domain2).toBeTruthy();
+        expect(domain1).toStrictEqual(domain2);
     });
 
     test("Domain-create-duplicate", () => {
@@ -315,7 +269,7 @@ describe("Serable", () => {
         domain.reg(ent);
 
         const template = JSON.stringify([
-            1, 6, 0, 0, 0, 0, -16929906, 456, 123,
+            1, 7, 0, 0, 0, 1, 0, -16929906, 456, 123,
         ]);
         expect(domain.asData()).toEqual(template);
 
@@ -326,10 +280,11 @@ describe("Serable", () => {
             RpcType.CLIENT
         );
         otherDomain.setData(template);
-        const otherEnt = otherDomain.get(0)!!;
+        const otherEnt = otherDomain.getWithoutCheck(0)!!;
         expect(otherEnt).toBeTruthy();
         const otherView = otherEnt.get(ViewComponent);
         expect(otherView).toBeTruthy();
+        expect(otherView !== view);
         expect(otherView!.width).toEqual(view!.width);
         expect(otherView!.height).toEqual(view!.height);
     });
@@ -354,7 +309,7 @@ describe("Serable", () => {
             RpcType.CLIENT
         );
         deserDomain.setData(data);
-        const deserEnt1 = deserDomain.get(serEnt1.id)!;
+        const deserEnt1 = deserDomain.getWithoutCheck(serEnt1.id)!;
         expect(deserEnt1.$comps.arr.arr).toMatchObject(serArr.arr);
         expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4]);
 
@@ -386,7 +341,7 @@ describe("Serable", () => {
             RpcType.CLIENT
         );
         deserDomain.setData(data);
-        const deserEnt1 = deserDomain.get(serEnt1.id)!;
+        const deserEnt1 = deserDomain.getWithoutCheck(serEnt1.id)!;
         expect(deserEnt1.$comps.logic.alive).toEqual(serLogic.alive);
         expect(deserEnt1.$comps.logic.pos).toMatchObject(serLogic.pos);
         expect(deserEnt1.$comps.logic.ze).toEqual(serLogic.ze);
@@ -398,23 +353,6 @@ describe("Serable", () => {
         });
     });
 });
-
-// describe("benchmark", () => {
-//     const serDomain = Domain.Create("ser-domain", StringDataBuffer);
-//     const deserDomain = Domain.Create("deser-domain", StringDataBuffer);
-//     const serEnt0 = new Entity();
-//     serDomain.reg(serEnt0);
-//     const serEnt1 = new Entity();
-//     serDomain.reg(serEnt1);
-//     const serArr = serEnt1.add(ArrComp);
-//     serArr.arr.push(1, 2, 3, 4);
-
-//     const start = Date.now();
-//     for (let i = 0; i < 1000000; i++) {
-//         deserDomain.setData(serDomain.asData());
-//     }
-//     expect(Date.now() - start).toBeLessThan(2000);
-// });
 
 describe("rpc", () => {
     test("valid", () => {
@@ -435,7 +373,7 @@ describe("rpc", () => {
             RpcType.CLIENT
         );
         client.setData(server.asData());
-        const clientEnt0 = client.get(0)!;
+        const clientEnt0 = client.getWithoutCheck(0)!;
         const clientLogic0 = clientEnt0.get(LogicComponent)!;
         expect(clientLogic0.alive).toEqual(serverLogic0.alive);
 
