@@ -225,35 +225,35 @@ describe("Version-Check", () => {
 
 describe("Domain-instance", () => {
     test("Domain-main", () => {
-        Domain.Create("main", StringDataBuffer, 50);
-
+        Domain.Create("main", {
+            type: RpcType.CLIENT,
+            dataBufCtr: StringDataBuffer,
+            capacity: 50,
+        });
         // expect(Domain.main).toBeTruthy();
     });
 
     test("Domain-create/get", () => {
-        const domain1 = Domain.Create(
-            "other",
-            StringDataBuffer,
-            RpcType.CLIENT
-        );
+        const domain1 = Domain.Create("other", {
+            type: RpcType.CLIENT,
+            dataBufCtr: StringDataBuffer,
+        });
         const domain2 = Domain.Get("other");
         expect(domain1).toStrictEqual(domain2);
     });
 
     test("Domain-create-duplicate", () => {
         const domainName = "Domain-create-duplicate-other";
-        const domain1 = Domain.Create(
-            domainName,
-            StringDataBuffer,
-            RpcType.CLIENT
-        );
+        const domain1 = Domain.Create(domainName, {
+            type: RpcType.CLIENT,
+            dataBufCtr: StringDataBuffer,
+        });
         expect(domain1).toBeTruthy();
         expect(() => {
-            const domain2 = Domain.Create(
-                domainName,
-                StringDataBuffer,
-                RpcType.CLIENT
-            );
+            const domain2 = Domain.Create(domainName, {
+                type: RpcType.CLIENT,
+                dataBufCtr: StringDataBuffer,
+            });
         }).toThrow();
     });
 });
@@ -263,7 +263,10 @@ describe("Serable", () => {
         // ser
         const view = new ViewComponent();
         const ent = new Entity(view);
-        const domain = Domain.Create("main", StringDataBuffer, RpcType.SERVER);
+        const domain = Domain.Create("main", {
+            type: RpcType.SERVER,
+            dataBufCtr: StringDataBuffer,
+        });
         view.width = 123;
         view.height = 456;
         domain.reg(ent);
@@ -274,11 +277,10 @@ describe("Serable", () => {
         expect(domain.asData()).toEqual(template);
 
         // deser
-        const otherDomain = Domain.Create<string>(
-            "other-main",
-            StringDataBuffer,
-            RpcType.CLIENT
-        );
+        const otherDomain = Domain.Create<string>("other-main", {
+            type: RpcType.CLIENT,
+            dataBufCtr: StringDataBuffer,
+        });
         otherDomain.setData(template);
         const otherEnt = otherDomain.getWithoutCheck(0)!!;
         expect(otherEnt).toBeTruthy();
@@ -290,11 +292,10 @@ describe("Serable", () => {
     });
 
     test("ser-deser-array", () => {
-        const serDomain = Domain.Create(
-            "ser-domain",
-            StringDataBuffer,
-            RpcType.SERVER
-        );
+        const serDomain = Domain.Create("ser-domain", {
+            type: RpcType.SERVER,
+            dataBufCtr: StringDataBuffer,
+        });
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
         const serArr = new ArrComp();
@@ -303,11 +304,10 @@ describe("Serable", () => {
         serArr.arr.push(1, 2, 3, 4);
         const data = serDomain.asData();
 
-        const deserDomain = Domain.Create(
-            "deser-domain",
-            StringDataBuffer,
-            RpcType.CLIENT
-        );
+        const deserDomain = Domain.Create("deser-domain", {
+            type: RpcType.CLIENT,
+            dataBufCtr: StringDataBuffer,
+        });
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.getWithoutCheck(serEnt1.id)!;
         expect(deserEnt1.$comps.arr.arr).toMatchObject(serArr.arr);
@@ -320,11 +320,10 @@ describe("Serable", () => {
     });
 
     test("ser-deser-obj", () => {
-        const serDomain = Domain.Create(
-            "ser-domain",
-            StringDataBuffer,
-            RpcType.SERVER
-        );
+        const serDomain = Domain.Create("ser-domain", {
+            type: RpcType.SERVER,
+            dataBufCtr: StringDataBuffer,
+        });
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
         const serLogic = new LogicComponent();
@@ -335,11 +334,10 @@ describe("Serable", () => {
 
         const data = serDomain.asData();
 
-        const deserDomain = Domain.Create(
-            "deser-domain",
-            StringDataBuffer,
-            RpcType.CLIENT
-        );
+        const deserDomain = Domain.Create("deser-domain", {
+            type: RpcType.CLIENT,
+            dataBufCtr: StringDataBuffer,
+        });
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.getWithoutCheck(serEnt1.id)!;
         expect(deserEnt1.$comps.logic.alive).toEqual(serLogic.alive);
@@ -356,22 +354,20 @@ describe("Serable", () => {
 
 describe("rpc", () => {
     test("valid", () => {
-        const server = Domain.Create(
-            "ser-domain",
-            StringDataBuffer,
-            RpcType.SERVER
-        );
+        const server = Domain.Create("ser-domain", {
+            type: RpcType.SERVER,
+            dataBufCtr: StringDataBuffer,
+        });
         const serverLogic0 = new LogicComponent();
         const serverEnt0 = new Entity(serverLogic0);
         server.reg(serverEnt0);
 
         serverLogic0.abcv();
 
-        const client = Domain.Create(
-            "deser-domain",
-            StringDataBuffer,
-            RpcType.CLIENT
-        );
+        const client = Domain.Create("deser-domain", {
+            type: RpcType.CLIENT,
+            dataBufCtr: StringDataBuffer,
+        });
         client.setData(server.asData());
         const clientEnt0 = client.getWithoutCheck(0)!;
         const clientLogic0 = clientEnt0.get(LogicComponent)!;

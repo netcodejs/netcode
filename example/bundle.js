@@ -676,6 +676,194 @@ var StateSync = (function (exports) {
         return MessageManager;
     })();
 
+    var tempTypedBuffer = {
+        int: new Int32Array(1),
+        uint: new Uint32Array(1),
+        short: new Int16Array(1),
+        ushort: new Uint16Array(1),
+        long: new Int32Array(1),
+        ulong: new Uint32Array(1),
+        float: new Float32Array(1),
+        double: new Float64Array(1),
+    };
+    var StringDataBufferOutOfRange = /** @class */ (function (_super) {
+        __extends(StringDataBufferOutOfRange, _super);
+        function StringDataBufferOutOfRange() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return StringDataBufferOutOfRange;
+    })(Error);
+    var StringDataBuffer = /** @class */ (function () {
+        function StringDataBuffer() {
+            this.writeBuffer = [];
+            this.writerCursor = 0;
+            this.readBuffer = [];
+            this.readerCursor = 0;
+            this.readerStart = 0;
+            this.readerEnd = 0;
+        }
+        StringDataBuffer.prototype.check = function (increment) {
+            if (increment === void 0) {
+                increment = 0;
+            }
+            if (
+                this.writerCursor + increment >= this.readBuffer.length &&
+                this.writerCursor + increment >= this.readerEnd
+            ) {
+                throw new StringDataBufferOutOfRange(
+                    "Cursor: (" +
+                        this.writerCursor +
+                        "), buffer's length: (" +
+                        this.writeBuffer.length +
+                        ")"
+                );
+            }
+        };
+        StringDataBuffer.prototype.reset = function () {
+            this.writerCursor = 0;
+            this.readerCursor = 0;
+            this.readBuffer.length = 0;
+            this.writeBuffer.length = 0;
+        };
+        StringDataBuffer.prototype.readInt = function () {
+            this.check();
+            var temp = tempTypedBuffer.int;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readUint = function () {
+            this.check();
+            var temp = tempTypedBuffer.uint;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readShort = function () {
+            this.check();
+            var temp = tempTypedBuffer.short;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readUshort = function () {
+            this.check();
+            var temp = tempTypedBuffer.ushort;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readLong = function () {
+            this.check();
+            var temp = tempTypedBuffer.long;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readUlong = function () {
+            this.check();
+            var temp = tempTypedBuffer.ulong;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readFloat = function () {
+            this.check();
+            var temp = tempTypedBuffer.float;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readDouble = function () {
+            this.check();
+            var temp = tempTypedBuffer.double;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readBoolean = function () {
+            this.check();
+            return Boolean(this.readBuffer[this.readerCursor++]);
+        };
+        StringDataBuffer.prototype.set = function (source, start, end) {
+            if (start === void 0) {
+                start = 0;
+            }
+            if (end === void 0) {
+                end = -1;
+            }
+            this.writerCursor = 0;
+            var dst = JSON.parse(source);
+            var dstChecked = Array.isArray(dst) ? dst : [];
+            if (end < 0) {
+                end += dstChecked.length;
+            }
+            this.readerStart = this.readerCursor = start;
+            this.readerEnd = end;
+            this.readBuffer = dstChecked;
+        };
+        StringDataBuffer.prototype.writeInt = function (source) {
+            var temp = tempTypedBuffer.int;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeUint = function (source) {
+            var temp = tempTypedBuffer.uint;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeShort = function (source) {
+            var temp = tempTypedBuffer.short;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeUshort = function (source) {
+            var temp = tempTypedBuffer.ushort;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeLong = function (source) {
+            var temp = tempTypedBuffer.long;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeUlong = function (source) {
+            var temp = tempTypedBuffer.ulong;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeFloat = function (source) {
+            var temp = tempTypedBuffer.float;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeDouble = function (source) {
+            var temp = tempTypedBuffer.double;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeBoolean = function (source) {
+            this.writeBuffer[this.writerCursor++] = source ? 1 : 0;
+            return this;
+        };
+        StringDataBuffer.prototype.get = function () {
+            this.writeBuffer.length = this.writerCursor;
+            return JSON.stringify(this.writeBuffer);
+        };
+        StringDataBuffer.prototype.hasNext = function () {
+            return (
+                this.readerCursor < this.readBuffer.length &&
+                this.readerCursor < this.readerEnd
+            );
+        };
+        StringDataBuffer.prototype.append = function (other) {
+            this.writeBuffer.push.apply(this.writeBuffer, other.writeBuffer);
+            this.writerCursor += other.writerCursor;
+            return this;
+        };
+        return StringDataBuffer;
+    })();
+
     var EntityNotValidError = /** @class */ (function (_super) {
         __extends(EntityNotValidError, _super);
         function EntityNotValidError() {
@@ -722,36 +910,42 @@ var StateSync = (function (exports) {
     })(Error);
     var DOMAIN_INDEX_BITS = 2;
     var DOMAIN_MAX_INDEX = (1 << DOMAIN_INDEX_BITS) - 1;
+    function HandleDomainDefautlValue(option) {
+        if (typeof option.dataBufCtr === "undefined") {
+            option.dataBufCtr = StringDataBuffer;
+        }
+        if (typeof option.capacity === "undefined") {
+            option.capacity = 50;
+        }
+        if (typeof option.autoResize === "undefined") {
+            option.autoResize = true;
+        }
+        if (typeof option.fixedTimeSec === "undefined") {
+            option.fixedTimeSec = 0.2;
+        }
+        return option;
+    }
     var Domain = /** @class */ (function () {
-        function Domain(dataBufCtr, type, capacity, autoResize) {
-            if (capacity === void 0) {
-                capacity = 50;
-            }
-            if (autoResize === void 0) {
-                autoResize = true;
-            }
-            this.dataBufCtr = dataBufCtr;
-            this.type = type;
-            this.capacity = capacity;
-            this.autoResize = autoResize;
+        //#endregion
+        function Domain(option) {
             this._index = -1;
             this._entityIdCursor = 0;
-            this._entities = new Array(capacity);
-            this._entityVersion = new Array(capacity);
+            this._fixedSecAccumulator = 0;
+            var requiredOption = HandleDomainDefautlValue(option);
+            this._option = requiredOption;
+            this._entities = new Array(requiredOption.capacity);
+            this._entityVersion = new Array(requiredOption.capacity);
             this._entityVersion.fill(0);
             this._destroyEntityId = new Array();
             this._internalMsgMng = new MessageManager(
-                new dataBufCtr(),
-                new dataBufCtr(),
-                new dataBufCtr()
+                new requiredOption.dataBufCtr(),
+                new requiredOption.dataBufCtr(),
+                new requiredOption.dataBufCtr()
             );
             this.readonlyInternalMsgMng = this._internalMsgMng;
         }
-        Domain.Create = function (name, dataBufferType) {
-            var args = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                args[_i - 2] = arguments[_i];
-            }
+        //#region static methods
+        Domain.Create = function (name, option) {
             if (this._name2domainMap.has(name)) {
                 throw new DomainDuplicated(name);
             }
@@ -760,10 +954,7 @@ var StateSync = (function (exports) {
             ) {
                 throw new DomainLengthLimit();
             }
-            var news = new (Domain.bind.apply(
-                Domain,
-                __spreadArray([void 0, dataBufferType], args)
-            ))();
+            var news = new Domain(option);
             var domainIndex = this._name2domainMap.set(name, news);
             news._index = domainIndex;
             return news;
@@ -786,6 +977,8 @@ var StateSync = (function (exports) {
             this._name2domainMap.clear();
         };
         Object.defineProperty(Domain.prototype, "index", {
+            //#endregion
+            //#region member variables
             get: function () {
                 return this._index;
             },
@@ -799,16 +992,24 @@ var StateSync = (function (exports) {
             enumerable: false,
             configurable: true,
         });
+        Object.defineProperty(Domain.prototype, "option", {
+            get: function () {
+                return this._option;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        //#region public methods
         Domain.prototype.reg = function (entity) {
             if (this.isValid(entity))
                 throw new EntityRepeatRegisteredError(entity.toString());
-            if (this._entityIdCursor == this.capacity) {
-                if (this.autoResize) {
-                    this.resize(Math.ceil(this.capacity * 1.5));
+            if (this._entityIdCursor == this._option.capacity) {
+                if (this._option.autoResize) {
+                    this.resize(Math.ceil(this._option.capacity * 1.5));
                 } else
                     throw new EntityGroupOutOfRangeYouCanOpenAutoResize(
                         "Domain: capacity: " +
-                            this.capacity +
+                            this._option.capacity +
                             "; " +
                             entity.toString()
                     );
@@ -817,12 +1018,6 @@ var StateSync = (function (exports) {
             var version = this._entityVersion[id];
             this._reg(entity, id, version);
             entity["_init"](this);
-        };
-        Domain.prototype._reg = function (entity, id, version) {
-            entity["_id"] = id;
-            entity["_version"] = version;
-            var index = this._getEntityIndexById(entity.id);
-            this._entities[index] = entity;
         };
         Domain.prototype.hasReg = function (entity) {
             return this.isValid(entity);
@@ -840,10 +1035,6 @@ var StateSync = (function (exports) {
                 throw new EntityNotValidError(entity.toString());
             this.unregWithoutValidation(entity);
         };
-        Domain.prototype._unreg = function (entity) {
-            entity["_id"] = NULL_NUM;
-            entity["_version"] = NULL_NUM;
-        };
         Domain.prototype.get = function (id) {
             var domainId = id & DOMAIN_MAX_INDEX;
             if (domainId != this._index) return null;
@@ -853,11 +1044,11 @@ var StateSync = (function (exports) {
             return this._entities[this._getEntityIndexById(id)];
         };
         Domain.prototype.resize = function (newSize) {
-            var oldSize = this.capacity;
+            var oldSize = this._option.capacity;
             this._entities.length = newSize;
             this._entityVersion.length = newSize;
             this._entityVersion.fill(0, oldSize, newSize);
-            this.capacity = newSize;
+            this._option.capacity = newSize;
         };
         Domain.prototype.isValid = function (entity) {
             return (
@@ -866,6 +1057,80 @@ var StateSync = (function (exports) {
                 entity.version ==
                     this._entityVersion[this._getEntityIndexById(entity.id)]
             );
+        };
+        Domain.prototype.asData = function () {
+            var isServer = this._option.type == RpcType.SERVER;
+            var outBuf = this._internalMsgMng.inoutbuffer;
+            var stateBuf = this._internalMsgMng.statebuffer;
+            var rpcBuf = this._internalMsgMng.rpcbuffer;
+            outBuf.reset();
+            if (isServer) {
+                this._internalMsgMng.startSendEntityAndComps();
+                this._internalMsgMng.startSendRpc();
+                this._serEntityAndComps();
+                var stateLen = stateBuf.writerCursor;
+                var rpcLen = rpcBuf.writerCursor;
+                outBuf
+                    .writeBoolean(isServer)
+                    .writeUlong(stateLen)
+                    .writeUlong(rpcLen)
+                    .append(stateBuf)
+                    .append(rpcBuf);
+                this._internalMsgMng.endSendEntityAndComps();
+                this._internalMsgMng.endSendRpc();
+            } else {
+                this._internalMsgMng.startSendRpc();
+                var rpcLen = rpcBuf.writerCursor;
+                outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
+                this._internalMsgMng.endSendRpc();
+            }
+            return outBuf.get();
+        };
+        Domain.prototype.setData = function (source) {
+            var inBuf = this._internalMsgMng.inoutbuffer;
+            var stateBuf = this._internalMsgMng.statebuffer;
+            var rpcBuf = this._internalMsgMng.rpcbuffer;
+            inBuf.set(source);
+            var isServer = inBuf.readBoolean();
+            if (isServer) {
+                var stateLen = inBuf.readUlong();
+                var rpcLen = inBuf.readUlong();
+                var stateStart = inBuf.readerCursor;
+                var stateEnd = stateStart + stateLen;
+                var rpcStart = stateEnd;
+                var rpcEnd = rpcStart + rpcLen;
+                stateBuf.set(source, stateStart, stateEnd);
+                rpcBuf.set(source, rpcStart, rpcEnd);
+                this._internalMsgMng.startRecvEntityAndComps();
+                this._derEntityAndComps();
+                this._internalMsgMng.endRecvEntityAndComps();
+                this._internalMsgMng.startRecvRpc();
+                this._deserRpcs();
+                this._internalMsgMng.endRecvRpc();
+            } else {
+                var rpcLen = inBuf.readUlong();
+                var rpcStart = inBuf.readerCursor;
+                var rpcEnd = rpcStart + rpcLen + 1;
+                rpcBuf.set(source, rpcStart, rpcEnd);
+                this._internalMsgMng.startRecvRpc();
+                this._deserRpcs();
+                this._internalMsgMng.endRecvRpc();
+            }
+        };
+        Domain.prototype.update = function (dtSec) {
+            this._fixedSecAccumulator += dtSec;
+        };
+        //#endregion
+        //#region protected methods
+        Domain.prototype._reg = function (entity, id, version) {
+            entity["_id"] = id;
+            entity["_version"] = version;
+            var index = this._getEntityIndexById(entity.id);
+            this._entities[index] = entity;
+        };
+        Domain.prototype._unreg = function (entity) {
+            entity["_id"] = NULL_NUM;
+            entity["_version"] = NULL_NUM;
         };
         Domain.prototype._serEntityAndComps = function () {
             for (var _i = 0, _a = this._entities; _i < _a.length; _i++) {
@@ -954,65 +1219,6 @@ var StateSync = (function (exports) {
                 );
                 var methodName = hash2RpcName[param.methodHash];
                 comp[methodName].apply(comp, argus);
-            }
-        };
-        Domain.prototype.asData = function () {
-            var isServer = this.type == RpcType.SERVER;
-            var outBuf = this._internalMsgMng.inoutbuffer;
-            var stateBuf = this._internalMsgMng.statebuffer;
-            var rpcBuf = this._internalMsgMng.rpcbuffer;
-            outBuf.reset();
-            if (isServer) {
-                this._internalMsgMng.startSendEntityAndComps();
-                this._internalMsgMng.startSendRpc();
-                this._serEntityAndComps();
-                var stateLen = stateBuf.writerCursor;
-                var rpcLen = rpcBuf.writerCursor;
-                outBuf
-                    .writeBoolean(isServer)
-                    .writeUlong(stateLen)
-                    .writeUlong(rpcLen)
-                    .append(stateBuf)
-                    .append(rpcBuf);
-                this._internalMsgMng.endSendEntityAndComps();
-                this._internalMsgMng.endSendRpc();
-            } else {
-                this._internalMsgMng.startSendRpc();
-                var rpcLen = rpcBuf.writerCursor;
-                outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
-                this._internalMsgMng.endSendRpc();
-            }
-            return outBuf.get();
-        };
-        Domain.prototype.setData = function (source) {
-            var inBuf = this._internalMsgMng.inoutbuffer;
-            var stateBuf = this._internalMsgMng.statebuffer;
-            var rpcBuf = this._internalMsgMng.rpcbuffer;
-            inBuf.set(source);
-            var isServer = inBuf.readBoolean();
-            if (isServer) {
-                var stateLen = inBuf.readUlong();
-                var rpcLen = inBuf.readUlong();
-                var stateStart = inBuf.readerCursor;
-                var stateEnd = stateStart + stateLen;
-                var rpcStart = stateEnd;
-                var rpcEnd = rpcStart + rpcLen;
-                stateBuf.set(source, stateStart, stateEnd);
-                rpcBuf.set(source, rpcStart, rpcEnd);
-                this._internalMsgMng.startRecvEntityAndComps();
-                this._derEntityAndComps();
-                this._internalMsgMng.endRecvEntityAndComps();
-                this._internalMsgMng.startRecvRpc();
-                this._deserRpcs();
-                this._internalMsgMng.endRecvRpc();
-            } else {
-                var rpcLen = inBuf.readUlong();
-                var rpcStart = inBuf.readerCursor;
-                var rpcEnd = rpcStart + rpcLen + 1;
-                rpcBuf.set(source, rpcStart, rpcEnd);
-                this._internalMsgMng.startRecvRpc();
-                this._deserRpcs();
-                this._internalMsgMng.endRecvRpc();
             }
         };
         Domain.prototype._getEntityIndexById = function (id) {
@@ -1273,7 +1479,7 @@ var StateSync = (function (exports) {
                     console.warn("Domain is not valid!");
                     return;
                 }
-                if (domain.type == ms.type) {
+                if (domain.option.type == ms.type) {
                     this[privateName].apply(this, args);
                 } else {
                     domain.readonlyInternalMsgMng.sendRpc(name_2, this, args);
@@ -1692,194 +1898,6 @@ var StateSync = (function (exports) {
         return Ushort;
     })(ADirty);
 
-    var tempTypedBuffer = {
-        int: new Int32Array(1),
-        uint: new Uint32Array(1),
-        short: new Int16Array(1),
-        ushort: new Uint16Array(1),
-        long: new Int32Array(1),
-        ulong: new Uint32Array(1),
-        float: new Float32Array(1),
-        double: new Float64Array(1),
-    };
-    var StringDataBufferOutOfRange = /** @class */ (function (_super) {
-        __extends(StringDataBufferOutOfRange, _super);
-        function StringDataBufferOutOfRange() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return StringDataBufferOutOfRange;
-    })(Error);
-    var StringDataBuffer = /** @class */ (function () {
-        function StringDataBuffer() {
-            this.writeBuffer = [];
-            this.writerCursor = 0;
-            this.readBuffer = [];
-            this.readerCursor = 0;
-            this.readerStart = 0;
-            this.readerEnd = 0;
-        }
-        StringDataBuffer.prototype.check = function (increment) {
-            if (increment === void 0) {
-                increment = 0;
-            }
-            if (
-                this.writerCursor + increment >= this.readBuffer.length &&
-                this.writerCursor + increment >= this.readerEnd
-            ) {
-                throw new StringDataBufferOutOfRange(
-                    "Cursor: (" +
-                        this.writerCursor +
-                        "), buffer's length: (" +
-                        this.writeBuffer.length +
-                        ")"
-                );
-            }
-        };
-        StringDataBuffer.prototype.reset = function () {
-            this.writerCursor = 0;
-            this.readerCursor = 0;
-            this.readBuffer.length = 0;
-            this.writeBuffer.length = 0;
-        };
-        StringDataBuffer.prototype.readInt = function () {
-            this.check();
-            var temp = tempTypedBuffer.int;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUint = function () {
-            this.check();
-            var temp = tempTypedBuffer.uint;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readShort = function () {
-            this.check();
-            var temp = tempTypedBuffer.short;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUshort = function () {
-            this.check();
-            var temp = tempTypedBuffer.ushort;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readLong = function () {
-            this.check();
-            var temp = tempTypedBuffer.long;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUlong = function () {
-            this.check();
-            var temp = tempTypedBuffer.ulong;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readFloat = function () {
-            this.check();
-            var temp = tempTypedBuffer.float;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readDouble = function () {
-            this.check();
-            var temp = tempTypedBuffer.double;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readBoolean = function () {
-            this.check();
-            return Boolean(this.readBuffer[this.readerCursor++]);
-        };
-        StringDataBuffer.prototype.set = function (source, start, end) {
-            if (start === void 0) {
-                start = 0;
-            }
-            if (end === void 0) {
-                end = -1;
-            }
-            this.writerCursor = 0;
-            var dst = JSON.parse(source);
-            var dstChecked = Array.isArray(dst) ? dst : [];
-            if (end < 0) {
-                end += dstChecked.length;
-            }
-            this.readerStart = this.readerCursor = start;
-            this.readerEnd = end;
-            this.readBuffer = dstChecked;
-        };
-        StringDataBuffer.prototype.writeInt = function (source) {
-            var temp = tempTypedBuffer.int;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUint = function (source) {
-            var temp = tempTypedBuffer.uint;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeShort = function (source) {
-            var temp = tempTypedBuffer.short;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUshort = function (source) {
-            var temp = tempTypedBuffer.ushort;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeLong = function (source) {
-            var temp = tempTypedBuffer.long;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUlong = function (source) {
-            var temp = tempTypedBuffer.ulong;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeFloat = function (source) {
-            var temp = tempTypedBuffer.float;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeDouble = function (source) {
-            var temp = tempTypedBuffer.double;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeBoolean = function (source) {
-            this.writeBuffer[this.writerCursor++] = source ? 1 : 0;
-            return this;
-        };
-        StringDataBuffer.prototype.get = function () {
-            this.writeBuffer.length = this.writerCursor;
-            return JSON.stringify(this.writeBuffer);
-        };
-        StringDataBuffer.prototype.hasNext = function () {
-            return (
-                this.readerCursor < this.readBuffer.length &&
-                this.writerCursor < this.readerEnd
-            );
-        };
-        StringDataBuffer.prototype.append = function (other) {
-            this.writeBuffer.push.apply(this.writeBuffer, other.writeBuffer);
-            this.writerCursor += other.writerCursor;
-            return this;
-        };
-        return StringDataBuffer;
-    })();
-
     var Net = /** @class */ (function () {
         function Net() {}
         Net.send = function (obj) {
@@ -2007,7 +2025,10 @@ var StateSync = (function (exports) {
             this.isRollback = false;
             this._preTimestamp = 0;
             this._fixedTimeAccumulator = 0;
-            this.domain = Domain.Create(name, StringDataBuffer, rpcType);
+            this.domain = Domain.Create(name, {
+                dataBufCtr: StringDataBuffer,
+                type: rpcType,
+            });
             this.ctx = canvas.getContext("2d");
             this.canvas.width = 950;
             this.canvas.height = 70;

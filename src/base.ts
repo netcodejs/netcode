@@ -10,8 +10,8 @@ export abstract class IComp {
         return this._entity!;
     }
     init?(domain: Domain, compIdx: number): void;
-    update?(domain: Domain, compIdx: number): void;
-    fixedUpdate?(domain: Domain, compIdx: number): void;
+    update?(dt: number, domain: Domain, compIdx: number): void;
+    fixedUpdate?(dt: number, domain: Domain, compIdx: number): void;
     destroy?(domain: Domain, compIdx: number): void;
 }
 /**
@@ -129,17 +129,17 @@ export class Entity<ProxyObj extends Object = any> {
         }
     }
 
-    private _update(domain: Domain) {
+    private _update(dt: number, domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.update && c.update(domain, i);
+            c.update && c.update(dt, domain, i);
         }
     }
 
-    private _fixedUpdate(domain: Domain) {
+    private _fixedUpdate(dt: number, domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.fixedUpdate && c.fixedUpdate(domain, i);
+            c.fixedUpdate && c.fixedUpdate(dt, domain, i);
         }
     }
 

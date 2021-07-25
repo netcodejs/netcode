@@ -447,7 +447,7 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
                 console.warn("Domain is not valid!");
                 return;
             }
-            if (domain.type == ms.type) {
+            if (domain.option.type == ms.type) {
                 this[privateName](...args);
             } else {
                 domain.readonlyInternalMsgMng.sendRpc(name, this, args);

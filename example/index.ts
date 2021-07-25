@@ -36,7 +36,10 @@ export abstract class Base {
         readonly canvas: HTMLCanvasElement,
         rpcType: RpcType
     ) {
-        this.domain = Domain.Create(name, StringDataBuffer, rpcType);
+        this.domain = Domain.Create(name, {
+            dataBufCtr: StringDataBuffer,
+            type: rpcType,
+        });
         this.ctx = canvas.getContext("2d")!;
         this.canvas.width = 950;
         this.canvas.height = 70;

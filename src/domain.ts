@@ -11,6 +11,7 @@ import {
 import { asSerable, assert } from "./misc";
 import { ArrayMap } from "./array-map";
 import { compName2ctr, hash2compName, hash2RpcName } from "./global-record";
+import { StringDataBuffer } from "./data/string-databuffer";
 
 class EntityNotValidError extends Error {}
 class EntityRepeatRegisteredError extends Error {}
@@ -24,13 +25,37 @@ const DOMAIN_MAX_INDEX = (1 << DOMAIN_INDEX_BITS) - 1;
 
 export type DomainConstructorParamters<TT extends new (...args: any) => any> =
     TT extends new (_: any, ...args: infer P) => Domain ? P : never;
+
+export interface DomainOption<T extends SupportNetDataType = string> {
+    dataBufCtr?: { new (...args: any[]): IDataBuffer<T> };
+    type: RpcType;
+    capacity?: number;
+    autoResize?: boolean;
+    fixedTimeSec?: number;
+}
+
+function HandleDomainDefautlValue<T extends DomainOption<any>>(option: T) {
+    if (typeof option.dataBufCtr === "undefined") {
+        option.dataBufCtr = StringDataBuffer;
+    }
+    if (typeof option.capacity === "undefined") {
+        option.capacity = 50;
+    }
+    if (typeof option.autoResize === "undefined") {
+        option.autoResize = true;
+    }
+    if (typeof option.fixedTimeSec === "undefined") {
+        option.fixedTimeSec = 0.2;
+    }
+    return option as Required<Readonly<T>>;
+}
+
 export class Domain<T extends SupportNetDataType = any> {
     private static _name2domainMap: ArrayMap<string, Domain> = new ArrayMap();
-
+    //#region static methods
     static Create<T extends SupportNetDataType = any>(
         name: string,
-        dataBufferType: new (...args: any) => IDataBuffer<T>,
-        ...args: DomainConstructorParamters<typeof Domain>
+        option: DomainOption<T>
     ) {
         if (this._name2domainMap.has(name)) {
             throw new DomainDuplicated(name);
@@ -38,7 +63,7 @@ export class Domain<T extends SupportNetDataType = any> {
         if (this._name2domainMap.readonlyValues.length >= DOMAIN_MAX_INDEX) {
             throw new DomainLengthLimit();
         }
-        const news: Domain<T> = new Domain(dataBufferType, ...args);
+        const news: Domain<T> = new Domain(option);
         const domainIndex = this._name2domainMap.set(name, news);
         news._index = domainIndex;
         return news;
@@ -60,14 +85,20 @@ export class Domain<T extends SupportNetDataType = any> {
     static Clear() {
         this._name2domainMap.clear();
     }
+    //#endregion
 
+    //#region member variables
     get index() {
         return this._index;
     }
     private _index = -1;
     private _entities: (Entity | null)[];
+    private _entitiesLength = 0;
     public get entities() {
         return this._entities;
+    }
+    public get length() {
+        return this._entitiesLength;
     }
     private _entityVersion: number[];
     private _destroyEntityId: number[];
@@ -75,33 +106,39 @@ export class Domain<T extends SupportNetDataType = any> {
     private _internalMsgMng: MessageManager<T>;
     public readonly readonlyInternalMsgMng!: MessageManager<T>;
 
-    public constructor(
-        public dataBufCtr: { new (...args: any[]): IDataBuffer<T> },
-        readonly type: RpcType,
-        public capacity = 50,
-        public autoResize = true
-    ) {
-        this._entities = new Array<Entity>(capacity);
-        this._entityVersion = new Array<number>(capacity);
+    private _fixedSecAccumulator = 0;
+
+    private readonly _option: DomainOption<T>;
+    get option() {
+        return this._option as Required<Readonly<DomainOption<T>>>;
+    }
+    //#endregion
+    public constructor(option: DomainOption<T>) {
+        var requiredOption = HandleDomainDefautlValue(option);
+        this._option = requiredOption;
+        this._entities = new Array<Entity>(requiredOption.capacity);
+        this._entityVersion = new Array<number>(requiredOption.capacity);
         this._entityVersion.fill(0);
         this._destroyEntityId = new Array<number>();
         this._internalMsgMng = new MessageManager(
-            new dataBufCtr(),
-            new dataBufCtr(),
-            new dataBufCtr()
+            new requiredOption.dataBufCtr(),
+            new requiredOption.dataBufCtr(),
+            new requiredOption.dataBufCtr()
         );
         this.readonlyInternalMsgMng = this._internalMsgMng;
     }
 
+    //#region public methods
     reg(entity: Entity) {
         if (this.isValid(entity))
             throw new EntityRepeatRegisteredError(entity.toString());
-        if (this._entityIdCursor == this.capacity) {
-            if (this.autoResize) {
-                this.resize(Math.ceil(this.capacity * 1.5));
+        if (this._entityIdCursor == this._option.capacity) {
+            if (this._option.autoResize) {
+                this.resize(Math.ceil(this._option.capacity * 1.5));
             } else
                 throw new EntityGroupOutOfRangeYouCanOpenAutoResize(
-                    `Domain: capacity: ${this.capacity}; ` + entity.toString()
+                    `Domain: capacity: ${this._option.capacity}; ` +
+                        entity.toString()
                 );
         }
 
@@ -109,13 +146,6 @@ export class Domain<T extends SupportNetDataType = any> {
         const version = this._entityVersion[id];
         this._reg(entity, id, version);
         entity["_init"](this);
-    }
-
-    private _reg(entity: Entity, id: number, version: number) {
-        entity["_id"] = id;
-        entity["_version"] = version;
-        const index = this._getEntityIndexById(entity.id);
-        this._entities[index] = entity;
     }
 
     hasReg(entity: Entity) {
@@ -137,11 +167,6 @@ export class Domain<T extends SupportNetDataType = any> {
         this.unregWithoutValidation(entity);
     }
 
-    private _unreg(entity: Entity) {
-        entity["_id"] = NULL_NUM;
-        entity["_version"] = NULL_NUM;
-    }
-
     get(id: number) {
         const domainId = id & DOMAIN_MAX_INDEX;
         if (domainId != this._index) return null;
@@ -153,11 +178,11 @@ export class Domain<T extends SupportNetDataType = any> {
     }
 
     resize(newSize: number) {
-        const oldSize = this.capacity;
+        const oldSize = this._option.capacity;
         this._entities.length = newSize;
         this._entityVersion.length = newSize;
         this._entityVersion.fill(0, oldSize, newSize);
-        this.capacity = newSize;
+        this._option.capacity = newSize;
     }
 
     isValid(entity: Entity) {
@@ -169,8 +194,124 @@ export class Domain<T extends SupportNetDataType = any> {
         );
     }
 
+    asData(): T {
+        const isServer = this._option.type == RpcType.SERVER;
+        const outBuf = this._internalMsgMng.inoutbuffer;
+        const stateBuf = this._internalMsgMng.statebuffer;
+        const rpcBuf = this._internalMsgMng.rpcbuffer;
+
+        outBuf.reset();
+
+        if (isServer) {
+            this._internalMsgMng.startSendEntityAndComps();
+            this._internalMsgMng.startSendRpc();
+
+            this._serEntityAndComps();
+            const stateLen = stateBuf.writerCursor;
+            const rpcLen = rpcBuf.writerCursor;
+
+            outBuf
+                .writeBoolean(isServer)
+                .writeUlong(stateLen)
+                .writeUlong(rpcLen)
+                .append(stateBuf)
+                .append(rpcBuf);
+
+            this._internalMsgMng.endSendEntityAndComps();
+            this._internalMsgMng.endSendRpc();
+        } else {
+            this._internalMsgMng.startSendRpc();
+
+            const rpcLen = rpcBuf.writerCursor;
+
+            outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
+
+            this._internalMsgMng.endSendRpc();
+        }
+
+        return outBuf.get();
+    }
+
+    setData(source: T) {
+        const inBuf = this._internalMsgMng.inoutbuffer;
+        const stateBuf = this._internalMsgMng.statebuffer;
+        const rpcBuf = this._internalMsgMng.rpcbuffer;
+
+        inBuf.set(source);
+        const isServer = inBuf.readBoolean();
+
+        if (isServer) {
+            const stateLen = inBuf.readUlong();
+            const rpcLen = inBuf.readUlong();
+
+            const stateStart = inBuf.readerCursor;
+            const stateEnd = stateStart + stateLen;
+
+            const rpcStart = stateEnd;
+            const rpcEnd = rpcStart + rpcLen;
+
+            stateBuf.set(source, stateStart, stateEnd);
+            rpcBuf.set(source, rpcStart, rpcEnd);
+
+            this._internalMsgMng.startRecvEntityAndComps();
+            this._derEntityAndComps();
+            this._internalMsgMng.endRecvEntityAndComps();
+
+            this._internalMsgMng.startRecvRpc();
+            this._deserRpcs();
+            this._internalMsgMng.endRecvRpc();
+        } else {
+            const rpcLen = inBuf.readUlong();
+
+            const rpcStart = inBuf.readerCursor;
+            const rpcEnd = rpcStart + rpcLen + 1;
+
+            rpcBuf.set(source, rpcStart, rpcEnd);
+
+            this._internalMsgMng.startRecvRpc();
+            this._deserRpcs();
+            this._internalMsgMng.endRecvRpc();
+        }
+    }
+
+    update(dtSec: number) {
+        this._fixedSecAccumulator += dtSec;
+        while (this._fixedSecAccumulator > this.option.fixedTimeSec) {
+            this._fixedSecAccumulator -= this.option.fixedTimeSec;
+            for (let i = 0, len = this._entitiesLength; i < len; i++) {
+                const ent = this._entities[i];
+                if (!ent) continue;
+                ent["_fixedUpdate"](this.option.fixedTimeSec, this);
+            }
+        }
+
+        for (let i = 0, len = this._entitiesLength; i < len; i++) {
+            const ent = this._entities[i];
+            if (!ent) continue;
+            ent["_update"](dtSec, this);
+        }
+    }
+    //#endregion
+
+    //#region protected methods
+    protected _reg(entity: Entity, id: number, version: number) {
+        entity["_id"] = id;
+        entity["_version"] = version;
+        const index = this._getEntityIndexById(entity.id);
+        this._entities[index] = entity;
+        if (index >= this._entitiesLength) {
+            this._entitiesLength = index + 1;
+        }
+    }
+
+    protected _unreg(entity: Entity) {
+        entity["_id"] = NULL_NUM;
+        entity["_version"] = NULL_NUM;
+    }
+
     protected _serEntityAndComps() {
-        for (let ent of this._entities) {
+        for (let i = 0, len = this._entitiesLength; i < len; i++) {
+            const ent = this._entities[i];
             if (!ent) continue;
             this._internalMsgMng.sendEntity(ent, false);
             const comps = ent.comps;
@@ -251,93 +392,14 @@ export class Domain<T extends SupportNetDataType = any> {
         }
     }
 
-    asData(): T {
-        const isServer = this.type == RpcType.SERVER;
-        const outBuf = this._internalMsgMng.inoutbuffer;
-        const stateBuf = this._internalMsgMng.statebuffer;
-        const rpcBuf = this._internalMsgMng.rpcbuffer;
-
-        outBuf.reset();
-
-        if (isServer) {
-            this._internalMsgMng.startSendEntityAndComps();
-            this._internalMsgMng.startSendRpc();
-
-            this._serEntityAndComps();
-            const stateLen = stateBuf.writerCursor;
-            const rpcLen = rpcBuf.writerCursor;
-
-            outBuf
-                .writeBoolean(isServer)
-                .writeUlong(stateLen)
-                .writeUlong(rpcLen)
-                .append(stateBuf)
-                .append(rpcBuf);
-
-            this._internalMsgMng.endSendEntityAndComps();
-            this._internalMsgMng.endSendRpc();
-        } else {
-            this._internalMsgMng.startSendRpc();
-
-            const rpcLen = rpcBuf.writerCursor;
-
-            outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
-
-            this._internalMsgMng.endSendRpc();
-        }
-
-        return outBuf.get();
-    }
-
-    setData(source: T) {
-        const inBuf = this._internalMsgMng.inoutbuffer;
-        const stateBuf = this._internalMsgMng.statebuffer;
-        const rpcBuf = this._internalMsgMng.rpcbuffer;
-
-        inBuf.set(source);
-        const isServer = inBuf.readBoolean();
-
-        if (isServer) {
-            const stateLen = inBuf.readUlong();
-            const rpcLen = inBuf.readUlong();
-
-            const stateStart = inBuf.readerCursor;
-            const stateEnd = stateStart + stateLen;
-
-            const rpcStart = stateEnd;
-            const rpcEnd = rpcStart + rpcLen;
-
-            stateBuf.set(source, stateStart, stateEnd);
-            rpcBuf.set(source, rpcStart, rpcEnd);
-
-            this._internalMsgMng.startRecvEntityAndComps();
-            this._derEntityAndComps();
-            this._internalMsgMng.endRecvEntityAndComps();
-
-            this._internalMsgMng.startRecvRpc();
-            this._deserRpcs();
-            this._internalMsgMng.endRecvRpc();
-        } else {
-            const rpcLen = inBuf.readUlong();
-
-            const rpcStart = inBuf.readerCursor;
-            const rpcEnd = rpcStart + rpcLen + 1;
-
-            rpcBuf.set(source, rpcStart, rpcEnd);
-
-            this._internalMsgMng.startRecvRpc();
-            this._deserRpcs();
-            this._internalMsgMng.endRecvRpc();
-        }
-    }
-
-    private _getEntityIndexById(id: number) {
+    protected _getEntityIndexById(id: number) {
         return id >> DOMAIN_INDEX_BITS;
     }
 
-    private _getEntityId() {
+    protected _getEntityId() {
         return this._destroyEntityId.length > 0
             ? this._destroyEntityId.unshift()
             : (this._entityIdCursor++ << DOMAIN_INDEX_BITS) + this._index;
     }
+    //#endregion
 }
