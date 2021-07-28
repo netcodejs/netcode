@@ -48,7 +48,7 @@ export function Rpc<RpcReturnType extends void | DataType = void>(
 
 export function RpcVar(type: DataType) {
     return function (
-        t: any,
+        t: IComp,
         propertyKey: string,
         parameterIndex: number
     ): void {

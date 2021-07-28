@@ -16,6 +16,7 @@ import {
     getSchemaByPrototype,
     IComp,
     StringDataBuffer,
+    RpcVar,
 } from "../src";
 
 @NetComp("view")
@@ -60,8 +61,13 @@ export class LogicComponent extends IComp {
     ze: string[] = [];
 
     @Rpc(RpcType.SERVER)
-    abcv() {
+    activate() {
         this.alive = true;
+    }
+
+    @Rpc(RpcType.SERVER)
+    setActive(@RpcVar(DataType.BOOL) inActive: boolean) {
+        this.alive = inActive;
     }
 }
 
@@ -362,7 +368,7 @@ describe("rpc", () => {
         const serverEnt0 = new Entity(serverLogic0);
         server.reg(serverEnt0);
 
-        serverLogic0.abcv();
+        serverLogic0.activate();
 
         const client = Domain.Create("deser-domain", {
             type: RpcType.CLIENT,
@@ -377,12 +383,20 @@ describe("rpc", () => {
         client.setData(server.asData());
         expect(clientLogic0.alive).toEqual(false);
 
-        clientLogic0.abcv();
+        clientLogic0.activate();
         // cs
         server.setData(client.asData());
         // sc
         client.setData(server.asData());
         expect(clientLogic0.alive).toEqual(true);
+
+        clientLogic0.setActive(false);
+        expect(clientLogic0.alive).toEqual(true);
+        // cs
+        server.setData(client.asData());
+        // sc
+        client.setData(server.asData());
+        expect(clientLogic0.alive).toEqual(false);
     });
 });
 
