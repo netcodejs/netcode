@@ -7,7 +7,7 @@ import {
     Domain,
     Entity,
     NetArr,
-    NetComp,
+    NetSerable,
     NetVar,
     NONE_CONTAINER,
     Rpc,
@@ -17,9 +17,10 @@ import {
     IComp,
     StringDataBuffer,
     RpcVar,
+    Float,
 } from "../src";
 
-@NetComp("view")
+@NetSerable("view")
 export class ViewComponent extends IComp {
     @NetVar(DataType.INT)
     width: number = 0;
@@ -27,7 +28,7 @@ export class ViewComponent extends IComp {
     height: number = 0;
 }
 
-@NetComp("reverseView")
+@NetSerable("reverseView")
 export class ReverseViewComponent extends IComp {
     @NetVar(DataType.INT)
     height: number = 0;
@@ -43,15 +44,15 @@ export class ViewComponentNoDecoration extends IComp {
     height: number = 0;
 }
 
-@NetComp("vec")
+@NetSerable("vec")
 export class Vector {
     @NetVar(DataType.FLOAT)
     x: number = 0;
-    @NetVar(DataType.FLOAT)
-    y: number = 0;
+    @NetVar(Float)
+    y: Float = new Float(0);
 }
 
-@NetComp("logic")
+@NetSerable("logic")
 export class LogicComponent extends IComp {
     @NetVar(DataType.BOOL)
     alive: boolean = false;
@@ -71,19 +72,19 @@ export class LogicComponent extends IComp {
     }
 }
 
-@NetComp("arr")
+@NetSerable("arr")
 class ArrComp extends IComp {
     @NetArr(DataType.FLOAT)
     arr: number[] = [];
 }
 
-@NetComp("lenArr")
+@NetSerable("lenArr")
 class LengthArrComp extends ArrComp {
     @NetVar(DataType.INT)
     length: number = 0;
 }
 
-@NetComp("lenArr")
+@NetSerable("lenArr")
 class DynamicArrComp extends LengthArrComp {
     @NetVar(DataType.INT)
     opcaity: number = 10;
@@ -336,7 +337,7 @@ describe("Serable", () => {
         const serEnt1 = new Entity(serLogic);
         serDomain.reg(serEnt1);
         serLogic.pos.x = 123;
-        serLogic.pos.y = 456;
+        serLogic.pos.y.value = 456;
 
         const data = serDomain.asData();
 
@@ -352,7 +353,7 @@ describe("Serable", () => {
         expect(deserEnt1.$comps.logic).toMatchObject({
             pos: {
                 x: 123,
-                y: 456,
+                y: { value: 456 },
             },
         });
     });

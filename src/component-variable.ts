@@ -24,7 +24,7 @@ function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
     return akey > bkey ? 1 : -1;
 }
 
-export function NetComp(name: string, genSerable = true) {
+export function NetSerable(name: string, genSerable = true) {
     return function <T>(target: { new (): T }) {
         const s = getOrCreateScheme(target.prototype);
         s.name = name;
