@@ -3,7 +3,7 @@
   "version": "0.0.7",
   "description": "A js game framework for state-synchronization.",
   "module": "dist/netcode.esm.js",
-  "exports": "dist/netcode.cjs.js",
+  "exports": "./dist/netcode.cjs.js",
   "main": "dist/netcode.cjs.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/netcodejs/netcode",

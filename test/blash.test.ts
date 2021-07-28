@@ -43,7 +43,7 @@ export class ViewComponentNoDecoration extends IComp {
 }
 
 @NetComp("vec")
-export class VectorComponent extends IComp {
+export class Vector {
     @NetVar(DataType.FLOAT)
     x: number = 0;
     @NetVar(DataType.FLOAT)
@@ -54,8 +54,8 @@ export class VectorComponent extends IComp {
 export class LogicComponent extends IComp {
     @NetVar(DataType.BOOL)
     alive: boolean = false;
-    @NetVar(VectorComponent)
-    pos: VectorComponent = new VectorComponent();
+    @NetVar(Vector)
+    pos: Vector = new Vector();
     @NetArr(DataType.STRING)
     ze: string[] = [];
 
@@ -115,14 +115,14 @@ describe("SchemaAndClassId", () => {
                 1: {
                     type: {
                         dataType: DataTypeObect,
-                        refCtr: VectorComponent,
+                        refCtr: Vector,
                         container: NONE_CONTAINER,
                     },
                     paramIndex: 1,
                     propertyKey: "pos",
                 },
                 pos: {
-                    type: { refCtr: VectorComponent },
+                    type: { refCtr: Vector },
                 },
                 2: {
                     type: {

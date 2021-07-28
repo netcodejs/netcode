@@ -1,3 +1,4 @@
+import { IComp } from "./base";
 import {
     DataType,
     DataTypeVoid,
@@ -13,7 +14,7 @@ export function Rpc<RpcReturnType extends void | DataType = void>(
     type: RpcType,
     returnType?: RpcReturnType
 ) {
-    return function (t: any, propertyKey: string): void {
+    return function (t: IComp, propertyKey: string): void {
         // gen schema
         const s = getOrCreateScheme(t);
         if (!s.methods[propertyKey]) {
