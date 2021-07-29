@@ -7,7 +7,6 @@ import {
     SCHEME_KEY,
 } from "./comp-schema";
 import { IDatabufferWriter, IDataBufferReader } from "./data/serializable";
-import { Domain } from "./domain";
 import { NONE_CONTAINER } from "./macro";
 
 export function fixupSerable<T extends Record<string, any>>(target: {
@@ -341,7 +340,7 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
             this: IComp & ISchema & Record<string, Function>,
             ...args: any[]
         ) {
-            const domain = Domain.GetByEntity(this.entity);
+            const domain = this.domain;
             if (domain == null) {
                 console.warn("Domain is not valid!");
                 return;

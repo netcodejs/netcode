@@ -20,9 +20,6 @@ class DomainDuplicated extends Error {}
 class DomainLengthLimit extends Error {}
 class DomainCompCountNotMatch extends Error {}
 
-const DOMAIN_INDEX_BITS = 2;
-const DOMAIN_MAX_INDEX = (1 << DOMAIN_INDEX_BITS) - 1;
-
 export type DomainConstructorParamters<TT extends new (...args: any) => any> =
     TT extends new (_: any, ...args: infer P) => Domain ? P : never;
 
@@ -60,9 +57,6 @@ export class Domain<T extends SupportNetDataType = any> {
         if (this._name2domainMap.has(name)) {
             throw new DomainDuplicated(name);
         }
-        if (this._name2domainMap.readonlyValues.length >= DOMAIN_MAX_INDEX) {
-            throw new DomainLengthLimit();
-        }
         const news: Domain<T> = new Domain(option);
         const domainIndex = this._name2domainMap.set(name, news);
         news._index = domainIndex;
@@ -74,7 +68,7 @@ export class Domain<T extends SupportNetDataType = any> {
     }
 
     static GetByEntity(entity: Entity) {
-        const domainIndex = entity.id & DOMAIN_MAX_INDEX;
+        const domainIndex = entity.id;
         const domain = this._name2domainMap.values[domainIndex];
         if (domain.isValid(entity)) {
             return domain;
@@ -156,7 +150,7 @@ export class Domain<T extends SupportNetDataType = any> {
     }
 
     unregWithoutValidation(entity: Entity) {
-        const index = this._getEntityIndexById(entity.id);
+        const index = entity.id;
         this._entityVersion[index]++;
         this._unreg(entity);
         this._destroyEntityId.push(entity.id);
@@ -171,13 +165,7 @@ export class Domain<T extends SupportNetDataType = any> {
     }
 
     get(id: number) {
-        const domainId = id & DOMAIN_MAX_INDEX;
-        if (domainId != this._index) return null;
-        return this.getWithoutCheck(id);
-    }
-
-    getWithoutCheck(id: number) {
-        return this._entities[this._getEntityIndexById(id)];
+        return this._entities[id];
     }
 
     resize(newSize: number) {
@@ -192,8 +180,7 @@ export class Domain<T extends SupportNetDataType = any> {
         return (
             entity.id != NULL_NUM &&
             entity.version != NULL_NUM &&
-            entity.version ==
-                this._entityVersion[this._getEntityIndexById(entity.id)]
+            entity.version == this._entityVersion[entity.id]
         );
     }
 
@@ -294,13 +281,15 @@ export class Domain<T extends SupportNetDataType = any> {
             ent["_update"](dtSec, this);
         }
     }
+
     //#endregion
 
     //#region protected methods
     protected _reg(entity: Entity, id: number, version: number) {
         entity["_id"] = id;
         entity["_version"] = version;
-        const index = this._getEntityIndexById(entity.id);
+        entity["_domain"] = this;
+        const index = entity.id;
         this._entities[index] = entity;
         if (index >= this._entitiesLength) {
             this._entitiesLength = index + 1;
@@ -310,6 +299,7 @@ export class Domain<T extends SupportNetDataType = any> {
     protected _unreg(entity: Entity) {
         entity["_id"] = NULL_NUM;
         entity["_version"] = NULL_NUM;
+        entity["_domain"] = undefined;
     }
 
     protected _serEntityAndComps() {
@@ -339,7 +329,7 @@ export class Domain<T extends SupportNetDataType = any> {
     protected _derEntityAndComps() {
         let params: MessageEntityInfo | null;
         while ((params = this._internalMsgMng.recvEntity())) {
-            let ent = this._entities[this._getEntityIndexById(params.entityId)];
+            let ent = this._entities[params.entityId];
             if (ent && ent.version != params.entityVersion) {
                 this.unreg(ent);
                 ent = null;
@@ -383,7 +373,7 @@ export class Domain<T extends SupportNetDataType = any> {
     protected _deserRpcs() {
         let param: MessageRpcInfo | null;
         while ((param = this._internalMsgMng.recvRpc())) {
-            const ent = this.getWithoutCheck(param.entityId);
+            const ent = this.get(param.entityId);
             if (!ent) continue;
             const comp = ent.comps[param.compIdx] as any;
             if (!comp) continue;
@@ -395,14 +385,10 @@ export class Domain<T extends SupportNetDataType = any> {
         }
     }
 
-    protected _getEntityIndexById(id: number) {
-        return id >> DOMAIN_INDEX_BITS;
-    }
-
     protected _getEntityId() {
         return this._destroyEntityId.length > 0
             ? this._destroyEntityId.unshift()
-            : (this._entityIdCursor++ << DOMAIN_INDEX_BITS) + this._index;
+            : this._entityIdCursor++;
     }
     //#endregion
 }

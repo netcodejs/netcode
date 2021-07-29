@@ -9,6 +9,9 @@ export abstract class IComp {
     get entity() {
         return this._entity!;
     }
+    get domain() {
+        return this._entity!.domain;
+    }
     get $comps() {
         return this._entity!.$comps;
     }
@@ -50,6 +53,10 @@ export class Entity<ProxyObj extends Object = any> {
     private _version = NULL_NUM;
     get version() {
         return this._version;
+    }
+    private _domain?: Domain;
+    get domain() {
+        return this._domain!;
     }
     static Event = {
         REG_ENTITY: "reg-entity",

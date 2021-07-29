@@ -88,6 +88,7 @@ var StateSync = (function (exports) {
 
     var NULL_NUM = -1;
     var NULL_STR = "";
+    var NONE_CONTAINER = 0;
 
     var RpcType;
     (function (RpcType) {
@@ -562,6 +563,43 @@ var StateSync = (function (exports) {
         return Entity;
     })();
 
+    var LogicTime = /** @class */ (function (_super) {
+        __extends(LogicTime, _super);
+        function LogicTime() {
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.delta = 0;
+            _this.duration = 0;
+            return _this;
+        }
+        __decorate(
+            [NetVar(DataType.FLOAT)],
+            LogicTime.prototype,
+            "delta",
+            void 0
+        );
+        __decorate(
+            [NetVar(DataType.DOUBLE)],
+            LogicTime.prototype,
+            "duration",
+            void 0
+        );
+        LogicTime = __decorate([NetSerable("logic_time")], LogicTime);
+        return LogicTime;
+    })(IComp);
+    var RenderTime = /** @class */ (function (_super) {
+        __extends(RenderTime, _super);
+        function RenderTime() {
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.delta = 0;
+            _this.duration = 0;
+            return _this;
+        }
+        RenderTime = __decorate([NetSerable("render_time")], RenderTime);
+        return RenderTime;
+    })(IComp);
+
     var MessageType;
     (function (MessageType) {
         MessageType[(MessageType["UPDATE_COMPONENT"] = 0)] = "UPDATE_COMPONENT";
@@ -873,43 +911,6 @@ var StateSync = (function (exports) {
         };
         return StringDataBuffer;
     })();
-
-    var LogicTime = /** @class */ (function (_super) {
-        __extends(LogicTime, _super);
-        function LogicTime() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
-            _this.delta = 0;
-            _this.duration = 0;
-            return _this;
-        }
-        __decorate(
-            [NetVar(DataType.FLOAT)],
-            LogicTime.prototype,
-            "delta",
-            void 0
-        );
-        __decorate(
-            [NetVar(DataType.DOUBLE)],
-            LogicTime.prototype,
-            "duration",
-            void 0
-        );
-        LogicTime = __decorate([NetSerable("logic_time")], LogicTime);
-        return LogicTime;
-    })(IComp);
-    var RenderTime = /** @class */ (function (_super) {
-        __extends(RenderTime, _super);
-        function RenderTime() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
-            _this.delta = 0;
-            _this.duration = 0;
-            return _this;
-        }
-        RenderTime = __decorate([NetSerable("render_time")], RenderTime);
-        return RenderTime;
-    })(IComp);
 
     var EntityNotValidError = /** @class */ (function (_super) {
         __extends(EntityNotValidError, _super);
@@ -1306,61 +1307,6 @@ var StateSync = (function (exports) {
         return Domain;
     })();
 
-    var WhyPropertyKeyHasTheSameError = /** @class */ (function (_super) {
-        __extends(WhyPropertyKeyHasTheSameError, _super);
-        function WhyPropertyKeyHasTheSameError() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return WhyPropertyKeyHasTheSameError;
-    })(Error);
-    function sortComponentPropertyKey(a, b) {
-        var akey = a.propertyKey;
-        var bkey = b.propertyKey;
-        if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
-        return akey > bkey ? 1 : -1;
-    }
-    function NetSerable(name, genSerable) {
-        if (genSerable === void 0) {
-            genSerable = true;
-        }
-        return function (target) {
-            var s = getOrCreateScheme(target.prototype);
-            s.name = name;
-            s.hash = crc32.str(name);
-            hash2compName[s.hash] = s.name;
-            compName2ctr[s.name] = target;
-            s.count = s.raw.length;
-            if (s.count > 0) {
-                s.raw.sort(sortComponentPropertyKey);
-                for (var paramIndex = 0; paramIndex < s.count; paramIndex++) {
-                    var v = s.raw[paramIndex];
-                    v.paramIndex = paramIndex;
-                    s.props[paramIndex] = v;
-                    s.props[v.propertyKey] = v;
-                }
-            }
-            if (genSerable) {
-                {
-                    fixupSerableJIT(target.prototype);
-                }
-            }
-        };
-    }
-    var NONE_CONTAINER = 0;
-    function NetVar(type) {
-        return function (t, propertyKey) {
-            var s = getOrCreateScheme(t);
-            s.raw.push({
-                paramIndex: -1,
-                propertyKey: String(propertyKey),
-                type: {
-                    container: NONE_CONTAINER,
-                    dataType: typeof type === "number" ? type : DataTypeObect,
-                    refCtr: typeof type === "number" ? undefined : type,
-                },
-            });
-        };
-    }
     function fixupSerableJIT(prototype) {
         var schema = prototype[SCHEME_KEY];
         fixedupSerableStateJit(prototype, schema);
@@ -1562,6 +1508,61 @@ var StateSync = (function (exports) {
         for (var i = 0, len = rpcNames.length; i < len; i++) {
             _loop_1(i);
         }
+    }
+
+    var WhyPropertyKeyHasTheSameError = /** @class */ (function (_super) {
+        __extends(WhyPropertyKeyHasTheSameError, _super);
+        function WhyPropertyKeyHasTheSameError() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return WhyPropertyKeyHasTheSameError;
+    })(Error);
+    function sortComponentPropertyKey(a, b) {
+        var akey = a.propertyKey;
+        var bkey = b.propertyKey;
+        if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
+        return akey > bkey ? 1 : -1;
+    }
+    function NetSerable(name, genSerable) {
+        if (genSerable === void 0) {
+            genSerable = true;
+        }
+        return function (target) {
+            var s = getOrCreateScheme(target.prototype);
+            s.name = name;
+            s.hash = crc32.str(name);
+            hash2compName[s.hash] = s.name;
+            compName2ctr[s.name] = target;
+            s.count = s.raw.length;
+            if (s.count > 0) {
+                s.raw.sort(sortComponentPropertyKey);
+                for (var paramIndex = 0; paramIndex < s.count; paramIndex++) {
+                    var v = s.raw[paramIndex];
+                    v.paramIndex = paramIndex;
+                    s.props[paramIndex] = v;
+                    s.props[v.propertyKey] = v;
+                }
+            }
+            if (genSerable) {
+                {
+                    fixupSerableJIT(target.prototype);
+                }
+            }
+        };
+    }
+    function NetVar(type) {
+        return function (t, propertyKey) {
+            var s = getOrCreateScheme(t);
+            s.raw.push({
+                paramIndex: -1,
+                propertyKey: String(propertyKey),
+                type: {
+                    container: NONE_CONTAINER,
+                    dataType: typeof type === "number" ? type : DataTypeObect,
+                    refCtr: typeof type === "number" ? undefined : type,
+                },
+            });
+        };
     }
 
     var Crc32PropertyKeyHashConflict = /** @class */ (function (_super) {

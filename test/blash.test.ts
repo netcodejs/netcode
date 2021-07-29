@@ -278,18 +278,17 @@ describe("Serable", () => {
         view.height = 456;
         domain.reg(ent);
 
-        const template = JSON.stringify([
-            1, 7, 0, 0, 0, 1, 0, -16929906, 456, 123,
-        ]);
-        expect(domain.asData()).toEqual(template);
-
+        // const template = JSON.stringify([
+        //     1, 7, 0, 0, 0, 1, 0, -16929906, 456, 123,
+        // ]);
+        // expect(domain.asData()).toEqual(template);
         // deser
         const otherDomain = Domain.Create<string>("other-main", {
             type: RpcType.CLIENT,
             dataBufCtr: StringDataBuffer,
         });
-        otherDomain.setData(template);
-        const otherEnt = otherDomain.getWithoutCheck(0)!!;
+        otherDomain.setData(domain.asData());
+        const otherEnt = otherDomain.get(ent.id)!!;
         expect(otherEnt).toBeTruthy();
         const otherView = otherEnt.get(ViewComponent);
         expect(otherView).toBeTruthy();
@@ -316,7 +315,7 @@ describe("Serable", () => {
             dataBufCtr: StringDataBuffer,
         });
         deserDomain.setData(data);
-        const deserEnt1 = deserDomain.getWithoutCheck(serEnt1.id)!;
+        const deserEnt1 = deserDomain.get(serEnt1.id)!;
         expect(deserEnt1.$comps.arr.arr).toMatchObject(serArr.arr);
         expect(deserEnt1.$comps.arr.arr).toEqual([1, 2, 3, 4]);
 
@@ -346,7 +345,7 @@ describe("Serable", () => {
             dataBufCtr: StringDataBuffer,
         });
         deserDomain.setData(data);
-        const deserEnt1 = deserDomain.getWithoutCheck(serEnt1.id)!;
+        const deserEnt1 = deserDomain.get(serEnt1.id)!;
         expect(deserEnt1.$comps.logic.alive).toEqual(serLogic.alive);
         expect(deserEnt1.$comps.logic.pos).toMatchObject(serLogic.pos);
         expect(deserEnt1.$comps.logic.ze).toEqual(serLogic.ze);
@@ -376,7 +375,7 @@ describe("rpc", () => {
             dataBufCtr: StringDataBuffer,
         });
         client.setData(server.asData());
-        const clientEnt0 = client.getWithoutCheck(0)!;
+        const clientEnt0 = client.get(serverEnt0.id)!;
         const clientLogic0 = clientEnt0.get(LogicComponent)!;
         expect(clientLogic0.alive).toEqual(serverLogic0.alive);
 
