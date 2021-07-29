@@ -2,14 +2,14 @@ import {
     DataType,
     IComp,
     Int,
-    NetComp,
+    NetSerable,
     NetVar,
     Rpc,
     RpcType,
     RpcVar,
 } from "../src";
 
-@NetComp("vec")
+@NetSerable("vec")
 export class Vector extends IComp {
     @NetVar(DataType.INT)
     x: number = 0;
@@ -17,7 +17,7 @@ export class Vector extends IComp {
     y: number = 0;
 }
 
-@NetComp("trans")
+@NetSerable("trans")
 export class Transform extends IComp {
     @NetVar(Vector)
     pos = new Vector();
@@ -32,7 +32,7 @@ export class Transform extends IComp {
     }
 }
 
-@NetComp("view")
+@NetSerable("view")
 export class View extends IComp {
     @NetVar(DataType.INT)
     color = 0xffffff;
@@ -41,9 +41,33 @@ export class View extends IComp {
     changeColor(@RpcVar(DataType.INT) inColor: number) {
         this.color = inColor;
     }
+
+    private _ctx?: CanvasRenderingContext2D;
+
+    bindCanvas(ctx: CanvasRenderingContext2D) {
+        this._ctx = ctx;
+    }
+
+    update() {
+        const trs = this.get(Transform);
+        const view = this.get(View);
+        if (!this._ctx || !trs || !view) return;
+        this.drawBall(this._ctx, trs.pos, "#" + view.color.toString(16));
+    }
+
+    protected drawBall(
+        ctx: CanvasRenderingContext2D,
+        pos: Vector,
+        color: string
+    ) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 26, 0, 2 * Math.PI);
+        ctx.fill();
+    }
 }
 
-@NetComp("time")
+@NetSerable("time")
 export class ServerTime extends IComp {
     @NetVar(DataType.INT)
     timestamp: number = 0;

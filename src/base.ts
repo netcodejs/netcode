@@ -1,4 +1,4 @@
-import { ISchema } from "./component-variable";
+import { ISchema } from "./comp-schema";
 import type { Domain } from "./domain";
 import { compName2ctr } from "./global-record";
 import { NULL_NUM } from "./macro";

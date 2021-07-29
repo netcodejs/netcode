@@ -405,6 +405,16 @@ var StateSync = (function (exports) {
             enumerable: false,
             configurable: true,
         });
+        Object.defineProperty(IComp.prototype, "$comps", {
+            get: function () {
+                return this._entity.$comps;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        IComp.prototype.get = function (ctr) {
+            return this._entity.get(ctr);
+        };
         return IComp;
     })();
     /**
@@ -524,16 +534,16 @@ var StateSync = (function (exports) {
                 c.init && c.init(domain, i);
             }
         };
-        Entity.prototype._update = function (domain) {
+        Entity.prototype._update = function (dt, domain) {
             for (var i = 0, len = this._comps.length; i < len; i++) {
                 var c = this._comps[i];
-                c.update && c.update(domain, i);
+                c.update && c.update(dt, domain, i);
             }
         };
-        Entity.prototype._fixedUpdate = function (domain) {
+        Entity.prototype._fixedUpdate = function (dt, domain) {
             for (var i = 0, len = this._comps.length; i < len; i++) {
                 var c = this._comps[i];
-                c.fixedUpdate && c.fixedUpdate(domain, i);
+                c.fixedUpdate && c.fixedUpdate(dt, domain, i);
             }
         };
         Entity.prototype._destroy = function (domain) {
@@ -864,6 +874,43 @@ var StateSync = (function (exports) {
         return StringDataBuffer;
     })();
 
+    var LogicTime = /** @class */ (function (_super) {
+        __extends(LogicTime, _super);
+        function LogicTime() {
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.delta = 0;
+            _this.duration = 0;
+            return _this;
+        }
+        __decorate(
+            [NetVar(DataType.FLOAT)],
+            LogicTime.prototype,
+            "delta",
+            void 0
+        );
+        __decorate(
+            [NetVar(DataType.DOUBLE)],
+            LogicTime.prototype,
+            "duration",
+            void 0
+        );
+        LogicTime = __decorate([NetSerable("logic_time")], LogicTime);
+        return LogicTime;
+    })(IComp);
+    var RenderTime = /** @class */ (function (_super) {
+        __extends(RenderTime, _super);
+        function RenderTime() {
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.delta = 0;
+            _this.duration = 0;
+            return _this;
+        }
+        RenderTime = __decorate([NetSerable("render_time")], RenderTime);
+        return RenderTime;
+    })(IComp);
+
     var EntityNotValidError = /** @class */ (function (_super) {
         __extends(EntityNotValidError, _super);
         function EntityNotValidError() {
@@ -929,6 +976,7 @@ var StateSync = (function (exports) {
         //#endregion
         function Domain(option) {
             this._index = -1;
+            this._entitiesLength = 0;
             this._entityIdCursor = 0;
             this._fixedSecAccumulator = 0;
             var requiredOption = HandleDomainDefautlValue(option);
@@ -943,6 +991,8 @@ var StateSync = (function (exports) {
                 new requiredOption.dataBufCtr()
             );
             this.readonlyInternalMsgMng = this._internalMsgMng;
+            this.time = new Entity(new LogicTime(), new RenderTime());
+            this.reg(this.time);
         }
         //#region static methods
         Domain.Create = function (name, option) {
@@ -988,6 +1038,13 @@ var StateSync = (function (exports) {
         Object.defineProperty(Domain.prototype, "entities", {
             get: function () {
                 return this._entities;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        Object.defineProperty(Domain.prototype, "length", {
+            get: function () {
+                return this._entitiesLength;
             },
             enumerable: false,
             configurable: true,
@@ -1119,6 +1176,19 @@ var StateSync = (function (exports) {
         };
         Domain.prototype.update = function (dtSec) {
             this._fixedSecAccumulator += dtSec;
+            while (this._fixedSecAccumulator > this.option.fixedTimeSec) {
+                this._fixedSecAccumulator -= this.option.fixedTimeSec;
+                for (var i = 0, len = this._entitiesLength; i < len; i++) {
+                    var ent = this._entities[i];
+                    if (!ent) continue;
+                    ent["_fixedUpdate"](this.option.fixedTimeSec, this);
+                }
+            }
+            for (var i = 0, len = this._entitiesLength; i < len; i++) {
+                var ent = this._entities[i];
+                if (!ent) continue;
+                ent["_update"](dtSec, this);
+            }
         };
         //#endregion
         //#region protected methods
@@ -1127,20 +1197,23 @@ var StateSync = (function (exports) {
             entity["_version"] = version;
             var index = this._getEntityIndexById(entity.id);
             this._entities[index] = entity;
+            if (index >= this._entitiesLength) {
+                this._entitiesLength = index + 1;
+            }
         };
         Domain.prototype._unreg = function (entity) {
             entity["_id"] = NULL_NUM;
             entity["_version"] = NULL_NUM;
         };
         Domain.prototype._serEntityAndComps = function () {
-            for (var _i = 0, _a = this._entities; _i < _a.length; _i++) {
-                var ent = _a[_i];
+            for (var i = 0, len = this._entitiesLength; i < len; i++) {
+                var ent = this._entities[i];
                 if (!ent) continue;
                 this._internalMsgMng.sendEntity(ent, false);
                 var comps = ent.comps;
                 for (
-                    var compIdx = 0, len = comps.length;
-                    compIdx < len;
+                    var compIdx = 0, len_1 = comps.length;
+                    compIdx < len_1;
                     compIdx++
                 ) {
                     var comp = comps[compIdx];
@@ -1246,7 +1319,7 @@ var StateSync = (function (exports) {
         if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
         return akey > bkey ? 1 : -1;
     }
-    function NetComp(name, genSerable) {
+    function NetSerable(name, genSerable) {
         if (genSerable === void 0) {
             genSerable = true;
         }
@@ -1593,7 +1666,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Int.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.INT)], Int.prototype, "value", null);
-        Int = __decorate([NetComp("Int")], Int);
+        Int = __decorate([NetSerable("Int")], Int);
         return Int;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1636,7 +1709,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Float.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.FLOAT)], Float.prototype, "value", null);
-        Float = __decorate([NetComp("Float")], Float);
+        Float = __decorate([NetSerable("Float")], Float);
         return Float;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1679,7 +1752,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Long.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.LONG)], Long.prototype, "value", null);
-        Long = __decorate([NetComp("Long")], Long);
+        Long = __decorate([NetSerable("Long")], Long);
         return Long;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1722,7 +1795,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Uint.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.uint)], Uint.prototype, "value", null);
-        Uint = __decorate([NetComp("Uint")], Uint);
+        Uint = __decorate([NetSerable("Uint")], Uint);
         return Uint;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1765,7 +1838,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Double.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.DOUBLE)], Double.prototype, "value", null);
-        Double = __decorate([NetComp("Double")], Double);
+        Double = __decorate([NetSerable("Double")], Double);
         return Double;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1808,7 +1881,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Ulong.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.ulong)], Ulong.prototype, "value", null);
-        Ulong = __decorate([NetComp("Ulong")], Ulong);
+        Ulong = __decorate([NetSerable("Ulong")], Ulong);
         return Ulong;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1851,7 +1924,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Short.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.SHORT)], Short.prototype, "value", null);
-        Short = __decorate([NetComp("Short")], Short);
+        Short = __decorate([NetSerable("Short")], Short);
         return Short;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1894,7 +1967,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Ushort.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.ushort)], Ushort.prototype, "value", null);
-        Ushort = __decorate([NetComp("Ulong")], Ushort);
+        Ushort = __decorate([NetSerable("Ulong")], Ushort);
         return Ushort;
     })(ADirty);
 
@@ -1933,7 +2006,7 @@ var StateSync = (function (exports) {
         }
         __decorate([NetVar(DataType.INT)], Vector.prototype, "x", void 0);
         __decorate([NetVar(DataType.INT)], Vector.prototype, "y", void 0);
-        Vector = __decorate([NetComp("vec")], Vector);
+        Vector = __decorate([NetSerable("vec")], Vector);
         return Vector;
     })(IComp);
     var Transform = /** @class */ (function (_super) {
@@ -1959,7 +2032,7 @@ var StateSync = (function (exports) {
             "serverMove",
             null
         );
-        Transform = __decorate([NetComp("trans")], Transform);
+        Transform = __decorate([NetSerable("trans")], Transform);
         return Transform;
     })(IComp);
     var View = /** @class */ (function (_super) {
@@ -1970,9 +2043,26 @@ var StateSync = (function (exports) {
             _this.color = 0xffffff;
             return _this;
         }
+        View_1 = View;
         View.prototype.changeColor = function (inColor) {
             this.color = inColor;
         };
+        View.prototype.bindCanvas = function (ctx) {
+            this._ctx = ctx;
+        };
+        View.prototype.update = function () {
+            var trs = this.get(Transform);
+            var view = this.get(View_1);
+            if (!this._ctx || !trs || !view) return;
+            this.drawBall(this._ctx, trs.pos, "#" + view.color.toString(16));
+        };
+        View.prototype.drawBall = function (ctx, pos, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 26, 0, 2 * Math.PI);
+            ctx.fill();
+        };
+        var View_1;
         __decorate([NetVar(DataType.INT)], View.prototype, "color", void 0);
         __decorate(
             [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.INT))],
@@ -1980,7 +2070,7 @@ var StateSync = (function (exports) {
             "changeColor",
             null
         );
-        View = __decorate([NetComp("view")], View);
+        View = View_1 = __decorate([NetSerable("view")], View);
         return View;
     })(IComp);
     var ServerTime = /** @class */ (function (_super) {
@@ -1999,7 +2089,7 @@ var StateSync = (function (exports) {
             void 0
         );
         __decorate([NetVar(Int)], ServerTime.prototype, "deltaTime", void 0);
-        ServerTime = __decorate([NetComp("time")], ServerTime);
+        ServerTime = __decorate([NetSerable("time")], ServerTime);
         return ServerTime;
     })(IComp);
 

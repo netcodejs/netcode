@@ -5,7 +5,7 @@ import {
     genMethodSchema,
     getOrCreateScheme,
     RpcType,
-} from "./component-schema";
+} from "./comp-schema";
 import { hash2RpcName } from "./global-record";
 import { str as hash } from "./lib/crc-32";
 

@@ -1,7 +1,7 @@
 import { composeVersion, decomposeVersion } from "./misc";
 import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
 import { Entity, IComp } from "./base";
-import { ISchema } from "./component-variable";
+import { ISchema } from "./comp-schema";
 
 export enum MessageType {
     UPDATE_COMPONENT,

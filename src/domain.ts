@@ -1,6 +1,6 @@
-import { RpcType } from "./component-schema";
-import { ISchema } from "./component-variable";
-import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
+import { LogicTime, RenderTime } from "./time";
+import { ISchema, RpcType } from "./comp-schema";
+import { IDataBuffer, SupportNetDataType } from "./data/serializable";
 import { Entity, IComp } from "./base";
 import { NULL_NUM } from "./macro";
 import {
@@ -107,6 +107,7 @@ export class Domain<T extends SupportNetDataType = any> {
     public readonly readonlyInternalMsgMng!: MessageManager<T>;
 
     private _fixedSecAccumulator = 0;
+    public readonly time: Entity;
 
     private readonly _option: DomainOption<T>;
     get option() {
@@ -126,6 +127,8 @@ export class Domain<T extends SupportNetDataType = any> {
             new requiredOption.dataBufCtr()
         );
         this.readonlyInternalMsgMng = this._internalMsgMng;
+        this.time = new Entity(new LogicTime(), new RenderTime());
+        this.reg(this.time);
     }
 
     //#region public methods

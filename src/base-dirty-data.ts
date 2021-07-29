@@ -1,5 +1,5 @@
-import { DataType } from "./component-schema";
-import { NetSerable, NetVar } from "./component-variable";
+import { DataType } from "./comp-schema";
+import { NetSerable, NetVar } from "./comp-decorator";
 import {
     IDataBufferReader,
     IDatabufferWriter,
