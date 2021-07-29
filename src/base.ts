@@ -9,6 +9,14 @@ export abstract class IComp {
     get entity() {
         return this._entity!;
     }
+    get $comps() {
+        return this._entity!.$comps;
+    }
+
+    get<T extends IComp>(ctr: { new (): T }): T | null {
+        return this._entity!.get(ctr);
+    }
+
     init?(domain: Domain, compIdx: number): void;
     update?(dt: number, domain: Domain, compIdx: number): void;
     fixedUpdate?(dt: number, domain: Domain, compIdx: number): void;
