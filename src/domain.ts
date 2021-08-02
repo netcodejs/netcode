@@ -1,5 +1,11 @@
-import { LogicTimeComp, RenderTimeComp, Role } from "./builtin-comp";
-import { DataTypeVoid, ISchema, RpcType, SCHEME_KEY } from "./comp-schema";
+import { LogicTimeComp, RenderTimeComp } from "./builtin-comp";
+import {
+    DataTypeVoid,
+    ISchema,
+    RpcType,
+    Role,
+    SCHEME_KEY,
+} from "./comp-schema";
 import { IDataBuffer, SupportNetDataType } from "./data/serializable";
 import { Entity } from "./entity";
 import { IComp } from "./comp-interface";
@@ -457,8 +463,9 @@ export class Domain<T extends SupportNetDataType = any> {
             const s = comp[SCHEME_KEY];
             const ms = s.methods[methodName];
             if (ms.returnType != DataTypeVoid) {
+                const w = param!;
                 unknown?.then((result: any) => {
-                    this._internalMsgMng.sendRpcCallback(param!);
+                    this._internalMsgMng.sendRpcCallback(w);
                     serValue(
                         ms.returnType,
                         result,

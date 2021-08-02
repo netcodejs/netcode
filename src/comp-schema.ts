@@ -28,12 +28,18 @@ export interface MethodSchema {
     paramCount: number;
     returnType: DataType;
     returnRefCtr?: any;
-    type: RpcType;
+    type: Role;
 }
 
 export enum RpcType {
     SERVER,
     CLIENT,
+}
+
+export enum Role {
+    AUTHORITY = 1,
+    SIMULATED_PROXY,
+    AUTONMOUS_PROXY,
 }
 
 // prettier-ignore

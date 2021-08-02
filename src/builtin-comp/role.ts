@@ -6,15 +6,9 @@ import {
     IDatabufferWriter,
     ISerable,
 } from "../data/serializable";
-import { DataType, RpcType } from "../comp-schema";
+import { DataType, Role } from "../comp-schema";
 
-export enum Role {
-    AUTHORITY = 0,
-    SIMULATED_PROXY,
-    AUTONMOUS_PROXY,
-}
-
-@NetSerable("role")
+@NetSerable("role", false)
 export class RoleComp extends IComp implements ISerable {
     //#region property
     @NetVar(Short)
@@ -48,7 +42,7 @@ export class RoleComp extends IComp implements ISerable {
     }
     //#endregion
 
-    @Rpc(RpcType.SERVER, DataType.BOOL)
+    @Rpc(Role.AUTHORITY, DataType.BOOL)
     async upgrade() {
         if (
             this.local != Role.AUTHORITY &&
@@ -60,7 +54,7 @@ export class RoleComp extends IComp implements ISerable {
         return false;
     }
 
-    @Rpc(RpcType.SERVER, DataType.BOOL)
+    @Rpc(Role.AUTHORITY, DataType.BOOL)
     async downgrade() {
         if (
             this.local != Role.AUTHORITY &&

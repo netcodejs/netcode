@@ -60,16 +60,6 @@ export class LogicComponent extends IComp {
     pos: Vector = new Vector();
     @NetArr(DataType.STRING)
     ze: string[] = [];
-
-    @Rpc(RpcType.SERVER)
-    activate() {
-        this.alive = true;
-    }
-
-    @Rpc(RpcType.SERVER)
-    setActive(@RpcVar(DataType.BOOL) inActive: boolean) {
-        this.alive = inActive;
-    }
 }
 
 @NetSerable("arr")
@@ -347,7 +337,10 @@ describe("Serable", () => {
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.get(serEnt1.id)!;
         expect(deserEnt1.$comps.logic.alive).toEqual(serLogic.alive);
-        expect(deserEnt1.$comps.logic.pos).toMatchObject(serLogic.pos);
+        expect(deserEnt1.$comps.logic.pos.x).toEqual(serLogic.pos.x);
+        expect(deserEnt1.$comps.logic.pos.y.value).toEqual(
+            serLogic.pos.y.value
+        );
         expect(deserEnt1.$comps.logic.ze).toEqual(serLogic.ze);
         expect(deserEnt1.$comps.logic).toMatchObject({
             pos: {
@@ -355,48 +348,6 @@ describe("Serable", () => {
                 y: { value: 456 },
             },
         });
-    });
-});
-
-describe("rpc", () => {
-    test("valid", () => {
-        const server = Domain.Create("ser-domain", {
-            type: RpcType.SERVER,
-            dataBufCtr: StringDataBuffer,
-        });
-        const serverLogic0 = new LogicComponent();
-        const serverEnt0 = new Entity(serverLogic0);
-        server.reg(serverEnt0);
-
-        serverLogic0.activate();
-
-        const client = Domain.Create("deser-domain", {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-        });
-        client.setData(server.asData());
-        const clientEnt0 = client.get(serverEnt0.id)!;
-        const clientLogic0 = clientEnt0.get(LogicComponent)!;
-        expect(clientLogic0.alive).toEqual(serverLogic0.alive);
-
-        serverLogic0.alive = false;
-        client.setData(server.asData());
-        expect(clientLogic0.alive).toEqual(false);
-
-        clientLogic0.activate();
-        // cs
-        server.setData(client.asData());
-        // sc
-        client.setData(server.asData());
-        expect(clientLogic0.alive).toEqual(true);
-
-        clientLogic0.setActive(false);
-        expect(clientLogic0.alive).toEqual(true);
-        // cs
-        server.setData(client.asData());
-        // sc
-        client.setData(server.asData());
-        expect(clientLogic0.alive).toEqual(false);
     });
 });
 

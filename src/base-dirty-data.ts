@@ -7,7 +7,8 @@ import {
 } from "./data/serializable";
 
 export abstract class ADirty<T> {
-    abstract value: T;
+    abstract get value(): T;
+    abstract set value(inValue: T);
     abstract dirty: boolean;
 
     getsetDirty(): boolean {
@@ -17,10 +18,10 @@ export abstract class ADirty<T> {
     }
 }
 
-@NetSerable("Int")
+@NetSerable("Int", false)
 export class Int extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
-    dirty: boolean = false;
+    dirty: boolean = true;
     private _value: number = 0;
     @NetVar(DataType.INT)
     get value() {
@@ -55,10 +56,10 @@ export class Int extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Float")
+@NetSerable("Float", false)
 export class Float extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
-    dirty: boolean = false;
+    dirty: boolean = true;
 
     private _value: number = 0;
     @NetVar(DataType.FLOAT)
@@ -93,10 +94,10 @@ export class Float extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Long")
+@NetSerable("Long", false)
 export class Long extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
-    dirty: boolean = false;
+    dirty: boolean = true;
 
     private _value: number = 0;
     @NetVar(DataType.LONG)
@@ -131,10 +132,10 @@ export class Long extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Uint")
+@NetSerable("Uint", false)
 export class Uint extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
-    dirty: boolean = false;
+    dirty: boolean = true;
     private _value: number = 0;
     @NetVar(DataType.uint)
     get value() {
@@ -169,10 +170,10 @@ export class Uint extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Double")
+@NetSerable("Double", false)
 export class Double extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
-    dirty: boolean = false;
+    dirty: boolean = true;
 
     private _value: number = 0;
     @NetVar(DataType.DOUBLE)
@@ -207,10 +208,10 @@ export class Double extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Ulong")
+@NetSerable("Ulong", false)
 export class Ulong extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
-    dirty: boolean = false;
+    dirty: boolean = true;
 
     private _value: number = 0;
     @NetVar(DataType.ulong)
@@ -245,10 +246,10 @@ export class Ulong extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Short")
+@NetSerable("Short", false)
 export class Short extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
-    dirty: boolean = false;
+    dirty: boolean = true;
 
     private _value: number = 0;
     @NetVar(DataType.SHORT)
@@ -283,10 +284,10 @@ export class Short extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Ulong")
+@NetSerable("Ulong", false)
 export class Ushort extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
-    dirty: boolean = false;
+    dirty: boolean = true;
 
     private _value: number = 0;
     @NetVar(DataType.ushort)

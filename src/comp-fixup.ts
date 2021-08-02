@@ -278,7 +278,12 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
         prototype["deser" + ms.hash] = function (buffer: IDataBufferReader) {
             const args = new Array(ms.paramCount);
             for (let j = 0, len = ms.paramCount; j < len; j++) {
-                deserValue(ms.paramTypes[j], buffer, args[j], ms.paramTypes[j]);
+                args[j] = deserValue(
+                    ms.paramTypes[j],
+                    buffer,
+                    args[j],
+                    ms.paramTypes[j]
+                );
             }
             return args;
         };
@@ -293,7 +298,7 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
             if (domain == null) {
                 return Promise.reject("Domain is not valid!");
             }
-            if (domain.option.type == ms.type) {
+            if (this.entity.role.local == ms.type) {
                 return this[privateName](...args);
             } else {
                 return domain.readonlyInternalMsgMng.sendRpc(

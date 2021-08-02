@@ -60,24 +60,27 @@ export class Entity<ProxyObj extends Object = any> {
 
     constructor(..._comps: IComp[]) {
         this.role = new RoleComp();
+        this._compMap = new Map();
+        this._initComp(this.role as any);
+
         this._comps = _comps;
-        const map = new Map();
         for (let i = 0, len = this._comps.length; i < len; i++) {
-            let c = this._comps[i] as ISchema & IComp;
-            c["_entity"] = this;
-            if (!c.__schema__ || c.__schema__.hash == NULL_NUM) {
-                throw new ComponentHasNotDecorated(
-                    "Component must use @NetComp"
-                );
-            }
-            const hash = c.__schema__.hash;
-            if (map.has(hash)) {
-                map.set(hash, [map.get(hash), c]);
-            } else {
-                map.set(hash, c);
-            }
+            this._initComp(this._comps[i] as IComp & ISchema);
         }
-        this._compMap = map;
+    }
+
+    protected _initComp(c: ISchema & IComp) {
+        const map = this._compMap;
+        c["_entity"] = this;
+        if (!c.__schema__ || c.__schema__.hash == NULL_NUM) {
+            throw new ComponentHasNotDecorated("Component must use @NetComp");
+        }
+        const hash = c.__schema__.hash;
+        if (map.has(hash)) {
+            map.set(hash, [map.get(hash) as any, c]);
+        } else {
+            map.set(hash, c);
+        }
     }
 
     toString() {

@@ -6,9 +6,9 @@ import {
     DataType,
     DataTypeObect,
     getOrCreateScheme,
-    RpcType,
     DataTypeVoid,
     genMethodSchema,
+    Role,
 } from "./comp-schema";
 import { hash2compName, compName2ctr, hash2RpcName } from "./global-record";
 import { ARR_CONTAINER, NONE_CONTAINER } from "./macro";
@@ -113,7 +113,7 @@ type RpcReturnTypeMapping<T extends undefined | number, R> = T extends number
 export class Crc32PropertyKeyHashConflict extends Error {}
 
 export function Rpc<R, RpcReturnType extends undefined | number = undefined>(
-    type: RpcType,
+    type: Role,
     returnType?: RpcReturnType | { new (): R }
 ) {
     return function <PropKey extends string>(
