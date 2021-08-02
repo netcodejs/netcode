@@ -1,7 +1,6 @@
 import {
     DataType,
     IComp,
-    Int,
     NetSerable,
     NetVar,
     Rpc,
@@ -65,13 +64,4 @@ export class View extends IComp {
         ctx.arc(pos.x, pos.y, 26, 0, 2 * Math.PI);
         ctx.fill();
     }
-}
-
-@NetSerable("time")
-export class ServerTime extends IComp {
-    @NetVar(DataType.INT)
-    timestamp: number = 0;
-
-    @NetVar(Int)
-    deltaTime: Int = new Int();
 }

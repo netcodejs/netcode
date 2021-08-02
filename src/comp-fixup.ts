@@ -1,4 +1,4 @@
-import { IComp } from "./base";
+import { IComp } from "./comp-interface";
 import {
     DataType,
     DataTypeObect,
@@ -8,6 +8,58 @@ import {
 } from "./comp-schema";
 import { IDatabufferWriter, IDataBufferReader } from "./data/serializable";
 import { NONE_CONTAINER } from "./macro";
+
+export function serValue(
+    type: DataType,
+    value: any,
+    buffer: IDatabufferWriter
+) {
+    switch (type) {
+        case DataType.INT:
+        case DataType.I32:
+            buffer.writeInt(value);
+            break;
+        case DataType.FLOAT:
+        case DataType.F32:
+            buffer.writeFloat(value);
+            break;
+        case DataType.DOUBLE:
+        case DataType.F64:
+            buffer.writeDouble(value);
+            break;
+        case DataType.BOOL:
+            buffer.writeBoolean(value);
+            break;
+        case DataTypeObect:
+            value.ser(buffer);
+            break;
+    }
+}
+
+export function deserValue(
+    type: DataType,
+    buffer: IDataBufferReader,
+    ref?: any,
+    refCtr?: any
+) {
+    switch (type) {
+        case DataType.INT:
+        case DataType.I32:
+            return buffer.readInt();
+        case DataType.FLOAT:
+        case DataType.F32:
+            return buffer.readFloat();
+        case DataType.DOUBLE:
+        case DataType.F64:
+            return buffer.readDouble();
+        case DataType.BOOL:
+            return buffer.readBoolean();
+        case DataTypeObect:
+            if (!ref) ref = new refCtr!();
+            ref.deser(buffer);
+            return ref;
+    }
+}
 
 export function fixupSerable<T extends Record<string, any>>(target: {
     new (): T;
@@ -23,49 +75,11 @@ export function fixupSerable<T extends Record<string, any>>(target: {
             const key = prop.propertyKey;
             const value = this[key];
             if (type.container === NONE_CONTAINER) {
-                switch (type.dataType) {
-                    case DataType.INT:
-                    case DataType.I32:
-                        buffer.writeInt(value);
-                        break;
-                    case DataType.FLOAT:
-                    case DataType.F32:
-                        buffer.writeFloat(value);
-                        break;
-                    case DataType.DOUBLE:
-                    case DataType.F64:
-                        buffer.writeDouble(value);
-                        break;
-                    case DataType.BOOL:
-                        buffer.writeBoolean(value);
-                        break;
-                    case DataTypeObect:
-                        value.ser(buffer);
-                        break;
-                }
+                serValue(type.dataType, value, buffer);
             } else {
                 buffer.writeInt(value.length);
                 for (let i = 0, j = value.length; i < j; i++) {
-                    switch (type.dataType) {
-                        case DataType.INT:
-                        case DataType.I32:
-                            buffer.writeInt(value[i]);
-                            break;
-                        case DataType.FLOAT:
-                        case DataType.F32:
-                            buffer.writeFloat(value[i]);
-                            break;
-                        case DataType.DOUBLE:
-                        case DataType.F64:
-                            buffer.writeDouble(value[i]);
-                            break;
-                        case DataType.BOOL:
-                            buffer.writeBoolean(value[i]);
-                            break;
-                        case DataTypeObect:
-                            value.ser(buffer);
-                            break;
-                    }
+                    serValue(type.dataType, value[i], buffer);
                 }
             }
         }
@@ -80,28 +94,12 @@ export function fixupSerable<T extends Record<string, any>>(target: {
             const type = prop.type;
             const key = prop.propertyKey;
             if (type.container === NONE_CONTAINER) {
-                switch (type.dataType) {
-                    case DataType.INT:
-                    case DataType.I32:
-                        (this as any)[key] = buffer.readInt();
-                        break;
-                    case DataType.FLOAT:
-                    case DataType.F32:
-                        (this as any)[key] = buffer.readFloat();
-                        break;
-                    case DataType.DOUBLE:
-                    case DataType.F64:
-                        (this as any)[key] = buffer.readDouble();
-                        break;
-                    case DataType.BOOL:
-                        (this as any)[key] = buffer.readBoolean();
-                        break;
-                    case DataTypeObect:
-                        if (!(this as any)[key])
-                            (this as any)[key] = new prop.type.refCtr!();
-                        (this as any)[key].deser(buffer);
-                        break;
-                }
+                this[key] = deserValue(
+                    type.dataType,
+                    buffer,
+                    this[key],
+                    prop.type.refCtr
+                );
             } else {
                 if (!(this as any)[key]) {
                     (this as any)[key] = [];
@@ -109,28 +107,12 @@ export function fixupSerable<T extends Record<string, any>>(target: {
                 const arr = (this as any)[key] as any[];
                 arr.length = buffer.readInt();
                 for (let i = 0, j = arr.length; i < j; i++) {
-                    switch (type.dataType) {
-                        case DataType.INT:
-                        case DataType.I32:
-                            arr[i] = buffer.readInt();
-                            break;
-                        case DataType.FLOAT:
-                        case DataType.F32:
-                            arr[i] = buffer.readFloat();
-                            break;
-                        case DataType.DOUBLE:
-                        case DataType.F64:
-                            arr[i] = buffer.readDouble();
-                            break;
-                        case DataType.BOOL:
-                            arr[i] = buffer.readBoolean();
-                            break;
-                        case DataTypeObect:
-                            if (!(this as any)[key])
-                                (this as any)[key] = new prop.type.refCtr!();
-                            (this as any)[key].deser(buffer);
-                            break;
-                    }
+                    arr[i] = deserValue(
+                        type.dataType,
+                        buffer,
+                        arr[i],
+                        prop.type.refCtr
+                    );
                 }
             }
         }
@@ -290,65 +272,36 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
         ) {
             for (let j = 0, len = ms.paramCount; j < len; j++) {
                 const value = args[j];
-                switch (ms.paramTypes[j]) {
-                    case DataType.INT:
-                    case DataType.I32:
-                        buffer.writeInt(value);
-                        break;
-                    case DataType.FLOAT:
-                    case DataType.F32:
-                        buffer.writeFloat(value);
-                        break;
-                    case DataType.DOUBLE:
-                    case DataType.F64:
-                        buffer.writeDouble(value);
-                        break;
-                    case DataTypeObect:
-                        value.ser(buffer);
-                        break;
-                }
+                serValue(ms.paramTypes[j], value, buffer);
             }
         };
         prototype["deser" + ms.hash] = function (buffer: IDataBufferReader) {
             const args = new Array(ms.paramCount);
             for (let j = 0, len = ms.paramCount; j < len; j++) {
-                switch (ms.paramTypes[j]) {
-                    case DataType.INT:
-                    case DataType.I32:
-                        args[j] = buffer.readInt();
-                        break;
-                    case DataType.FLOAT:
-                    case DataType.F32:
-                        args[j] = buffer.readFloat();
-                        break;
-                    case DataType.DOUBLE:
-                    case DataType.F64:
-                        args[j] = buffer.readDouble();
-                        break;
-                    case DataTypeObect:
-                        args[j] = new (ms.paramTypes[j] as any)();
-                        args[j].ser(buffer);
-                        break;
-                }
+                deserValue(ms.paramTypes[j], buffer, args[j], ms.paramTypes[j]);
             }
             return args;
         };
 
         const privateName = "__" + name + "__";
         prototype[privateName] = prototype[name];
-        prototype[name] = function (
+        prototype[name] = async function (
             this: IComp & ISchema & Record<string, Function>,
             ...args: any[]
         ) {
             const domain = this.domain;
             if (domain == null) {
-                console.warn("Domain is not valid!");
-                return;
+                return Promise.reject("Domain is not valid!");
             }
             if (domain.option.type == ms.type) {
-                this[privateName](...args);
+                return this[privateName](...args);
             } else {
-                domain.readonlyInternalMsgMng.sendRpc(name, this, args);
+                return domain.readonlyInternalMsgMng.sendRpc(
+                    name,
+                    this,
+                    args,
+                    domain.logicTime.duration
+                );
             }
         };
     }

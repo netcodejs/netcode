@@ -1,30 +1,11 @@
+import { RoleComp } from "./builtin-comp/";
 import { ISchema } from "./comp-schema";
 import type { Domain } from "./domain";
 import { compName2ctr } from "./global-record";
+import { IComp } from "./comp-interface";
 import { NULL_NUM } from "./macro";
 
 class ComponentHasNotDecorated extends Error {}
-export abstract class IComp {
-    private _entity?: Entity | null;
-    get entity() {
-        return this._entity!;
-    }
-    get domain() {
-        return this._entity!.domain;
-    }
-    get $comps() {
-        return this._entity!.$comps;
-    }
-
-    get<T extends IComp>(ctr: { new (): T }): T | null {
-        return this._entity!.get(ctr);
-    }
-
-    init?(domain: Domain, compIdx: number): void;
-    update?(dt: number, domain: Domain, compIdx: number): void;
-    fixedUpdate?(dt: number, domain: Domain, compIdx: number): void;
-    destroy?(domain: Domain, compIdx: number): void;
-}
 /**
  * The unit in a network.It can manager some component.
  * It include id and version, plz don't modify then if you are not undersanding!
@@ -75,7 +56,10 @@ export class Entity<ProxyObj extends Object = any> {
         return this._comps;
     }
 
+    readonly role: RoleComp;
+
     constructor(..._comps: IComp[]) {
+        this.role = new RoleComp();
         this._comps = _comps;
         const map = new Map();
         for (let i = 0, len = this._comps.length; i < len; i++) {
@@ -137,31 +121,31 @@ export class Entity<ProxyObj extends Object = any> {
         return this._comps.indexOf(ins);
     }
 
-    private _init(domain: Domain) {
+    private _init() {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.init && c.init(domain, i);
+            c.init && c.init(i);
         }
     }
 
-    private _update(dt: number, domain: Domain) {
+    private _renderUpdate() {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.update && c.update(dt, domain, i);
+            c.renderUpdate && c.renderUpdate(i);
         }
     }
 
-    private _fixedUpdate(dt: number, domain: Domain) {
+    private _logicUpdate() {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.fixedUpdate && c.fixedUpdate(dt, domain, i);
+            c.logicUpdate && c.logicUpdate(i);
         }
     }
 
-    private _destroy(domain: Domain) {
+    private _destroy() {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.destroy && c.destroy(domain, i);
+            c.destroy && c.destroy(i);
             c["_entity"] = null;
         }
         this._comps.length = 0;

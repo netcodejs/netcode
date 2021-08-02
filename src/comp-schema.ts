@@ -27,6 +27,7 @@ export interface MethodSchema {
     paramTypes: DataType[];
     paramCount: number;
     returnType: DataType;
+    returnRefCtr?: any;
     type: RpcType;
 }
 
@@ -77,7 +78,7 @@ export function getSchemaByPrototype(prototype: any): Schema | null {
     return null;
 }
 
-export function getOrCreateScheme(prototype: any) {
+export function getOrCreateScheme(prototype: any): Schema {
     if (prototype.hasOwnProperty(SCHEME_KEY)) {
         return (prototype as any)[SCHEME_KEY];
     }

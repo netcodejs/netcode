@@ -1,17 +1,20 @@
-import { LogicTime, RenderTime } from "./time";
-import { ISchema, RpcType } from "./comp-schema";
+import { LogicTimeComp, RenderTimeComp, Role } from "./builtin-comp";
+import { DataTypeVoid, ISchema, RpcType, SCHEME_KEY } from "./comp-schema";
 import { IDataBuffer, SupportNetDataType } from "./data/serializable";
-import { Entity, IComp } from "./base";
+import { Entity } from "./entity";
+import { IComp } from "./comp-interface";
 import { NULL_NUM } from "./macro";
 import {
     MessageEntityInfo,
     MessageManager,
+    MessageRpcCallbackInfo,
     MessageRpcInfo,
 } from "./message-manager";
 import { asSerable, assert } from "./misc";
 import { ArrayMap } from "./array-map";
 import { compName2ctr, hash2compName, hash2RpcName } from "./global-record";
 import { StringDataBuffer } from "./data/string-databuffer";
+import { deserValue, serValue } from "./comp-fixup";
 
 class EntityNotValidError extends Error {}
 class EntityRepeatRegisteredError extends Error {}
@@ -102,6 +105,8 @@ export class Domain<T extends SupportNetDataType = any> {
 
     private _fixedSecAccumulator = 0;
     public readonly time: Entity;
+    public readonly logicTime: LogicTimeComp;
+    public readonly renderTime: RenderTimeComp;
 
     private readonly _option: DomainOption<T>;
     get option() {
@@ -115,13 +120,14 @@ export class Domain<T extends SupportNetDataType = any> {
         this._entityVersion = new Array<number>(requiredOption.capacity);
         this._entityVersion.fill(0);
         this._destroyEntityId = new Array<number>();
-        this._internalMsgMng = new MessageManager(
-            new requiredOption.dataBufCtr(),
-            new requiredOption.dataBufCtr(),
-            new requiredOption.dataBufCtr()
-        );
+        this._internalMsgMng = new MessageManager(requiredOption.dataBufCtr);
         this.readonlyInternalMsgMng = this._internalMsgMng;
-        this.time = new Entity(new LogicTime(), new RenderTime());
+
+        this.logicTime = new LogicTimeComp();
+        this.renderTime = new RenderTimeComp();
+        this.time = new Entity(this.logicTime, this.renderTime);
+        this.logicTime.delta = this.option.fixedTimeSec;
+
         this.reg(this.time);
     }
 
@@ -142,7 +148,7 @@ export class Domain<T extends SupportNetDataType = any> {
         const id = this._getEntityId();
         const version = this._entityVersion[id];
         this._reg(entity, id, version);
-        entity["_init"](this);
+        entity["_init"]();
     }
 
     hasReg(entity: Entity) {
@@ -155,7 +161,7 @@ export class Domain<T extends SupportNetDataType = any> {
         this._unreg(entity);
         this._destroyEntityId.push(entity.id);
         this._entities[index] = null;
-        entity["_destroy"](this);
+        entity["_destroy"]();
     }
 
     unreg(entity: Entity) {
@@ -189,34 +195,48 @@ export class Domain<T extends SupportNetDataType = any> {
         const outBuf = this._internalMsgMng.inoutbuffer;
         const stateBuf = this._internalMsgMng.statebuffer;
         const rpcBuf = this._internalMsgMng.rpcbuffer;
+        const rpcCbBuf = this._internalMsgMng.rpcCallbackBuffer;
 
         outBuf.reset();
 
         if (isServer) {
             this._internalMsgMng.startSendEntityAndComps();
             this._internalMsgMng.startSendRpc();
+            this._internalMsgMng.startSendRpcCallback();
 
             this._serEntityAndComps();
             const stateLen = stateBuf.writerCursor;
             const rpcLen = rpcBuf.writerCursor;
+            const rpcCbLen = rpcCbBuf.writerCursor;
 
             outBuf
                 .writeBoolean(isServer)
                 .writeUlong(stateLen)
                 .writeUlong(rpcLen)
+                .writeUlong(rpcCbLen)
                 .append(stateBuf)
-                .append(rpcBuf);
+                .append(rpcBuf)
+                .append(rpcCbBuf);
 
             this._internalMsgMng.endSendEntityAndComps();
             this._internalMsgMng.endSendRpc();
+            this._internalMsgMng.endSendRpcCallback();
         } else {
             this._internalMsgMng.startSendRpc();
+            this._internalMsgMng.startSendRpcCallback();
 
             const rpcLen = rpcBuf.writerCursor;
+            const rpcCbLen = rpcCbBuf.writerCursor;
 
-            outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
+            outBuf
+                .writeBoolean(isServer)
+                .writeUlong(rpcLen)
+                .writeUlong(rpcCbLen)
+                .append(rpcBuf)
+                .append(rpcCbBuf);
 
             this._internalMsgMng.endSendRpc();
+            this._internalMsgMng.endSendRpcCallback();
         }
 
         return outBuf.get();
@@ -226,6 +246,7 @@ export class Domain<T extends SupportNetDataType = any> {
         const inBuf = this._internalMsgMng.inoutbuffer;
         const stateBuf = this._internalMsgMng.statebuffer;
         const rpcBuf = this._internalMsgMng.rpcbuffer;
+        const rpcCbBuf = this._internalMsgMng.rpcCallbackBuffer;
 
         inBuf.set(source);
         const isServer = inBuf.readBoolean();
@@ -233,6 +254,7 @@ export class Domain<T extends SupportNetDataType = any> {
         if (isServer) {
             const stateLen = inBuf.readUlong();
             const rpcLen = inBuf.readUlong();
+            const rpcCbLen = inBuf.readUlong();
 
             const stateStart = inBuf.readerCursor;
             const stateEnd = stateStart + stateLen;
@@ -240,8 +262,12 @@ export class Domain<T extends SupportNetDataType = any> {
             const rpcStart = stateEnd;
             const rpcEnd = rpcStart + rpcLen;
 
+            const rpcCbStart = rpcEnd;
+            const rpcCbEnd = rpcCbStart + rpcCbLen;
+
             stateBuf.set(source, stateStart, stateEnd);
             rpcBuf.set(source, rpcStart, rpcEnd);
+            rpcCbBuf.set(source, rpcCbStart, rpcCbEnd);
 
             this._internalMsgMng.startRecvEntityAndComps();
             this._derEntityAndComps();
@@ -250,35 +276,57 @@ export class Domain<T extends SupportNetDataType = any> {
             this._internalMsgMng.startRecvRpc();
             this._deserRpcs();
             this._internalMsgMng.endRecvRpc();
+
+            this._internalMsgMng.startRecvRpcCallback();
+            this._deserRpcCallbacks();
+            this._internalMsgMng.endRecvRpcCallback();
         } else {
             const rpcLen = inBuf.readUlong();
+            const rpcCbLen = inBuf.readUlong();
 
             const rpcStart = inBuf.readerCursor;
-            const rpcEnd = rpcStart + rpcLen + 1;
+            const rpcEnd = rpcStart + rpcLen;
+
+            const rpcCbStart = rpcEnd;
+            const rpcCbEnd = rpcCbStart + rpcCbLen;
 
             rpcBuf.set(source, rpcStart, rpcEnd);
+            rpcCbBuf.set(source, rpcCbStart, rpcCbEnd);
 
             this._internalMsgMng.startRecvRpc();
             this._deserRpcs();
             this._internalMsgMng.endRecvRpc();
+
+            this._internalMsgMng.startRecvRpcCallback();
+            this._deserRpcCallbacks();
+            this._internalMsgMng.endRecvRpcCallback();
         }
     }
 
     update(dtSec: number) {
         this._fixedSecAccumulator += dtSec;
-        while (this._fixedSecAccumulator > this.option.fixedTimeSec) {
-            this._fixedSecAccumulator -= this.option.fixedTimeSec;
+        const fixedDeltaTime = this.logicTime.delta;
+        while (this._fixedSecAccumulator > fixedDeltaTime) {
+            this._fixedSecAccumulator -= fixedDeltaTime;
+            this.logicTime.duration += fixedDeltaTime;
             for (let i = 0, len = this._entitiesLength; i < len; i++) {
                 const ent = this._entities[i];
                 if (!ent) continue;
-                ent["_fixedUpdate"](this.option.fixedTimeSec, this);
+                if (
+                    ent.role.local === Role.AUTHORITY ||
+                    ent.role.local === Role.AUTONMOUS_PROXY
+                ) {
+                    ent["_logicUpdate"]();
+                }
             }
         }
 
+        this.renderTime.delta = dtSec;
+        this.renderTime.duration += dtSec;
         for (let i = 0, len = this._entitiesLength; i < len; i++) {
             const ent = this._entities[i];
             if (!ent) continue;
-            ent["_update"](dtSec, this);
+            ent["_renderUpdate"]();
         }
     }
 
@@ -305,8 +353,21 @@ export class Domain<T extends SupportNetDataType = any> {
     protected _serEntityAndComps() {
         for (let i = 0, len = this._entitiesLength; i < len; i++) {
             const ent = this._entities[i];
-            if (!ent) continue;
-            this._internalMsgMng.sendEntity(ent, false);
+            if (!ent) {
+                this._internalMsgMng.sendEntity(
+                    i,
+                    this._entityVersion[i],
+                    0,
+                    true
+                );
+                continue;
+            }
+            this._internalMsgMng.sendEntity(
+                ent.id,
+                ent.version,
+                ent.comps.length,
+                false
+            );
             const comps = ent.comps;
             for (
                 let compIdx = 0, len = comps.length;
@@ -323,6 +384,7 @@ export class Domain<T extends SupportNetDataType = any> {
                 }
                 this._internalMsgMng.sendComp(compIdx, serableComp);
             }
+            ent.role.ser(this._internalMsgMng.statebuffer);
         }
     }
 
@@ -330,13 +392,18 @@ export class Domain<T extends SupportNetDataType = any> {
         let params: MessageEntityInfo | null;
         while ((params = this._internalMsgMng.recvEntity())) {
             let ent = this._entities[params.entityId];
-            if (ent && ent.version != params.entityVersion) {
+            if (
+                ent &&
+                (ent.version != params.entityVersion || params.destoryed)
+            ) {
                 this.unreg(ent);
                 ent = null;
             }
-            ent = ent
-                ? this._derEntityAndCompsUnderExisted(params, ent)
-                : this._derEntityAndCompsUnderUnExsited(params);
+            if (!params.destoryed) {
+                ent = ent
+                    ? this._derEntityAndCompsUnderExisted(params, ent)
+                    : this._derEntityAndCompsUnderUnExsited(params);
+            }
         }
     }
 
@@ -352,6 +419,7 @@ export class Domain<T extends SupportNetDataType = any> {
             if (!comp) continue;
             this._internalMsgMng.recvCompBody(comp);
         }
+        entity.role.deser(this._internalMsgMng.statebuffer);
         return entity;
     }
 
@@ -366,6 +434,7 @@ export class Domain<T extends SupportNetDataType = any> {
             compArr[compHeaderInfo.compIdx] = comp;
         }
         const e = new Entity(...compArr);
+        e.role.deser(this._internalMsgMng.statebuffer);
         this.reg(e);
         return e;
     }
@@ -375,13 +444,56 @@ export class Domain<T extends SupportNetDataType = any> {
         while ((param = this._internalMsgMng.recvRpc())) {
             const ent = this.get(param.entityId);
             if (!ent) continue;
-            const comp = ent.comps[param.compIdx] as any;
+            const comp = ent.comps[param.compIdx] as IComp &
+                ISchema &
+                Record<string, Function>;
             if (!comp) continue;
             const argus = comp["deser" + param.methodHash](
                 this._internalMsgMng.rpcbuffer
             );
             const methodName = hash2RpcName[param.methodHash];
-            comp[methodName].apply(comp, argus);
+            const unknown = comp[methodName].apply(comp, argus);
+
+            const s = comp[SCHEME_KEY];
+            const ms = s.methods[methodName];
+            if (ms.returnType != DataTypeVoid) {
+                unknown?.then((result: any) => {
+                    this._internalMsgMng.sendRpcCallback(param!);
+                    serValue(
+                        ms.returnType,
+                        result,
+                        this._internalMsgMng.rpcCallbackBuffer
+                    );
+                });
+            }
+        }
+    }
+
+    protected _deserRpcCallbacks() {
+        let param: MessageRpcCallbackInfo | null;
+        while ((param = this._internalMsgMng.recvRpcCallback())) {
+            const ent = this.get(param.entityId);
+            if (!ent) continue;
+            const comp = ent.comps[param.compIdx] as IComp &
+                ISchema &
+                Record<string, Function>;
+            if (!comp) continue;
+            const s = comp[SCHEME_KEY];
+            const methodName = hash2RpcName[param.methodHash];
+            const ms = s.methods[methodName];
+            let result: any;
+            if (ms.returnType != DataTypeVoid) {
+                result = deserValue(
+                    ms.returnType,
+                    this._internalMsgMng.rpcCallbackBuffer,
+                    undefined,
+                    ms.returnRefCtr
+                );
+            }
+            const callbackRecord =
+                this._internalMsgMng.getRpcCallbackRecord(param);
+            if (!callbackRecord) continue;
+            callbackRecord.deferred.resolve(result);
         }
     }
 

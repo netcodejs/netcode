@@ -6,10 +6,14 @@ import {
     DataType,
     DataTypeObect,
     getOrCreateScheme,
+    RpcType,
+    DataTypeVoid,
+    genMethodSchema,
 } from "./comp-schema";
-import { hash2compName, compName2ctr } from "./global-record";
+import { hash2compName, compName2ctr, hash2RpcName } from "./global-record";
 import { ARR_CONTAINER, NONE_CONTAINER } from "./macro";
 import { fixupSerable, fixupSerableJIT } from "./comp-fixup";
+import { IComp } from "./comp-interface";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
 function sortComponentPropertyKey(a: PropSchema, b: PropSchema): number {
@@ -48,7 +52,7 @@ export function NetSerable(name: string, genSerable = true) {
     };
 }
 
-type DataTypeMappingPrimitive = {
+export type DataTypeMappingPrimitive = {
     [DataType.NONE]: never;
     [DataType.INT]: number;
     [DataType.LONG]: number;
@@ -64,6 +68,7 @@ type DataTypeMappingPrimitive = {
     [DataType.F32]: number;
     [DataType.F64]: number;
     [DataType.STRING]: string;
+    [DataType.BOOL]: boolean;
 };
 
 export function NetVar<DT extends number, R>(type: DT | { new (): R }) {
@@ -99,5 +104,75 @@ export function NetArr<DT extends number, R>(type: DT | { new (): R }) {
                 refCtr: typeof type === "number" ? undefined : type,
             },
         });
+    };
+}
+
+type RpcReturnTypeMapping<T extends undefined | number, R> = T extends number
+    ? DataTypeMappingPrimitive[T] & R
+    : void;
+export class Crc32PropertyKeyHashConflict extends Error {}
+
+export function Rpc<R, RpcReturnType extends undefined | number = undefined>(
+    type: RpcType,
+    returnType?: RpcReturnType | { new (): R }
+) {
+    return function <PropKey extends string>(
+        t: IComp &
+            ProtoOf<
+                Record<
+                    PropKey,
+                    (
+                        ...args: any[]
+                    ) => void | Promise<RpcReturnTypeMapping<RpcReturnType, R>>
+                >
+            >,
+        propertyKey: PropKey
+    ): void {
+        // gen schema
+        const s = getOrCreateScheme(t);
+        if (!s.methods[propertyKey]) {
+            s.methods[propertyKey] = genMethodSchema();
+        }
+        const ms = s.methods[propertyKey];
+        ms.hash = hash(propertyKey);
+        ms.name = propertyKey;
+        ms.type = type;
+        if (hash2RpcName[ms.hash] && hash2RpcName[ms.hash] != ms.name) {
+            throw new Crc32PropertyKeyHashConflict();
+        }
+        hash2RpcName[ms.hash] = ms.name;
+        if (typeof returnType === "undefined") {
+            ms.returnType = DataTypeVoid;
+        } else {
+            ms.returnType =
+                typeof returnType === "number" ? returnType : DataTypeObect;
+            ms.returnRefCtr =
+                typeof returnType === "number" ? undefined : returnType;
+        }
+
+        ms.paramCount = ms.paramTypes.length;
+        for (let i = 0, len = ms.paramCount; i < len; i++) {
+            if (!ms.paramTypes[i]) {
+                console.warn(
+                    `[Netcode]Rpc function ${propertyKey} at paramIndex(${i}) set the default type DataType.double`
+                );
+                ms.paramTypes[i] = DataType.DOUBLE;
+            }
+        }
+    };
+}
+
+export function RpcVar(type: DataType) {
+    return function (
+        t: IComp,
+        propertyKey: string,
+        parameterIndex: number
+    ): void {
+        const s = getOrCreateScheme(t);
+        if (!s.methods[propertyKey]) {
+            s.methods[propertyKey] = genMethodSchema();
+        }
+        const ms = s.methods[propertyKey];
+        ms.paramTypes[parameterIndex] = type;
     };
 }
