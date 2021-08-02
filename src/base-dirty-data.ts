@@ -1,5 +1,5 @@
-import { DataType } from "./component-schema";
-import { NetComp, NetVar } from "./component-variable";
+import { DataType } from "./comp-schema";
+import { NetSerable, NetVar } from "./comp-decorator";
 import {
     IDataBufferReader,
     IDatabufferWriter,
@@ -17,7 +17,7 @@ export abstract class ADirty<T> {
     }
 }
 
-@NetComp("Int")
+@NetSerable("Int")
 export class Int extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = false;
@@ -55,7 +55,7 @@ export class Int extends ADirty<number> implements ISerable {
     }
 }
 
-@NetComp("Float")
+@NetSerable("Float")
 export class Float extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = false;
@@ -93,7 +93,7 @@ export class Float extends ADirty<number> implements ISerable {
     }
 }
 
-@NetComp("Long")
+@NetSerable("Long")
 export class Long extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = false;
@@ -131,7 +131,7 @@ export class Long extends ADirty<number> implements ISerable {
     }
 }
 
-@NetComp("Uint")
+@NetSerable("Uint")
 export class Uint extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = false;
@@ -169,7 +169,7 @@ export class Uint extends ADirty<number> implements ISerable {
     }
 }
 
-@NetComp("Double")
+@NetSerable("Double")
 export class Double extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = false;
@@ -207,7 +207,7 @@ export class Double extends ADirty<number> implements ISerable {
     }
 }
 
-@NetComp("Ulong")
+@NetSerable("Ulong")
 export class Ulong extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = false;
@@ -245,7 +245,7 @@ export class Ulong extends ADirty<number> implements ISerable {
     }
 }
 
-@NetComp("Short")
+@NetSerable("Short")
 export class Short extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = false;
@@ -283,7 +283,7 @@ export class Short extends ADirty<number> implements ISerable {
     }
 }
 
-@NetComp("Ulong")
+@NetSerable("Ulong")
 export class Ushort extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = false;

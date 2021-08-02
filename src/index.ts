@@ -1,11 +1,13 @@
-export * from "./component-schema";
+export * from "./comp-schema";
 export * from "./array-map";
 export * from "./macro";
 export * from "./misc";
-export * from "./component-variable";
-export * from "./component-rpc";
+export * from "./comp-decorator";
+export * from "./comp-rpc";
 export * from "./base";
 export * from "./domain";
 export * from "./base-dirty-data";
 export * from "./data/string-databuffer";
+export * from "./time";
+export * from "./comp-fixup";
 // import "./test";

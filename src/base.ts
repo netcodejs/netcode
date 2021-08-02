@@ -1,4 +1,4 @@
-import { ISchema } from "./component-variable";
+import { ISchema } from "./comp-schema";
 import type { Domain } from "./domain";
 import { compName2ctr } from "./global-record";
 import { NULL_NUM } from "./macro";
@@ -9,9 +9,20 @@ export abstract class IComp {
     get entity() {
         return this._entity!;
     }
+    get domain() {
+        return this._entity!.domain;
+    }
+    get $comps() {
+        return this._entity!.$comps;
+    }
+
+    get<T extends IComp>(ctr: { new (): T }): T | null {
+        return this._entity!.get(ctr);
+    }
+
     init?(domain: Domain, compIdx: number): void;
-    update?(domain: Domain, compIdx: number): void;
-    fixedUpdate?(domain: Domain, compIdx: number): void;
+    update?(dt: number, domain: Domain, compIdx: number): void;
+    fixedUpdate?(dt: number, domain: Domain, compIdx: number): void;
     destroy?(domain: Domain, compIdx: number): void;
 }
 /**
@@ -42,6 +53,10 @@ export class Entity<ProxyObj extends Object = any> {
     private _version = NULL_NUM;
     get version() {
         return this._version;
+    }
+    private _domain?: Domain;
+    get domain() {
+        return this._domain!;
     }
     static Event = {
         REG_ENTITY: "reg-entity",
@@ -129,17 +144,17 @@ export class Entity<ProxyObj extends Object = any> {
         }
     }
 
-    private _update(domain: Domain) {
+    private _update(dt: number, domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.update && c.update(domain, i);
+            c.update && c.update(dt, domain, i);
         }
     }
 
-    private _fixedUpdate(domain: Domain) {
+    private _fixedUpdate(dt: number, domain: Domain) {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
-            c.fixedUpdate && c.fixedUpdate(domain, i);
+            c.fixedUpdate && c.fixedUpdate(dt, domain, i);
         }
     }
 

@@ -163,7 +163,7 @@ export class StringDataBuffer implements IDataBuffer<string> {
     hasNext(): boolean {
         return (
             this.readerCursor < this.readBuffer.length &&
-            this.writerCursor < this.readerEnd
+            this.readerCursor < this.readerEnd
         );
     }
 

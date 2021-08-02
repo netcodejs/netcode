@@ -1,10 +1,11 @@
+import { IComp } from "./base";
 import {
     DataType,
     DataTypeVoid,
     genMethodSchema,
     getOrCreateScheme,
     RpcType,
-} from "./component-schema";
+} from "./comp-schema";
 import { hash2RpcName } from "./global-record";
 import { str as hash } from "./lib/crc-32";
 
@@ -13,7 +14,7 @@ export function Rpc<RpcReturnType extends void | DataType = void>(
     type: RpcType,
     returnType?: RpcReturnType
 ) {
-    return function (t: any, propertyKey: string): void {
+    return function (t: IComp, propertyKey: string): void {
         // gen schema
         const s = getOrCreateScheme(t);
         if (!s.methods[propertyKey]) {
@@ -47,7 +48,7 @@ export function Rpc<RpcReturnType extends void | DataType = void>(
 
 export function RpcVar(type: DataType) {
     return function (
-        t: any,
+        t: IComp,
         propertyKey: string,
         parameterIndex: number
     ): void {

@@ -1,4 +1,4 @@
-import { DataType } from "./component-schema";
+import { DataType } from "./comp-schema";
 import { ISerable } from "./data/serializable";
 
 export function fastRemove(arr: any[], index: number) {

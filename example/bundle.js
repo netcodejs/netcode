@@ -88,6 +88,7 @@ var StateSync = (function (exports) {
 
     var NULL_NUM = -1;
     var NULL_STR = "";
+    var NONE_CONTAINER = 0;
 
     var RpcType;
     (function (RpcType) {
@@ -405,6 +406,16 @@ var StateSync = (function (exports) {
             enumerable: false,
             configurable: true,
         });
+        Object.defineProperty(IComp.prototype, "$comps", {
+            get: function () {
+                return this._entity.$comps;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        IComp.prototype.get = function (ctr) {
+            return this._entity.get(ctr);
+        };
         return IComp;
     })();
     /**
@@ -524,16 +535,16 @@ var StateSync = (function (exports) {
                 c.init && c.init(domain, i);
             }
         };
-        Entity.prototype._update = function (domain) {
+        Entity.prototype._update = function (dt, domain) {
             for (var i = 0, len = this._comps.length; i < len; i++) {
                 var c = this._comps[i];
-                c.update && c.update(domain, i);
+                c.update && c.update(dt, domain, i);
             }
         };
-        Entity.prototype._fixedUpdate = function (domain) {
+        Entity.prototype._fixedUpdate = function (dt, domain) {
             for (var i = 0, len = this._comps.length; i < len; i++) {
                 var c = this._comps[i];
-                c.fixedUpdate && c.fixedUpdate(domain, i);
+                c.fixedUpdate && c.fixedUpdate(dt, domain, i);
             }
         };
         Entity.prototype._destroy = function (domain) {
@@ -551,6 +562,43 @@ var StateSync = (function (exports) {
         };
         return Entity;
     })();
+
+    var LogicTime = /** @class */ (function (_super) {
+        __extends(LogicTime, _super);
+        function LogicTime() {
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.delta = 0;
+            _this.duration = 0;
+            return _this;
+        }
+        __decorate(
+            [NetVar(DataType.FLOAT)],
+            LogicTime.prototype,
+            "delta",
+            void 0
+        );
+        __decorate(
+            [NetVar(DataType.DOUBLE)],
+            LogicTime.prototype,
+            "duration",
+            void 0
+        );
+        LogicTime = __decorate([NetSerable("logic_time")], LogicTime);
+        return LogicTime;
+    })(IComp);
+    var RenderTime = /** @class */ (function (_super) {
+        __extends(RenderTime, _super);
+        function RenderTime() {
+            var _this =
+                (_super !== null && _super.apply(this, arguments)) || this;
+            _this.delta = 0;
+            _this.duration = 0;
+            return _this;
+        }
+        RenderTime = __decorate([NetSerable("render_time")], RenderTime);
+        return RenderTime;
+    })(IComp);
 
     var MessageType;
     (function (MessageType) {
@@ -676,6 +724,194 @@ var StateSync = (function (exports) {
         return MessageManager;
     })();
 
+    var tempTypedBuffer = {
+        int: new Int32Array(1),
+        uint: new Uint32Array(1),
+        short: new Int16Array(1),
+        ushort: new Uint16Array(1),
+        long: new Int32Array(1),
+        ulong: new Uint32Array(1),
+        float: new Float32Array(1),
+        double: new Float64Array(1),
+    };
+    var StringDataBufferOutOfRange = /** @class */ (function (_super) {
+        __extends(StringDataBufferOutOfRange, _super);
+        function StringDataBufferOutOfRange() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return StringDataBufferOutOfRange;
+    })(Error);
+    var StringDataBuffer = /** @class */ (function () {
+        function StringDataBuffer() {
+            this.writeBuffer = [];
+            this.writerCursor = 0;
+            this.readBuffer = [];
+            this.readerCursor = 0;
+            this.readerStart = 0;
+            this.readerEnd = 0;
+        }
+        StringDataBuffer.prototype.check = function (increment) {
+            if (increment === void 0) {
+                increment = 0;
+            }
+            if (
+                this.writerCursor + increment >= this.readBuffer.length &&
+                this.writerCursor + increment >= this.readerEnd
+            ) {
+                throw new StringDataBufferOutOfRange(
+                    "Cursor: (" +
+                        this.writerCursor +
+                        "), buffer's length: (" +
+                        this.writeBuffer.length +
+                        ")"
+                );
+            }
+        };
+        StringDataBuffer.prototype.reset = function () {
+            this.writerCursor = 0;
+            this.readerCursor = 0;
+            this.readBuffer.length = 0;
+            this.writeBuffer.length = 0;
+        };
+        StringDataBuffer.prototype.readInt = function () {
+            this.check();
+            var temp = tempTypedBuffer.int;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readUint = function () {
+            this.check();
+            var temp = tempTypedBuffer.uint;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readShort = function () {
+            this.check();
+            var temp = tempTypedBuffer.short;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readUshort = function () {
+            this.check();
+            var temp = tempTypedBuffer.ushort;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readLong = function () {
+            this.check();
+            var temp = tempTypedBuffer.long;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readUlong = function () {
+            this.check();
+            var temp = tempTypedBuffer.ulong;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readFloat = function () {
+            this.check();
+            var temp = tempTypedBuffer.float;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readDouble = function () {
+            this.check();
+            var temp = tempTypedBuffer.double;
+            temp[0] = this.readBuffer[this.readerCursor++];
+            return temp[0];
+        };
+        StringDataBuffer.prototype.readBoolean = function () {
+            this.check();
+            return Boolean(this.readBuffer[this.readerCursor++]);
+        };
+        StringDataBuffer.prototype.set = function (source, start, end) {
+            if (start === void 0) {
+                start = 0;
+            }
+            if (end === void 0) {
+                end = -1;
+            }
+            this.writerCursor = 0;
+            var dst = JSON.parse(source);
+            var dstChecked = Array.isArray(dst) ? dst : [];
+            if (end < 0) {
+                end += dstChecked.length;
+            }
+            this.readerStart = this.readerCursor = start;
+            this.readerEnd = end;
+            this.readBuffer = dstChecked;
+        };
+        StringDataBuffer.prototype.writeInt = function (source) {
+            var temp = tempTypedBuffer.int;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeUint = function (source) {
+            var temp = tempTypedBuffer.uint;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeShort = function (source) {
+            var temp = tempTypedBuffer.short;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeUshort = function (source) {
+            var temp = tempTypedBuffer.ushort;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeLong = function (source) {
+            var temp = tempTypedBuffer.long;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeUlong = function (source) {
+            var temp = tempTypedBuffer.ulong;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeFloat = function (source) {
+            var temp = tempTypedBuffer.float;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeDouble = function (source) {
+            var temp = tempTypedBuffer.double;
+            temp[0] = source;
+            this.writeBuffer[this.writerCursor++] = source;
+            return this;
+        };
+        StringDataBuffer.prototype.writeBoolean = function (source) {
+            this.writeBuffer[this.writerCursor++] = source ? 1 : 0;
+            return this;
+        };
+        StringDataBuffer.prototype.get = function () {
+            this.writeBuffer.length = this.writerCursor;
+            return JSON.stringify(this.writeBuffer);
+        };
+        StringDataBuffer.prototype.hasNext = function () {
+            return (
+                this.readerCursor < this.readBuffer.length &&
+                this.readerCursor < this.readerEnd
+            );
+        };
+        StringDataBuffer.prototype.append = function (other) {
+            this.writeBuffer.push.apply(this.writeBuffer, other.writeBuffer);
+            this.writerCursor += other.writerCursor;
+            return this;
+        };
+        return StringDataBuffer;
+    })();
+
     var EntityNotValidError = /** @class */ (function (_super) {
         __extends(EntityNotValidError, _super);
         function EntityNotValidError() {
@@ -722,36 +958,45 @@ var StateSync = (function (exports) {
     })(Error);
     var DOMAIN_INDEX_BITS = 2;
     var DOMAIN_MAX_INDEX = (1 << DOMAIN_INDEX_BITS) - 1;
+    function HandleDomainDefautlValue(option) {
+        if (typeof option.dataBufCtr === "undefined") {
+            option.dataBufCtr = StringDataBuffer;
+        }
+        if (typeof option.capacity === "undefined") {
+            option.capacity = 50;
+        }
+        if (typeof option.autoResize === "undefined") {
+            option.autoResize = true;
+        }
+        if (typeof option.fixedTimeSec === "undefined") {
+            option.fixedTimeSec = 0.2;
+        }
+        return option;
+    }
     var Domain = /** @class */ (function () {
-        function Domain(dataBufCtr, type, capacity, autoResize) {
-            if (capacity === void 0) {
-                capacity = 50;
-            }
-            if (autoResize === void 0) {
-                autoResize = true;
-            }
-            this.dataBufCtr = dataBufCtr;
-            this.type = type;
-            this.capacity = capacity;
-            this.autoResize = autoResize;
+        //#endregion
+        function Domain(option) {
             this._index = -1;
+            this._entitiesLength = 0;
             this._entityIdCursor = 0;
-            this._entities = new Array(capacity);
-            this._entityVersion = new Array(capacity);
+            this._fixedSecAccumulator = 0;
+            var requiredOption = HandleDomainDefautlValue(option);
+            this._option = requiredOption;
+            this._entities = new Array(requiredOption.capacity);
+            this._entityVersion = new Array(requiredOption.capacity);
             this._entityVersion.fill(0);
             this._destroyEntityId = new Array();
             this._internalMsgMng = new MessageManager(
-                new dataBufCtr(),
-                new dataBufCtr(),
-                new dataBufCtr()
+                new requiredOption.dataBufCtr(),
+                new requiredOption.dataBufCtr(),
+                new requiredOption.dataBufCtr()
             );
             this.readonlyInternalMsgMng = this._internalMsgMng;
+            this.time = new Entity(new LogicTime(), new RenderTime());
+            this.reg(this.time);
         }
-        Domain.Create = function (name, dataBufferType) {
-            var args = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                args[_i - 2] = arguments[_i];
-            }
+        //#region static methods
+        Domain.Create = function (name, option) {
             if (this._name2domainMap.has(name)) {
                 throw new DomainDuplicated(name);
             }
@@ -760,10 +1005,7 @@ var StateSync = (function (exports) {
             ) {
                 throw new DomainLengthLimit();
             }
-            var news = new (Domain.bind.apply(
-                Domain,
-                __spreadArray([void 0, dataBufferType], args)
-            ))();
+            var news = new Domain(option);
             var domainIndex = this._name2domainMap.set(name, news);
             news._index = domainIndex;
             return news;
@@ -786,6 +1028,8 @@ var StateSync = (function (exports) {
             this._name2domainMap.clear();
         };
         Object.defineProperty(Domain.prototype, "index", {
+            //#endregion
+            //#region member variables
             get: function () {
                 return this._index;
             },
@@ -799,16 +1043,31 @@ var StateSync = (function (exports) {
             enumerable: false,
             configurable: true,
         });
+        Object.defineProperty(Domain.prototype, "length", {
+            get: function () {
+                return this._entitiesLength;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        Object.defineProperty(Domain.prototype, "option", {
+            get: function () {
+                return this._option;
+            },
+            enumerable: false,
+            configurable: true,
+        });
+        //#region public methods
         Domain.prototype.reg = function (entity) {
             if (this.isValid(entity))
                 throw new EntityRepeatRegisteredError(entity.toString());
-            if (this._entityIdCursor == this.capacity) {
-                if (this.autoResize) {
-                    this.resize(Math.ceil(this.capacity * 1.5));
+            if (this._entityIdCursor == this._option.capacity) {
+                if (this._option.autoResize) {
+                    this.resize(Math.ceil(this._option.capacity * 1.5));
                 } else
                     throw new EntityGroupOutOfRangeYouCanOpenAutoResize(
                         "Domain: capacity: " +
-                            this.capacity +
+                            this._option.capacity +
                             "; " +
                             entity.toString()
                     );
@@ -817,12 +1076,6 @@ var StateSync = (function (exports) {
             var version = this._entityVersion[id];
             this._reg(entity, id, version);
             entity["_init"](this);
-        };
-        Domain.prototype._reg = function (entity, id, version) {
-            entity["_id"] = id;
-            entity["_version"] = version;
-            var index = this._getEntityIndexById(entity.id);
-            this._entities[index] = entity;
         };
         Domain.prototype.hasReg = function (entity) {
             return this.isValid(entity);
@@ -840,10 +1093,6 @@ var StateSync = (function (exports) {
                 throw new EntityNotValidError(entity.toString());
             this.unregWithoutValidation(entity);
         };
-        Domain.prototype._unreg = function (entity) {
-            entity["_id"] = NULL_NUM;
-            entity["_version"] = NULL_NUM;
-        };
         Domain.prototype.get = function (id) {
             var domainId = id & DOMAIN_MAX_INDEX;
             if (domainId != this._index) return null;
@@ -853,11 +1102,11 @@ var StateSync = (function (exports) {
             return this._entities[this._getEntityIndexById(id)];
         };
         Domain.prototype.resize = function (newSize) {
-            var oldSize = this.capacity;
+            var oldSize = this._option.capacity;
             this._entities.length = newSize;
             this._entityVersion.length = newSize;
             this._entityVersion.fill(0, oldSize, newSize);
-            this.capacity = newSize;
+            this._option.capacity = newSize;
         };
         Domain.prototype.isValid = function (entity) {
             return (
@@ -867,15 +1116,105 @@ var StateSync = (function (exports) {
                     this._entityVersion[this._getEntityIndexById(entity.id)]
             );
         };
+        Domain.prototype.asData = function () {
+            var isServer = this._option.type == RpcType.SERVER;
+            var outBuf = this._internalMsgMng.inoutbuffer;
+            var stateBuf = this._internalMsgMng.statebuffer;
+            var rpcBuf = this._internalMsgMng.rpcbuffer;
+            outBuf.reset();
+            if (isServer) {
+                this._internalMsgMng.startSendEntityAndComps();
+                this._internalMsgMng.startSendRpc();
+                this._serEntityAndComps();
+                var stateLen = stateBuf.writerCursor;
+                var rpcLen = rpcBuf.writerCursor;
+                outBuf
+                    .writeBoolean(isServer)
+                    .writeUlong(stateLen)
+                    .writeUlong(rpcLen)
+                    .append(stateBuf)
+                    .append(rpcBuf);
+                this._internalMsgMng.endSendEntityAndComps();
+                this._internalMsgMng.endSendRpc();
+            } else {
+                this._internalMsgMng.startSendRpc();
+                var rpcLen = rpcBuf.writerCursor;
+                outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
+                this._internalMsgMng.endSendRpc();
+            }
+            return outBuf.get();
+        };
+        Domain.prototype.setData = function (source) {
+            var inBuf = this._internalMsgMng.inoutbuffer;
+            var stateBuf = this._internalMsgMng.statebuffer;
+            var rpcBuf = this._internalMsgMng.rpcbuffer;
+            inBuf.set(source);
+            var isServer = inBuf.readBoolean();
+            if (isServer) {
+                var stateLen = inBuf.readUlong();
+                var rpcLen = inBuf.readUlong();
+                var stateStart = inBuf.readerCursor;
+                var stateEnd = stateStart + stateLen;
+                var rpcStart = stateEnd;
+                var rpcEnd = rpcStart + rpcLen;
+                stateBuf.set(source, stateStart, stateEnd);
+                rpcBuf.set(source, rpcStart, rpcEnd);
+                this._internalMsgMng.startRecvEntityAndComps();
+                this._derEntityAndComps();
+                this._internalMsgMng.endRecvEntityAndComps();
+                this._internalMsgMng.startRecvRpc();
+                this._deserRpcs();
+                this._internalMsgMng.endRecvRpc();
+            } else {
+                var rpcLen = inBuf.readUlong();
+                var rpcStart = inBuf.readerCursor;
+                var rpcEnd = rpcStart + rpcLen + 1;
+                rpcBuf.set(source, rpcStart, rpcEnd);
+                this._internalMsgMng.startRecvRpc();
+                this._deserRpcs();
+                this._internalMsgMng.endRecvRpc();
+            }
+        };
+        Domain.prototype.update = function (dtSec) {
+            this._fixedSecAccumulator += dtSec;
+            while (this._fixedSecAccumulator > this.option.fixedTimeSec) {
+                this._fixedSecAccumulator -= this.option.fixedTimeSec;
+                for (var i = 0, len = this._entitiesLength; i < len; i++) {
+                    var ent = this._entities[i];
+                    if (!ent) continue;
+                    ent["_fixedUpdate"](this.option.fixedTimeSec, this);
+                }
+            }
+            for (var i = 0, len = this._entitiesLength; i < len; i++) {
+                var ent = this._entities[i];
+                if (!ent) continue;
+                ent["_update"](dtSec, this);
+            }
+        };
+        //#endregion
+        //#region protected methods
+        Domain.prototype._reg = function (entity, id, version) {
+            entity["_id"] = id;
+            entity["_version"] = version;
+            var index = this._getEntityIndexById(entity.id);
+            this._entities[index] = entity;
+            if (index >= this._entitiesLength) {
+                this._entitiesLength = index + 1;
+            }
+        };
+        Domain.prototype._unreg = function (entity) {
+            entity["_id"] = NULL_NUM;
+            entity["_version"] = NULL_NUM;
+        };
         Domain.prototype._serEntityAndComps = function () {
-            for (var _i = 0, _a = this._entities; _i < _a.length; _i++) {
-                var ent = _a[_i];
+            for (var i = 0, len = this._entitiesLength; i < len; i++) {
+                var ent = this._entities[i];
                 if (!ent) continue;
                 this._internalMsgMng.sendEntity(ent, false);
                 var comps = ent.comps;
                 for (
-                    var compIdx = 0, len = comps.length;
-                    compIdx < len;
+                    var compIdx = 0, len_1 = comps.length;
+                    compIdx < len_1;
                     compIdx++
                 ) {
                     var comp = comps[compIdx];
@@ -956,65 +1295,6 @@ var StateSync = (function (exports) {
                 comp[methodName].apply(comp, argus);
             }
         };
-        Domain.prototype.asData = function () {
-            var isServer = this.type == RpcType.SERVER;
-            var outBuf = this._internalMsgMng.inoutbuffer;
-            var stateBuf = this._internalMsgMng.statebuffer;
-            var rpcBuf = this._internalMsgMng.rpcbuffer;
-            outBuf.reset();
-            if (isServer) {
-                this._internalMsgMng.startSendEntityAndComps();
-                this._internalMsgMng.startSendRpc();
-                this._serEntityAndComps();
-                var stateLen = stateBuf.writerCursor;
-                var rpcLen = rpcBuf.writerCursor;
-                outBuf
-                    .writeBoolean(isServer)
-                    .writeUlong(stateLen)
-                    .writeUlong(rpcLen)
-                    .append(stateBuf)
-                    .append(rpcBuf);
-                this._internalMsgMng.endSendEntityAndComps();
-                this._internalMsgMng.endSendRpc();
-            } else {
-                this._internalMsgMng.startSendRpc();
-                var rpcLen = rpcBuf.writerCursor;
-                outBuf.writeBoolean(isServer).writeUlong(rpcLen).append(rpcBuf);
-                this._internalMsgMng.endSendRpc();
-            }
-            return outBuf.get();
-        };
-        Domain.prototype.setData = function (source) {
-            var inBuf = this._internalMsgMng.inoutbuffer;
-            var stateBuf = this._internalMsgMng.statebuffer;
-            var rpcBuf = this._internalMsgMng.rpcbuffer;
-            inBuf.set(source);
-            var isServer = inBuf.readBoolean();
-            if (isServer) {
-                var stateLen = inBuf.readUlong();
-                var rpcLen = inBuf.readUlong();
-                var stateStart = inBuf.readerCursor;
-                var stateEnd = stateStart + stateLen;
-                var rpcStart = stateEnd;
-                var rpcEnd = rpcStart + rpcLen;
-                stateBuf.set(source, stateStart, stateEnd);
-                rpcBuf.set(source, rpcStart, rpcEnd);
-                this._internalMsgMng.startRecvEntityAndComps();
-                this._derEntityAndComps();
-                this._internalMsgMng.endRecvEntityAndComps();
-                this._internalMsgMng.startRecvRpc();
-                this._deserRpcs();
-                this._internalMsgMng.endRecvRpc();
-            } else {
-                var rpcLen = inBuf.readUlong();
-                var rpcStart = inBuf.readerCursor;
-                var rpcEnd = rpcStart + rpcLen + 1;
-                rpcBuf.set(source, rpcStart, rpcEnd);
-                this._internalMsgMng.startRecvRpc();
-                this._deserRpcs();
-                this._internalMsgMng.endRecvRpc();
-            }
-        };
         Domain.prototype._getEntityIndexById = function (id) {
             return id >> DOMAIN_INDEX_BITS;
         };
@@ -1027,61 +1307,6 @@ var StateSync = (function (exports) {
         return Domain;
     })();
 
-    var WhyPropertyKeyHasTheSameError = /** @class */ (function (_super) {
-        __extends(WhyPropertyKeyHasTheSameError, _super);
-        function WhyPropertyKeyHasTheSameError() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return WhyPropertyKeyHasTheSameError;
-    })(Error);
-    function sortComponentPropertyKey(a, b) {
-        var akey = a.propertyKey;
-        var bkey = b.propertyKey;
-        if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
-        return akey > bkey ? 1 : -1;
-    }
-    function NetComp(name, genSerable) {
-        if (genSerable === void 0) {
-            genSerable = true;
-        }
-        return function (target) {
-            var s = getOrCreateScheme(target.prototype);
-            s.name = name;
-            s.hash = crc32.str(name);
-            hash2compName[s.hash] = s.name;
-            compName2ctr[s.name] = target;
-            s.count = s.raw.length;
-            if (s.count > 0) {
-                s.raw.sort(sortComponentPropertyKey);
-                for (var paramIndex = 0; paramIndex < s.count; paramIndex++) {
-                    var v = s.raw[paramIndex];
-                    v.paramIndex = paramIndex;
-                    s.props[paramIndex] = v;
-                    s.props[v.propertyKey] = v;
-                }
-            }
-            if (genSerable) {
-                {
-                    fixupSerableJIT(target.prototype);
-                }
-            }
-        };
-    }
-    var NONE_CONTAINER = 0;
-    function NetVar(type) {
-        return function (t, propertyKey) {
-            var s = getOrCreateScheme(t);
-            s.raw.push({
-                paramIndex: -1,
-                propertyKey: String(propertyKey),
-                type: {
-                    container: NONE_CONTAINER,
-                    dataType: typeof type === "number" ? type : DataTypeObect,
-                    refCtr: typeof type === "number" ? undefined : type,
-                },
-            });
-        };
-    }
     function fixupSerableJIT(prototype) {
         var schema = prototype[SCHEME_KEY];
         fixedupSerableStateJit(prototype, schema);
@@ -1273,7 +1498,7 @@ var StateSync = (function (exports) {
                     console.warn("Domain is not valid!");
                     return;
                 }
-                if (domain.type == ms.type) {
+                if (domain.option.type == ms.type) {
                     this[privateName].apply(this, args);
                 } else {
                     domain.readonlyInternalMsgMng.sendRpc(name_2, this, args);
@@ -1283,6 +1508,61 @@ var StateSync = (function (exports) {
         for (var i = 0, len = rpcNames.length; i < len; i++) {
             _loop_1(i);
         }
+    }
+
+    var WhyPropertyKeyHasTheSameError = /** @class */ (function (_super) {
+        __extends(WhyPropertyKeyHasTheSameError, _super);
+        function WhyPropertyKeyHasTheSameError() {
+            return (_super !== null && _super.apply(this, arguments)) || this;
+        }
+        return WhyPropertyKeyHasTheSameError;
+    })(Error);
+    function sortComponentPropertyKey(a, b) {
+        var akey = a.propertyKey;
+        var bkey = b.propertyKey;
+        if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
+        return akey > bkey ? 1 : -1;
+    }
+    function NetSerable(name, genSerable) {
+        if (genSerable === void 0) {
+            genSerable = true;
+        }
+        return function (target) {
+            var s = getOrCreateScheme(target.prototype);
+            s.name = name;
+            s.hash = crc32.str(name);
+            hash2compName[s.hash] = s.name;
+            compName2ctr[s.name] = target;
+            s.count = s.raw.length;
+            if (s.count > 0) {
+                s.raw.sort(sortComponentPropertyKey);
+                for (var paramIndex = 0; paramIndex < s.count; paramIndex++) {
+                    var v = s.raw[paramIndex];
+                    v.paramIndex = paramIndex;
+                    s.props[paramIndex] = v;
+                    s.props[v.propertyKey] = v;
+                }
+            }
+            if (genSerable) {
+                {
+                    fixupSerableJIT(target.prototype);
+                }
+            }
+        };
+    }
+    function NetVar(type) {
+        return function (t, propertyKey) {
+            var s = getOrCreateScheme(t);
+            s.raw.push({
+                paramIndex: -1,
+                propertyKey: String(propertyKey),
+                type: {
+                    container: NONE_CONTAINER,
+                    dataType: typeof type === "number" ? type : DataTypeObect,
+                    refCtr: typeof type === "number" ? undefined : type,
+                },
+            });
+        };
     }
 
     var Crc32PropertyKeyHashConflict = /** @class */ (function (_super) {
@@ -1387,7 +1667,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Int.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.INT)], Int.prototype, "value", null);
-        Int = __decorate([NetComp("Int")], Int);
+        Int = __decorate([NetSerable("Int")], Int);
         return Int;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1430,7 +1710,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Float.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.FLOAT)], Float.prototype, "value", null);
-        Float = __decorate([NetComp("Float")], Float);
+        Float = __decorate([NetSerable("Float")], Float);
         return Float;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1473,7 +1753,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Long.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.LONG)], Long.prototype, "value", null);
-        Long = __decorate([NetComp("Long")], Long);
+        Long = __decorate([NetSerable("Long")], Long);
         return Long;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1516,7 +1796,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Uint.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.uint)], Uint.prototype, "value", null);
-        Uint = __decorate([NetComp("Uint")], Uint);
+        Uint = __decorate([NetSerable("Uint")], Uint);
         return Uint;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1559,7 +1839,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Double.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.DOUBLE)], Double.prototype, "value", null);
-        Double = __decorate([NetComp("Double")], Double);
+        Double = __decorate([NetSerable("Double")], Double);
         return Double;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1602,7 +1882,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Ulong.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.ulong)], Ulong.prototype, "value", null);
-        Ulong = __decorate([NetComp("Ulong")], Ulong);
+        Ulong = __decorate([NetSerable("Ulong")], Ulong);
         return Ulong;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1645,7 +1925,7 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Short.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.SHORT)], Short.prototype, "value", null);
-        Short = __decorate([NetComp("Short")], Short);
+        Short = __decorate([NetSerable("Short")], Short);
         return Short;
     })(ADirty);
     /** @class */ (function (_super) {
@@ -1688,197 +1968,9 @@ var StateSync = (function (exports) {
         };
         __decorate([NetVar(DataType.BOOL)], Ushort.prototype, "dirty", void 0);
         __decorate([NetVar(DataType.ushort)], Ushort.prototype, "value", null);
-        Ushort = __decorate([NetComp("Ulong")], Ushort);
+        Ushort = __decorate([NetSerable("Ulong")], Ushort);
         return Ushort;
     })(ADirty);
-
-    var tempTypedBuffer = {
-        int: new Int32Array(1),
-        uint: new Uint32Array(1),
-        short: new Int16Array(1),
-        ushort: new Uint16Array(1),
-        long: new Int32Array(1),
-        ulong: new Uint32Array(1),
-        float: new Float32Array(1),
-        double: new Float64Array(1),
-    };
-    var StringDataBufferOutOfRange = /** @class */ (function (_super) {
-        __extends(StringDataBufferOutOfRange, _super);
-        function StringDataBufferOutOfRange() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return StringDataBufferOutOfRange;
-    })(Error);
-    var StringDataBuffer = /** @class */ (function () {
-        function StringDataBuffer() {
-            this.writeBuffer = [];
-            this.writerCursor = 0;
-            this.readBuffer = [];
-            this.readerCursor = 0;
-            this.readerStart = 0;
-            this.readerEnd = 0;
-        }
-        StringDataBuffer.prototype.check = function (increment) {
-            if (increment === void 0) {
-                increment = 0;
-            }
-            if (
-                this.writerCursor + increment >= this.readBuffer.length &&
-                this.writerCursor + increment >= this.readerEnd
-            ) {
-                throw new StringDataBufferOutOfRange(
-                    "Cursor: (" +
-                        this.writerCursor +
-                        "), buffer's length: (" +
-                        this.writeBuffer.length +
-                        ")"
-                );
-            }
-        };
-        StringDataBuffer.prototype.reset = function () {
-            this.writerCursor = 0;
-            this.readerCursor = 0;
-            this.readBuffer.length = 0;
-            this.writeBuffer.length = 0;
-        };
-        StringDataBuffer.prototype.readInt = function () {
-            this.check();
-            var temp = tempTypedBuffer.int;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUint = function () {
-            this.check();
-            var temp = tempTypedBuffer.uint;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readShort = function () {
-            this.check();
-            var temp = tempTypedBuffer.short;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUshort = function () {
-            this.check();
-            var temp = tempTypedBuffer.ushort;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readLong = function () {
-            this.check();
-            var temp = tempTypedBuffer.long;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUlong = function () {
-            this.check();
-            var temp = tempTypedBuffer.ulong;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readFloat = function () {
-            this.check();
-            var temp = tempTypedBuffer.float;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readDouble = function () {
-            this.check();
-            var temp = tempTypedBuffer.double;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readBoolean = function () {
-            this.check();
-            return Boolean(this.readBuffer[this.readerCursor++]);
-        };
-        StringDataBuffer.prototype.set = function (source, start, end) {
-            if (start === void 0) {
-                start = 0;
-            }
-            if (end === void 0) {
-                end = -1;
-            }
-            this.writerCursor = 0;
-            var dst = JSON.parse(source);
-            var dstChecked = Array.isArray(dst) ? dst : [];
-            if (end < 0) {
-                end += dstChecked.length;
-            }
-            this.readerStart = this.readerCursor = start;
-            this.readerEnd = end;
-            this.readBuffer = dstChecked;
-        };
-        StringDataBuffer.prototype.writeInt = function (source) {
-            var temp = tempTypedBuffer.int;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUint = function (source) {
-            var temp = tempTypedBuffer.uint;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeShort = function (source) {
-            var temp = tempTypedBuffer.short;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUshort = function (source) {
-            var temp = tempTypedBuffer.ushort;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeLong = function (source) {
-            var temp = tempTypedBuffer.long;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUlong = function (source) {
-            var temp = tempTypedBuffer.ulong;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeFloat = function (source) {
-            var temp = tempTypedBuffer.float;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeDouble = function (source) {
-            var temp = tempTypedBuffer.double;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeBoolean = function (source) {
-            this.writeBuffer[this.writerCursor++] = source ? 1 : 0;
-            return this;
-        };
-        StringDataBuffer.prototype.get = function () {
-            this.writeBuffer.length = this.writerCursor;
-            return JSON.stringify(this.writeBuffer);
-        };
-        StringDataBuffer.prototype.hasNext = function () {
-            return (
-                this.readerCursor < this.readBuffer.length &&
-                this.writerCursor < this.readerEnd
-            );
-        };
-        StringDataBuffer.prototype.append = function (other) {
-            this.writeBuffer.push.apply(this.writeBuffer, other.writeBuffer);
-            this.writerCursor += other.writerCursor;
-            return this;
-        };
-        return StringDataBuffer;
-    })();
 
     var Net = /** @class */ (function () {
         function Net() {}
@@ -1915,7 +2007,7 @@ var StateSync = (function (exports) {
         }
         __decorate([NetVar(DataType.INT)], Vector.prototype, "x", void 0);
         __decorate([NetVar(DataType.INT)], Vector.prototype, "y", void 0);
-        Vector = __decorate([NetComp("vec")], Vector);
+        Vector = __decorate([NetSerable("vec")], Vector);
         return Vector;
     })(IComp);
     var Transform = /** @class */ (function (_super) {
@@ -1941,7 +2033,7 @@ var StateSync = (function (exports) {
             "serverMove",
             null
         );
-        Transform = __decorate([NetComp("trans")], Transform);
+        Transform = __decorate([NetSerable("trans")], Transform);
         return Transform;
     })(IComp);
     var View = /** @class */ (function (_super) {
@@ -1952,9 +2044,26 @@ var StateSync = (function (exports) {
             _this.color = 0xffffff;
             return _this;
         }
+        View_1 = View;
         View.prototype.changeColor = function (inColor) {
             this.color = inColor;
         };
+        View.prototype.bindCanvas = function (ctx) {
+            this._ctx = ctx;
+        };
+        View.prototype.update = function () {
+            var trs = this.get(Transform);
+            var view = this.get(View_1);
+            if (!this._ctx || !trs || !view) return;
+            this.drawBall(this._ctx, trs.pos, "#" + view.color.toString(16));
+        };
+        View.prototype.drawBall = function (ctx, pos, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 26, 0, 2 * Math.PI);
+            ctx.fill();
+        };
+        var View_1;
         __decorate([NetVar(DataType.INT)], View.prototype, "color", void 0);
         __decorate(
             [Rpc(RpcType.SERVER), __param(0, RpcVar(DataType.INT))],
@@ -1962,7 +2071,7 @@ var StateSync = (function (exports) {
             "changeColor",
             null
         );
-        View = __decorate([NetComp("view")], View);
+        View = View_1 = __decorate([NetSerable("view")], View);
         return View;
     })(IComp);
     var ServerTime = /** @class */ (function (_super) {
@@ -1981,7 +2090,7 @@ var StateSync = (function (exports) {
             void 0
         );
         __decorate([NetVar(Int)], ServerTime.prototype, "deltaTime", void 0);
-        ServerTime = __decorate([NetComp("time")], ServerTime);
+        ServerTime = __decorate([NetSerable("time")], ServerTime);
         return ServerTime;
     })(IComp);
 
@@ -2007,7 +2116,10 @@ var StateSync = (function (exports) {
             this.isRollback = false;
             this._preTimestamp = 0;
             this._fixedTimeAccumulator = 0;
-            this.domain = Domain.Create(name, StringDataBuffer, rpcType);
+            this.domain = Domain.Create(name, {
+                dataBufCtr: StringDataBuffer,
+                type: rpcType,
+            });
             this.ctx = canvas.getContext("2d");
             this.canvas.width = 950;
             this.canvas.height = 70;
