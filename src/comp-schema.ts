@@ -27,12 +27,19 @@ export interface MethodSchema {
     paramTypes: DataType[];
     paramCount: number;
     returnType: DataType;
-    type: RpcType;
+    returnRefCtr?: any;
+    type: Role;
 }
 
 export enum RpcType {
     SERVER,
     CLIENT,
+}
+
+export enum Role {
+    AUTHORITY = 1,
+    SIMULATED_PROXY,
+    AUTONMOUS_PROXY,
 }
 
 // prettier-ignore
@@ -77,7 +84,7 @@ export function getSchemaByPrototype(prototype: any): Schema | null {
     return null;
 }
 
-export function getOrCreateScheme(prototype: any) {
+export function getOrCreateScheme(prototype: any): Schema {
     if (prototype.hasOwnProperty(SCHEME_KEY)) {
         return (prototype as any)[SCHEME_KEY];
     }
