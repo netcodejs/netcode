@@ -17,6 +17,14 @@ beforeEach(() => {
     Domain.Clear();
 });
 
+function wait(sec = 0) {
+    return new Promise<void>((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, sec);
+    });
+}
+
 describe("rpc", () => {
     @NetSerable("logic")
     class LogicComponent extends IComp {
@@ -84,19 +92,19 @@ describe("rpc-return-type", () => {
         callCount = 0;
 
         @Rpc(Role.AUTHORITY, DataType.BOOL)
-        async log(@RpcVar(DataType.INT) value: number) {
-            if (value <= 0) return false;
-            console.log("I am number: " + value);
-            return true;
+        log(@RpcVar(DataType.INT) value: number) {
+            if (value <= 0) return Promise.resolve(false);
+            console.log(`[${this.domain.name}]I am number: ${value}`);
+            return Promise.resolve(true);
         }
     }
 
-    test("pure", () => {
-        const server = Domain.Create("ser-domain", {
+    test("pure", async () => {
+        const server = Domain.Create("server-domain", {
             type: RpcType.SERVER,
             dataBufCtr: StringDataBuffer,
         });
-        const client = Domain.Create("deser-domain", {
+        const client = Domain.Create("client-domain", {
             type: RpcType.CLIENT,
             dataBufCtr: StringDataBuffer,
         });
@@ -107,16 +115,23 @@ describe("rpc-return-type", () => {
         client.setData(server.asData());
         const clientLogic = client.get(serverEnt.id)!.get(Console)!;
         let check = false;
+
         clientLogic.log(1).then((result) => {
             check = result;
         });
         server.setData(client.asData());
+        await wait();
+        client.setData(server.asData());
+        await wait();
         expect(check).toEqual(true);
 
         clientLogic.log(0).then((result) => {
             check = result;
         });
         server.setData(client.asData());
+        await wait();
+        client.setData(server.asData());
+        await wait();
         expect(check).toEqual(false);
     });
 });

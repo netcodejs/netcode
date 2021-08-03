@@ -66,7 +66,7 @@ export class Domain<T extends SupportNetDataType = any> {
         if (this._name2domainMap.has(name)) {
             throw new DomainDuplicated(name);
         }
-        const news: Domain<T> = new Domain(option);
+        const news: Domain<T> = new Domain(name, option);
         const domainIndex = this._name2domainMap.set(name, news);
         news._index = domainIndex;
         return news;
@@ -119,7 +119,7 @@ export class Domain<T extends SupportNetDataType = any> {
         return this._option as Required<Readonly<DomainOption<T>>>;
     }
     //#endregion
-    public constructor(option: DomainOption<T>) {
+    protected constructor(readonly name: string, option: DomainOption<T>) {
         var requiredOption = HandleDomainDefautlValue(option);
         this._option = requiredOption;
         this._entities = new Array<Entity>(requiredOption.capacity);
