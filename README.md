@@ -54,10 +54,26 @@ Component also support rpc. When tagged with `@NetRpc(type: RpcType)`, the metho
 @NetSerable("Transform")
 class TransformComp extends IComp {
     // ... as above
-    @NetRpc(RpcType.CLIENT)
-    move(x: number, y: number) {
+    @Rpc(Role.AUTHORITY)
+    move(@NetVar(DataType.INT) x: number, @NetVar(DataType.INT) y: number) {
         this.position.x += x;
         this.position.y += y;
+    }
+}
+```
+
+Rpc - Return
+
+```typescript
+class TransformComp extends IComp {
+    // ...as above
+    @Rpc(Role.AUTHORITY, DataType.BOOL)
+    async fly() {
+        if (this.position.y > 0) {
+            return false;
+        }
+        this.position.y = 200;
+        return true;
     }
 }
 ```
