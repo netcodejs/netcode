@@ -18,6 +18,7 @@ export default {
         serve({
             open: true,
             contentBase: "example",
+            port: 8889,
         }),
     ],
 };

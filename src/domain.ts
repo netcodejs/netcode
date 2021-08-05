@@ -262,11 +262,6 @@ export class Domain<T extends SupportNetDataType = any> {
 
         inBuf.set(source);
         const uuid = inBuf.readInt();
-        console.log(
-            `uuid: ${uuid}, type: ${RpcType[this.option.type]}, bufLen: ${
-                inBuf.readerEnd
-            }`
-        );
         const isServer = inBuf.readBoolean();
 
         if (isServer) {
