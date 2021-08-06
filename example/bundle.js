@@ -1,6 +1,5 @@
-var StateSync = (function (exports) {
+var netcode = (function (t) {
     "use strict";
-
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
 
@@ -14,2746 +13,2670 @@ var StateSync = (function (exports) {
     LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    /* global Reflect, Promise */
-
-    var extendStatics = function (d, b) {
-        extendStatics =
-            Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array &&
-                function (d, b) {
-                    d.__proto__ = b;
-                }) ||
-            function (d, b) {
-                for (var p in b)
-                    if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
-            };
-        return extendStatics(d, b);
-    };
-
-    function __extends(d, b) {
-        if (typeof b !== "function" && b !== null)
+    ***************************************************************************** */ var e =
+        function (t, r) {
+            return (e =
+                Object.setPrototypeOf ||
+                ({ __proto__: [] } instanceof Array &&
+                    function (t, e) {
+                        t.__proto__ = e;
+                    }) ||
+                function (t, e) {
+                    for (var r in e)
+                        Object.prototype.hasOwnProperty.call(e, r) &&
+                            (t[r] = e[r]);
+                })(t, r);
+        };
+    function r(t, r) {
+        if ("function" != typeof r && null !== r)
             throw new TypeError(
                 "Class extends value " +
-                    String(b) +
+                    String(r) +
                     " is not a constructor or null"
             );
-        extendStatics(d, b);
-        function __() {
-            this.constructor = d;
+        function n() {
+            this.constructor = t;
         }
-        d.prototype =
-            b === null
-                ? Object.create(b)
-                : ((__.prototype = b.prototype), new __());
+        e(t, r),
+            (t.prototype =
+                null === r
+                    ? Object.create(r)
+                    : ((n.prototype = r.prototype), new n()));
     }
-
-    function __decorate(decorators, target, key, desc) {
-        var c = arguments.length,
-            r =
-                c < 3
-                    ? target
-                    : desc === null
-                    ? (desc = Object.getOwnPropertyDescriptor(target, key))
-                    : desc,
-            d;
-        if (
-            typeof Reflect === "object" &&
-            typeof Reflect.decorate === "function"
-        )
-            r = Reflect.decorate(decorators, target, key, desc);
+    function n(t, e, r, n) {
+        var i,
+            o = arguments.length,
+            s =
+                o < 3
+                    ? e
+                    : null === n
+                    ? (n = Object.getOwnPropertyDescriptor(e, r))
+                    : n;
+        if ("object" == typeof Reflect && "function" == typeof Reflect.decorate)
+            s = Reflect.decorate(t, e, r, n);
         else
-            for (var i = decorators.length - 1; i >= 0; i--)
-                if ((d = decorators[i]))
-                    r =
-                        (c < 3
-                            ? d(r)
-                            : c > 3
-                            ? d(target, key, r)
-                            : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
+            for (var a = t.length - 1; a >= 0; a--)
+                (i = t[a]) &&
+                    (s = (o < 3 ? i(s) : o > 3 ? i(e, r, s) : i(e, r)) || s);
+        return o > 3 && s && Object.defineProperty(e, r, s), s;
     }
-
-    function __param(paramIndex, decorator) {
-        return function (target, key) {
-            decorator(target, key, paramIndex);
+    function i(t, e) {
+        return function (r, n) {
+            e(r, n, t);
         };
     }
-
-    function __awaiter(thisArg, _arguments, P, generator) {
-        function adopt(value) {
-            return value instanceof P
-                ? value
-                : new P(function (resolve) {
-                      resolve(value);
-                  });
-        }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) {
+    function o(t, e, r, n) {
+        return new (r || (r = Promise))(function (i, o) {
+            function s(t) {
                 try {
-                    step(generator.next(value));
-                } catch (e) {
-                    reject(e);
+                    u(n.next(t));
+                } catch (t) {
+                    o(t);
                 }
             }
-            function rejected(value) {
+            function a(t) {
                 try {
-                    step(generator["throw"](value));
-                } catch (e) {
-                    reject(e);
+                    u(n.throw(t));
+                } catch (t) {
+                    o(t);
                 }
             }
-            function step(result) {
-                result.done
-                    ? resolve(result.value)
-                    : adopt(result.value).then(fulfilled, rejected);
+            function u(t) {
+                var e;
+                t.done
+                    ? i(t.value)
+                    : ((e = t.value),
+                      e instanceof r
+                          ? e
+                          : new r(function (t) {
+                                t(e);
+                            })).then(s, a);
             }
-            step(
-                (generator = generator.apply(thisArg, _arguments || [])).next()
-            );
+            u((n = n.apply(t, e || [])).next());
         });
     }
-
-    function __generator(thisArg, body) {
-        var _ = {
+    function s(t, e) {
+        var r,
+            n,
+            i,
+            o,
+            s = {
                 label: 0,
                 sent: function () {
-                    if (t[0] & 1) throw t[1];
-                    return t[1];
+                    if (1 & i[0]) throw i[1];
+                    return i[1];
                 },
                 trys: [],
                 ops: [],
-            },
-            f,
-            y,
-            t,
-            g;
+            };
         return (
-            (g = { next: verb(0), throw: verb(1), return: verb(2) }),
-            typeof Symbol === "function" &&
-                (g[Symbol.iterator] = function () {
+            (o = { next: a(0), throw: a(1), return: a(2) }),
+            "function" == typeof Symbol &&
+                (o[Symbol.iterator] = function () {
                     return this;
                 }),
-            g
+            o
         );
-        function verb(n) {
-            return function (v) {
-                return step([n, v]);
+        function a(o) {
+            return function (a) {
+                return (function (o) {
+                    if (r)
+                        throw new TypeError("Generator is already executing.");
+                    for (; s; )
+                        try {
+                            if (
+                                ((r = 1),
+                                n &&
+                                    (i =
+                                        2 & o[0]
+                                            ? n.return
+                                            : o[0]
+                                            ? n.throw ||
+                                              ((i = n.return) && i.call(n), 0)
+                                            : n.next) &&
+                                    !(i = i.call(n, o[1])).done)
+                            )
+                                return i;
+                            switch (
+                                ((n = 0), i && (o = [2 & o[0], i.value]), o[0])
+                            ) {
+                                case 0:
+                                case 1:
+                                    i = o;
+                                    break;
+                                case 4:
+                                    return s.label++, { value: o[1], done: !1 };
+                                case 5:
+                                    s.label++, (n = o[1]), (o = [0]);
+                                    continue;
+                                case 7:
+                                    (o = s.ops.pop()), s.trys.pop();
+                                    continue;
+                                default:
+                                    if (
+                                        !((i = s.trys),
+                                        (i = i.length > 0 && i[i.length - 1]) ||
+                                            (6 !== o[0] && 2 !== o[0]))
+                                    ) {
+                                        s = 0;
+                                        continue;
+                                    }
+                                    if (
+                                        3 === o[0] &&
+                                        (!i || (o[1] > i[0] && o[1] < i[3]))
+                                    ) {
+                                        s.label = o[1];
+                                        break;
+                                    }
+                                    if (6 === o[0] && s.label < i[1]) {
+                                        (s.label = i[1]), (i = o);
+                                        break;
+                                    }
+                                    if (i && s.label < i[2]) {
+                                        (s.label = i[2]), s.ops.push(o);
+                                        break;
+                                    }
+                                    i[2] && s.ops.pop(), s.trys.pop();
+                                    continue;
+                            }
+                            o = e.call(t, s);
+                        } catch (t) {
+                            (o = [6, t]), (n = 0);
+                        } finally {
+                            r = i = 0;
+                        }
+                    if (5 & o[0]) throw o[1];
+                    return { value: o[0] ? o[1] : void 0, done: !0 };
+                })([o, a]);
             };
         }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (_)
-                try {
-                    if (
-                        ((f = 1),
-                        y &&
-                            (t =
-                                op[0] & 2
-                                    ? y["return"]
-                                    : op[0]
-                                    ? y["throw"] ||
-                                      ((t = y["return"]) && t.call(y), 0)
-                                    : y.next) &&
-                            !(t = t.call(y, op[1])).done)
-                    )
-                        return t;
-                    if (((y = 0), t)) op = [op[0] & 2, t.value];
-                    switch (op[0]) {
-                        case 0:
-                        case 1:
-                            t = op;
-                            break;
-                        case 4:
-                            _.label++;
-                            return { value: op[1], done: false };
-                        case 5:
-                            _.label++;
-                            y = op[1];
-                            op = [0];
-                            continue;
-                        case 7:
-                            op = _.ops.pop();
-                            _.trys.pop();
-                            continue;
-                        default:
-                            if (
-                                !((t = _.trys),
-                                (t = t.length > 0 && t[t.length - 1])) &&
-                                (op[0] === 6 || op[0] === 2)
-                            ) {
-                                _ = 0;
-                                continue;
-                            }
-                            if (
-                                op[0] === 3 &&
-                                (!t || (op[1] > t[0] && op[1] < t[3]))
-                            ) {
-                                _.label = op[1];
-                                break;
-                            }
-                            if (op[0] === 6 && _.label < t[1]) {
-                                _.label = t[1];
-                                t = op;
-                                break;
-                            }
-                            if (t && _.label < t[2]) {
-                                _.label = t[2];
-                                _.ops.push(op);
-                                break;
-                            }
-                            if (t[2]) _.ops.pop();
-                            _.trys.pop();
-                            continue;
-                    }
-                    op = body.call(thisArg, _);
-                } catch (e) {
-                    op = [6, e];
-                    y = 0;
-                } finally {
-                    f = t = 0;
-                }
-            if (op[0] & 5) throw op[1];
-            return { value: op[0] ? op[1] : void 0, done: true };
-        }
     }
-
-    function __spreadArray(to, from) {
-        for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-            to[j] = from[i];
-        return to;
-    }
-
-    var IComp = /** @class */ (function () {
-        function IComp() {}
-        Object.defineProperty(IComp.prototype, "entity", {
-            get: function () {
-                return this._entity;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(IComp.prototype, "domain", {
-            get: function () {
-                return this._entity.domain;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(IComp.prototype, "$comps", {
-            get: function () {
-                return this._entity.$comps;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        IComp.prototype.get = function (ctr) {
-            return this._entity.get(ctr);
-        };
-        return IComp;
-    })();
-
-    var NULL_NUM = -1;
-    var NULL_STR = "";
-    var NONE_CONTAINER = 0;
-    var RPC_MAX_UUID = (1 << 8) - 1;
-
-    var RpcType;
-    (function (RpcType) {
-        RpcType[(RpcType["SERVER"] = 0)] = "SERVER";
-        RpcType[(RpcType["CLIENT"] = 1)] = "CLIENT";
-    })(RpcType || (RpcType = {}));
-    var Role;
-    (function (Role) {
-        Role[(Role["AUTHORITY"] = 1)] = "AUTHORITY";
-        Role[(Role["SIMULATED_PROXY"] = 2)] = "SIMULATED_PROXY";
-        Role[(Role["AUTONMOUS_PROXY"] = 3)] = "AUTONMOUS_PROXY";
-    })(Role || (Role = {}));
-    // prettier-ignore
-    var DataType;
-    (function (DataType) {
-        DataType[(DataType["NONE"] = 0)] = "NONE";
-        DataType[(DataType["I8"] = 1)] = "I8";
-        DataType[(DataType["U8"] = 2)] = "U8";
-        DataType[(DataType["I16"] = 3)] = "I16";
-        DataType[(DataType["U16"] = 4)] = "U16";
-        DataType[(DataType["I32"] = 5)] = "I32";
-        DataType[(DataType["U32"] = 6)] = "U32";
-        DataType[(DataType["F32"] = 7)] = "F32";
-        DataType[(DataType["F64"] = 8)] = "F64";
-        DataType[(DataType["SHORT"] = 9)] = "SHORT";
-        DataType[(DataType["ushort"] = 10)] = "ushort";
-        DataType[(DataType["INT"] = 11)] = "INT";
-        DataType[(DataType["uint"] = 12)] = "uint";
-        DataType[(DataType["LONG"] = 13)] = "LONG";
-        DataType[(DataType["ulong"] = 14)] = "ulong";
-        DataType[(DataType["FLOAT"] = 15)] = "FLOAT";
-        DataType[(DataType["DOUBLE"] = 16)] = "DOUBLE";
-        DataType[(DataType["STRING"] = 17)] = "STRING";
-        DataType[(DataType["BOOL"] = 18)] = "BOOL";
-    })(DataType || (DataType = {}));
-    var DataTypeObect = 99;
-    var DataTypeVoid = 98;
-    function genSchema(o) {
-        if (o === void 0) {
-            o = Object.create(null);
-        }
-        o.hash = NULL_NUM;
-        o.name = NULL_STR;
-        o.count = 0;
-        o.props = Object.create(null);
-        o.methods = Object.create(null);
-        o.raw = [];
-        return o;
-    }
-    function genMethodSchema(o) {
-        if (o === void 0) {
-            o = Object.create(null);
-        }
-        o.hash = NULL_NUM;
-        o.name = NULL_STR;
-        o.paramCount = 0;
-        o.paramTypes = [];
-        o.returnType = DataTypeVoid;
-        o.type = -1;
-        return o;
-    }
-    var SCHEME_KEY = "__schema__";
-    function getOrCreateScheme(prototype) {
-        if (prototype.hasOwnProperty(SCHEME_KEY)) {
-            return prototype[SCHEME_KEY];
-        }
-        var s = genSchema();
-        prototype[SCHEME_KEY] = s;
-        var superCtr = Object.getPrototypeOf(prototype);
-        var superSchema = superCtr[SCHEME_KEY];
-        if (superSchema) {
-            s.raw.push.apply(s.raw, superSchema.raw);
-        }
-        return s;
-    }
-
-    var ArrayMap = /** @class */ (function () {
-        function ArrayMap(source) {
-            this._name2indexRecord = Object.create(null);
-            this._values = [];
-            if (source != null) {
-                this._values.length = source.length;
-                for (var i = 0, len = source.length; i < len; i++) {
-                    var _a = source[i],
-                        key = _a[0],
-                        value = _a[1];
-                    this._name2indexRecord[key] = i;
-                    this._values[i] = value;
-                }
-            }
-        }
-        ArrayMap.prototype.get = function (key) {
-            var idx = this.getIndex(key);
-            if (idx > -1) {
-                return this._values[idx];
-            }
-            return null;
-        };
-        ArrayMap.prototype.getIndex = function (key) {
-            var _a;
-            return (_a = this._name2indexRecord[key]) !== null && _a !== void 0
-                ? _a
-                : -1;
-        };
-        ArrayMap.prototype.getByIndex = function (index) {
-            return this._values[index];
-        };
-        ArrayMap.prototype.has = function (key) {
-            var _a;
+    var a,
+        u,
+        c,
+        p = (function () {
+            function t() {}
             return (
-                ((_a = this._name2indexRecord[key]) !== null && _a !== void 0
-                    ? _a
-                    : -1) > -1
+                Object.defineProperty(t.prototype, "entity", {
+                    get: function () {
+                        return this._entity;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t.prototype, "domain", {
+                    get: function () {
+                        return this._entity.domain;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t.prototype, "$comps", {
+                    get: function () {
+                        return this._entity.$comps;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                (t.prototype.get = function (t) {
+                    return this._entity.get(t);
+                }),
+                t
             );
-        };
-        ArrayMap.prototype.set = function (key, value) {
-            var index = this._name2indexRecord[key];
-            if (index == null) {
-                index = this._values.length;
-                this._name2indexRecord[key] = index;
+        })(),
+        h = -1;
+    !(function (t) {
+        (t[(t.SERVER = 0)] = "SERVER"), (t[(t.CLIENT = 1)] = "CLIENT");
+    })(a || (a = {})),
+        (function (t) {
+            (t[(t.AUTHORITY = 1)] = "AUTHORITY"),
+                (t[(t.SIMULATED_PROXY = 2)] = "SIMULATED_PROXY"),
+                (t[(t.AUTONMOUS_PROXY = 3)] = "AUTONMOUS_PROXY");
+        })(u || (u = {})),
+        (function (t) {
+            (t[(t.NONE = 0)] = "NONE"),
+                (t[(t.I8 = 1)] = "I8"),
+                (t[(t.U8 = 2)] = "U8"),
+                (t[(t.I16 = 3)] = "I16"),
+                (t[(t.U16 = 4)] = "U16"),
+                (t[(t.I32 = 5)] = "I32"),
+                (t[(t.U32 = 6)] = "U32"),
+                (t[(t.F32 = 7)] = "F32"),
+                (t[(t.F64 = 8)] = "F64"),
+                (t[(t.SHORT = 9)] = "SHORT"),
+                (t[(t.ushort = 10)] = "ushort"),
+                (t[(t.INT = 11)] = "INT"),
+                (t[(t.uint = 12)] = "uint"),
+                (t[(t.LONG = 13)] = "LONG"),
+                (t[(t.ulong = 14)] = "ulong"),
+                (t[(t.FLOAT = 15)] = "FLOAT"),
+                (t[(t.DOUBLE = 16)] = "DOUBLE"),
+                (t[(t.STRING = 17)] = "STRING"),
+                (t[(t.BOOL = 18)] = "BOOL");
+        })(c || (c = {}));
+    var l = 99;
+    function f(t) {
+        return (
+            void 0 === t && (t = Object.create(null)),
+            (t.hash = h),
+            (t.name = ""),
+            (t.paramCount = 0),
+            (t.paramTypes = []),
+            (t.returnType = 98),
+            (t.type = -1),
+            t
+        );
+    }
+    var d = "__schema__";
+    function y(t) {
+        if (t.hasOwnProperty(d)) return t.__schema__;
+        var e,
+            r =
+                (void 0 === e && (e = Object.create(null)),
+                (e.hash = h),
+                (e.name = ""),
+                (e.count = 0),
+                (e.props = Object.create(null)),
+                (e.methods = Object.create(null)),
+                (e.raw = []),
+                e);
+        t.__schema__ = r;
+        var n = Object.getPrototypeOf(t).__schema__;
+        return n && r.raw.push.apply(r.raw, n.raw), r;
+    }
+    var v = (function () {
+        function t(t) {
+            if (
+                ((this._name2indexRecord = Object.create(null)),
+                (this._values = []),
+                null != t)
+            ) {
+                this._values.length = t.length;
+                for (var e = 0, r = t.length; e < r; e++) {
+                    var n = t[e],
+                        i = n[0],
+                        o = n[1];
+                    (this._name2indexRecord[i] = e), (this._values[e] = o);
+                }
             }
-            this._values[index] = value;
-            return index;
-        };
-        ArrayMap.prototype.delete = function (key) {
-            var index = this.getIndex(key);
-            if (index < 0) {
-                return [null, -1];
-            }
-            return [this._values[index], index];
-        };
-        ArrayMap.prototype.clear = function () {
-            this._name2indexRecord = Object.create(null);
-            this._values.length = 0;
-        };
-        Object.defineProperty(ArrayMap.prototype, "values", {
-            get: function () {
-                return Array.from(this._values);
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(ArrayMap.prototype, "readonlyValues", {
-            get: function () {
-                return this._values;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        return ArrayMap;
+        }
+        return (
+            (t.prototype.get = function (t) {
+                var e = this.getIndex(t);
+                return e > -1 ? this._values[e] : null;
+            }),
+            (t.prototype.getIndex = function (t) {
+                var e;
+                return null !== (e = this._name2indexRecord[t]) && void 0 !== e
+                    ? e
+                    : -1;
+            }),
+            (t.prototype.getByIndex = function (t) {
+                return this._values[t];
+            }),
+            (t.prototype.has = function (t) {
+                var e;
+                return (
+                    (null !== (e = this._name2indexRecord[t]) && void 0 !== e
+                        ? e
+                        : -1) > -1
+                );
+            }),
+            (t.prototype.set = function (t, e) {
+                var r = this._name2indexRecord[t];
+                return (
+                    null == r &&
+                        ((r = this._values.length),
+                        (this._name2indexRecord[t] = r)),
+                    (this._values[r] = e),
+                    r
+                );
+            }),
+            (t.prototype.delete = function (t) {
+                var e = this.getIndex(t);
+                return e < 0 ? [null, -1] : [this._values[e], e];
+            }),
+            (t.prototype.clear = function () {
+                (this._name2indexRecord = Object.create(null)),
+                    (this._values.length = 0);
+            }),
+            Object.defineProperty(t.prototype, "values", {
+                get: function () {
+                    return Array.from(this._values);
+                },
+                enumerable: !1,
+                configurable: !0,
+            }),
+            Object.defineProperty(t.prototype, "readonlyValues", {
+                get: function () {
+                    return this._values;
+                },
+                enumerable: !1,
+                configurable: !0,
+            }),
+            t
+        );
     })();
-
-    var MAX_VERSION = (1 << 30) - 1;
-    function composeVersion(num, destoryed) {
-        num = num % MAX_VERSION;
-        return destoryed ? -num : num;
-    }
-    function decomposeVersion(version) {
-        return [version > 0 ? version : -version, version < 0];
-    }
-    function asSerable(obj) {
-        if (!obj) return null;
-        // @ts-ignore
-        return typeof obj.ser === "function" && typeof obj.deser === "function"
-            ? obj
+    function _(t) {
+        return t && "function" == typeof t.ser && "function" == typeof t.deser
+            ? t
             : null;
     }
-    function assert(b, errrorClass) {
-        if (!b) {
-            throw new errrorClass();
+    var g = (function () {
+        function t() {
+            var t = this;
+            (this.state = "pending"),
+                (this.fate = "unresolved"),
+                (this.promise = new Promise(function (e, r) {
+                    (t._resolve = e), (t._reject = r);
+                })),
+                this.promise.then(
+                    function (e) {
+                        (t.state = "fulfilled"), (t._value = e);
+                    },
+                    function () {
+                        return (t.state = "rejected");
+                    }
+                );
         }
-    }
-    var Deferred = /** @class */ (function () {
-        function Deferred() {
-            var _this = this;
-            this.state = "pending";
-            this.fate = "unresolved";
-            this.promise = new Promise(function (resolve, reject) {
-                _this._resolve = resolve;
-                _this._reject = reject;
-            });
-            this.promise.then(
-                function () {
-                    return (_this.state = "fulfilled");
+        return (
+            Object.defineProperty(t.prototype, "value", {
+                get: function () {
+                    return this._value;
                 },
-                function () {
-                    return (_this.state = "rejected");
-                }
-            );
-        }
-        Deferred.prototype.resolve = function (value) {
-            if (this.fate === "resolved") {
-                throw "Deferred cannot be resolved twice";
-            }
-            this.fate = "resolved";
-            this._resolve(value);
-        };
-        Deferred.prototype.reject = function (reason) {
-            if (this.fate === "resolved") {
-                throw "Deferred cannot be resolved twice";
-            }
-            this.fate = "resolved";
-            this._reject(reason);
-        };
-        Deferred.prototype.isResolved = function () {
-            return this.fate === "resolved";
-        };
-        Deferred.prototype.isPending = function () {
-            return this.state === "pending";
-        };
-        Deferred.prototype.isFulfilled = function () {
-            return this.state === "fulfilled";
-        };
-        Deferred.prototype.isRejected = function () {
-            return this.state === "rejected";
-        };
-        return Deferred;
+                enumerable: !1,
+                configurable: !0,
+            }),
+            (t.prototype.resolve = function (t) {
+                if ("resolved" === this.fate)
+                    throw "Deferred cannot be resolved twice";
+                (this.fate = "resolved"), this._resolve(t);
+            }),
+            (t.prototype.reject = function (t) {
+                if ("resolved" === this.fate)
+                    throw "Deferred cannot be resolved twice";
+                (this.fate = "resolved"), this._reject(t);
+            }),
+            (t.prototype.isResolved = function () {
+                return "resolved" === this.fate;
+            }),
+            (t.prototype.isPending = function () {
+                return "pending" === this.state;
+            }),
+            (t.prototype.isFulfilled = function () {
+                return "fulfilled" === this.state;
+            }),
+            (t.prototype.isRejected = function () {
+                return "rejected" === this.state;
+            }),
+            t
+        );
     })();
+    var m,
+        b =
+            ((function (t, e) {
+                var r;
+                (r = function (t) {
+                    t.version = "1.2.0";
+                    var e = (function () {
+                        for (
+                            var t = 0, e = new Array(256), r = 0;
+                            256 != r;
+                            ++r
+                        )
+                            (t =
+                                1 &
+                                (t =
+                                    1 &
+                                    (t =
+                                        1 &
+                                        (t =
+                                            1 &
+                                            (t =
+                                                1 &
+                                                (t =
+                                                    1 &
+                                                    (t =
+                                                        1 &
+                                                        (t =
+                                                            1 & (t = r)
+                                                                ? -306674912 ^
+                                                                  (t >>> 1)
+                                                                : t >>> 1)
+                                                            ? -306674912 ^
+                                                              (t >>> 1)
+                                                            : t >>> 1)
+                                                        ? -306674912 ^ (t >>> 1)
+                                                        : t >>> 1)
+                                                    ? -306674912 ^ (t >>> 1)
+                                                    : t >>> 1)
+                                                ? -306674912 ^ (t >>> 1)
+                                                : t >>> 1)
+                                            ? -306674912 ^ (t >>> 1)
+                                            : t >>> 1)
+                                        ? -306674912 ^ (t >>> 1)
+                                        : t >>> 1)
+                                    ? -306674912 ^ (t >>> 1)
+                                    : t >>> 1),
+                                (e[r] = t);
+                        return "undefined" != typeof Int32Array
+                            ? new Int32Array(e)
+                            : e;
+                    })();
+                    (t.table = e),
+                        (t.bstr = function (t, r) {
+                            for (
+                                var n = -1 ^ r, i = t.length - 1, o = 0;
+                                o < i;
 
-    function createCommonjsModule(fn) {
-        var module = { exports: {} };
-        return fn(module, module.exports), module.exports;
+                            )
+                                n =
+                                    ((n =
+                                        (n >>> 8) ^
+                                        e[255 & (n ^ t.charCodeAt(o++))]) >>>
+                                        8) ^
+                                    e[255 & (n ^ t.charCodeAt(o++))];
+                            return (
+                                o === i &&
+                                    (n =
+                                        (n >>> 8) ^
+                                        e[255 & (n ^ t.charCodeAt(o))]),
+                                -1 ^ n
+                            );
+                        }),
+                        (t.buf = function (t, r) {
+                            if (t.length > 1e4)
+                                return (function (t, r) {
+                                    for (
+                                        var n = -1 ^ r, i = t.length - 7, o = 0;
+                                        o < i;
+
+                                    )
+                                        n =
+                                            ((n =
+                                                ((n =
+                                                    ((n =
+                                                        ((n =
+                                                            ((n =
+                                                                ((n =
+                                                                    ((n =
+                                                                        (n >>>
+                                                                            8) ^
+                                                                        e[
+                                                                            255 &
+                                                                                (n ^
+                                                                                    t[
+                                                                                        o++
+                                                                                    ])
+                                                                        ]) >>>
+                                                                        8) ^
+                                                                    e[
+                                                                        255 &
+                                                                            (n ^
+                                                                                t[
+                                                                                    o++
+                                                                                ])
+                                                                    ]) >>>
+                                                                    8) ^
+                                                                e[
+                                                                    255 &
+                                                                        (n ^
+                                                                            t[
+                                                                                o++
+                                                                            ])
+                                                                ]) >>>
+                                                                8) ^
+                                                            e[
+                                                                255 &
+                                                                    (n ^ t[o++])
+                                                            ]) >>>
+                                                            8) ^
+                                                        e[
+                                                            255 & (n ^ t[o++])
+                                                        ]) >>>
+                                                        8) ^
+                                                    e[255 & (n ^ t[o++])]) >>>
+                                                    8) ^
+                                                e[255 & (n ^ t[o++])]) >>>
+                                                8) ^
+                                            e[255 & (n ^ t[o++])];
+                                    for (; o < i + 7; )
+                                        n = (n >>> 8) ^ e[255 & (n ^ t[o++])];
+                                    return -1 ^ n;
+                                })(t, r);
+                            for (
+                                var n = -1 ^ r, i = t.length - 3, o = 0;
+                                o < i;
+
+                            )
+                                n =
+                                    ((n =
+                                        ((n =
+                                            ((n =
+                                                (n >>> 8) ^
+                                                e[255 & (n ^ t[o++])]) >>>
+                                                8) ^
+                                            e[255 & (n ^ t[o++])]) >>>
+                                            8) ^
+                                        e[255 & (n ^ t[o++])]) >>>
+                                        8) ^
+                                    e[255 & (n ^ t[o++])];
+                            for (; o < i + 3; )
+                                n = (n >>> 8) ^ e[255 & (n ^ t[o++])];
+                            return -1 ^ n;
+                        }),
+                        (t.str = function (t, r) {
+                            for (
+                                var n, i, o = -1 ^ r, s = 0, a = t.length;
+                                s < a;
+
+                            )
+                                (n = t.charCodeAt(s++)) < 128
+                                    ? (o = (o >>> 8) ^ e[255 & (o ^ n)])
+                                    : n < 2048
+                                    ? (o =
+                                          ((o =
+                                              (o >>> 8) ^
+                                              e[
+                                                  255 &
+                                                      (o ^
+                                                          (192 |
+                                                              ((n >> 6) & 31)))
+                                              ]) >>>
+                                              8) ^
+                                          e[255 & (o ^ (128 | (63 & n)))])
+                                    : n >= 55296 && n < 57344
+                                    ? ((n = 64 + (1023 & n)),
+                                      (i = 1023 & t.charCodeAt(s++)),
+                                      (o =
+                                          ((o =
+                                              ((o =
+                                                  ((o =
+                                                      (o >>> 8) ^
+                                                      e[
+                                                          255 &
+                                                              (o ^
+                                                                  (240 |
+                                                                      ((n >>
+                                                                          8) &
+                                                                          7)))
+                                                      ]) >>>
+                                                      8) ^
+                                                  e[
+                                                      255 &
+                                                          (o ^
+                                                              (128 |
+                                                                  ((n >> 2) &
+                                                                      63)))
+                                                  ]) >>>
+                                                  8) ^
+                                              e[
+                                                  255 &
+                                                      (o ^
+                                                          (128 |
+                                                              ((i >> 6) & 15) |
+                                                              ((3 & n) << 4)))
+                                              ]) >>>
+                                              8) ^
+                                          e[255 & (o ^ (128 | (63 & i)))]))
+                                    : (o =
+                                          ((o =
+                                              ((o =
+                                                  (o >>> 8) ^
+                                                  e[
+                                                      255 &
+                                                          (o ^
+                                                              (224 |
+                                                                  ((n >> 12) &
+                                                                      15)))
+                                                  ]) >>>
+                                                  8) ^
+                                              e[
+                                                  255 &
+                                                      (o ^
+                                                          (128 |
+                                                              ((n >> 6) & 63)))
+                                              ]) >>>
+                                              8) ^
+                                          e[255 & (o ^ (128 | (63 & n)))]);
+                            return -1 ^ o;
+                        });
+                }),
+                    "undefined" == typeof DO_NOT_EXPORT_CRC ? r(e) : r({});
+            })((m = { exports: {} }), m.exports),
+            m.exports),
+        w = typeof eval && typeof Function,
+        O = Object.create(null),
+        C = Object.create(null),
+        T = {};
+    function M(t, e, r) {
+        switch (t) {
+            case c.INT:
+            case c.I32:
+                r.writeInt(e);
+                break;
+            case c.FLOAT:
+            case c.F32:
+                r.writeFloat(e);
+                break;
+            case c.DOUBLE:
+            case c.F64:
+                r.writeDouble(e);
+                break;
+            case c.BOOL:
+                r.writeBoolean(e);
+                break;
+            case l:
+                e.ser(r);
+        }
     }
-
-    /* crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
-
-    var crc32 = createCommonjsModule(function (module, exports) {
-        (function (factory) {
-            /*jshint ignore:start */
-            /*eslint-disable */
-            if (typeof DO_NOT_EXPORT_CRC === "undefined") {
-                {
-                    factory(exports);
-                }
-            } else {
-                factory({});
-            }
-            /*eslint-enable */
-            /*jshint ignore:end */
-        })(function (CRC32) {
-            CRC32.version = "1.2.0";
-            /* see perf/crc32table.js */
-            /*global Int32Array */
-            function signed_crc_table() {
-                var c = 0,
-                    table = new Array(256);
-
-                for (var n = 0; n != 256; ++n) {
-                    c = n;
-                    c = c & 1 ? -306674912 ^ (c >>> 1) : c >>> 1;
-                    c = c & 1 ? -306674912 ^ (c >>> 1) : c >>> 1;
-                    c = c & 1 ? -306674912 ^ (c >>> 1) : c >>> 1;
-                    c = c & 1 ? -306674912 ^ (c >>> 1) : c >>> 1;
-                    c = c & 1 ? -306674912 ^ (c >>> 1) : c >>> 1;
-                    c = c & 1 ? -306674912 ^ (c >>> 1) : c >>> 1;
-                    c = c & 1 ? -306674912 ^ (c >>> 1) : c >>> 1;
-                    c = c & 1 ? -306674912 ^ (c >>> 1) : c >>> 1;
-                    table[n] = c;
-                }
-
-                return typeof Int32Array !== "undefined"
-                    ? new Int32Array(table)
-                    : table;
-            }
-
-            var T = signed_crc_table();
-            function crc32_bstr(bstr, seed) {
-                var C = seed ^ -1,
-                    L = bstr.length - 1;
-                for (var i = 0; i < L; ) {
-                    C = (C >>> 8) ^ T[(C ^ bstr.charCodeAt(i++)) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ bstr.charCodeAt(i++)) & 0xff];
-                }
-                if (i === L) C = (C >>> 8) ^ T[(C ^ bstr.charCodeAt(i)) & 0xff];
-                return C ^ -1;
-            }
-
-            function crc32_buf(buf, seed) {
-                if (buf.length > 10000) return crc32_buf_8(buf, seed);
-                var C = seed ^ -1,
-                    L = buf.length - 3;
-                for (var i = 0; i < L; ) {
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                }
-                while (i < L + 3) C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                return C ^ -1;
-            }
-
-            function crc32_buf_8(buf, seed) {
-                var C = seed ^ -1,
-                    L = buf.length - 7;
-                for (var i = 0; i < L; ) {
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                    C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                }
-                while (i < L + 7) C = (C >>> 8) ^ T[(C ^ buf[i++]) & 0xff];
-                return C ^ -1;
-            }
-
-            function crc32_str(str, seed) {
-                var C = seed ^ -1;
-                for (var i = 0, L = str.length, c, d; i < L; ) {
-                    c = str.charCodeAt(i++);
-                    if (c < 0x80) {
-                        C = (C >>> 8) ^ T[(C ^ c) & 0xff];
-                    } else if (c < 0x800) {
-                        C = (C >>> 8) ^ T[(C ^ (192 | ((c >> 6) & 31))) & 0xff];
-                        C = (C >>> 8) ^ T[(C ^ (128 | (c & 63))) & 0xff];
-                    } else if (c >= 0xd800 && c < 0xe000) {
-                        c = (c & 1023) + 64;
-                        d = str.charCodeAt(i++) & 1023;
-                        C = (C >>> 8) ^ T[(C ^ (240 | ((c >> 8) & 7))) & 0xff];
-                        C = (C >>> 8) ^ T[(C ^ (128 | ((c >> 2) & 63))) & 0xff];
-                        C =
-                            (C >>> 8) ^
-                            T[
-                                (C ^ (128 | ((d >> 6) & 15) | ((c & 3) << 4))) &
-                                    0xff
-                            ];
-                        C = (C >>> 8) ^ T[(C ^ (128 | (d & 63))) & 0xff];
-                    } else {
-                        C =
-                            (C >>> 8) ^
-                            T[(C ^ (224 | ((c >> 12) & 15))) & 0xff];
-                        C = (C >>> 8) ^ T[(C ^ (128 | ((c >> 6) & 63))) & 0xff];
-                        C = (C >>> 8) ^ T[(C ^ (128 | (c & 63))) & 0xff];
+    function R(t, e, r) {
+        switch (t) {
+            case c.INT:
+            case c.I32:
+                return r + ".writeInt(" + e + ");";
+            case c.FLOAT:
+            case c.F32:
+                return r + ".writeFloat(" + e + ");";
+            case c.DOUBLE:
+            case c.F64:
+                return r + ".writeDouble(" + e + ");";
+            case c.BOOL:
+                return r + ".writeBoolean(" + e + ");";
+            case l:
+                return e + ".ser(" + r + ");";
+        }
+    }
+    function I(t, e, r, n, i) {
+        for (var o = "", s = e; s < r; s++) o += R(t[s], n + "[" + s + "]", i);
+        return o;
+    }
+    function B(t, e, r, n) {
+        switch (t) {
+            case c.INT:
+            case c.I32:
+                return e.readInt();
+            case c.FLOAT:
+            case c.F32:
+                return e.readFloat();
+            case c.DOUBLE:
+            case c.F64:
+                return e.readDouble();
+            case c.BOOL:
+                return e.readBoolean();
+            case l:
+                return r || (r = new n()), r.deser(e), r;
+        }
+    }
+    function U(t, e, r, n, i) {
+        for (var o = "", s = e; s < r; s++) o += E(t[s], i, n + "[" + s + "]");
+        return o;
+    }
+    function E(t, e, r) {
+        switch (t) {
+            case c.INT:
+            case c.I32:
+                return r + " = " + e + ".readInt();";
+            case c.FLOAT:
+            case c.F32:
+                return r + " = " + e + ".readFloat();";
+            case c.DOUBLE:
+            case c.F64:
+                return r + " = " + e + ".readDouble();";
+            case c.BOOL:
+                return r + " = " + e + ".readBoolean();";
+            case l:
+                return "\n" + r + ".deser(" + e + ")\n            ";
+        }
+    }
+    function A(t) {
+        var e = t.__schema__;
+        !(function (t, e) {
+            (t.ser = function (t) {
+                for (var r = 0, n = e.count; r < n; r++) {
+                    var i = e.props[r],
+                        o = i.type,
+                        s = this[i.propertyKey];
+                    if (0 === o.container) M(o.dataType, s, t);
+                    else {
+                        t.writeInt(s.length);
+                        for (var a = 0, u = s.length; a < u; a++)
+                            M(o.dataType, s[a], t);
                     }
                 }
-                return C ^ -1;
-            }
-            CRC32.table = T;
-            // $FlowIgnore
-            CRC32.bstr = crc32_bstr;
-            // $FlowIgnore
-            CRC32.buf = crc32_buf;
-            // $FlowIgnore
-            CRC32.str = crc32_str;
-        });
-    });
-
-    var hash2compName = Object.create(null);
-    var compName2ctr = Object.create(null);
-    var hash2RpcName = {};
-
-    function serValue(type, value, buffer) {
-        switch (type) {
-            case DataType.INT:
-            case DataType.I32:
-                buffer.writeInt(value);
-                break;
-            case DataType.FLOAT:
-            case DataType.F32:
-                buffer.writeFloat(value);
-                break;
-            case DataType.DOUBLE:
-            case DataType.F64:
-                buffer.writeDouble(value);
-                break;
-            case DataType.BOOL:
-                buffer.writeBoolean(value);
-                break;
-            case DataTypeObect:
-                value.ser(buffer);
-                break;
-        }
-    }
-    function deserValue(type, buffer, ref, refCtr) {
-        switch (type) {
-            case DataType.INT:
-            case DataType.I32:
-                return buffer.readInt();
-            case DataType.FLOAT:
-            case DataType.F32:
-                return buffer.readFloat();
-            case DataType.DOUBLE:
-            case DataType.F64:
-                return buffer.readDouble();
-            case DataType.BOOL:
-                return buffer.readBoolean();
-            case DataTypeObect:
-                if (!ref) ref = new refCtr();
-                ref.deser(buffer);
-                return ref;
-        }
-    }
-    function fixupSerableJIT(prototype) {
-        var schema = prototype[SCHEME_KEY];
-        fixedupSerableStateJit(prototype, schema);
-        fixedupSerableRpc(prototype, schema);
-    }
-    function fixedupSerableStateJit(prototype, schema) {
-        var serJitStr = "";
-        for (var i = 0, count = schema.count; i < count; i++) {
-            var prop = schema.props[i];
-            var type = prop.type;
-            var key = prop.propertyKey;
-            if (type.container === NONE_CONTAINER) {
-                switch (type.dataType) {
-                    case DataType.INT:
-                    case DataType.I32:
-                        serJitStr += "buffer.writeInt(this." + key + ");";
-                        break;
-                    case DataType.FLOAT:
-                    case DataType.F32:
-                        serJitStr += "buffer.writeFloat(this." + key + ");";
-                        break;
-                    case DataType.DOUBLE:
-                    case DataType.F64:
-                        serJitStr += "buffer.writeDouble(this." + key + ");";
-                        break;
-                    case DataType.BOOL:
-                        serJitStr += "buffer.writeBoolean(this." + key + ");";
-                        break;
-                    case DataTypeObect:
-                        serJitStr += "this." + key + ".ser(buffer);";
-                        break;
-                }
-            } else {
-                serJitStr += "buffer.writeInt(this." + key + ".length);";
-                var itemSerFuncStr = "";
-                switch (type.dataType) {
-                    case DataType.INT:
-                    case DataType.I32:
-                        itemSerFuncStr = "buffer.writeInt(arr[i]);";
-                        break;
-                    case DataType.FLOAT:
-                    case DataType.F32:
-                        itemSerFuncStr = "buffer.writeFloat(arr[i]);";
-                        break;
-                    case DataType.DOUBLE:
-                    case DataType.F64:
-                        itemSerFuncStr = "buffer.writeDouble(arr[i]);";
-                        break;
-                    case DataType.BOOL:
-                        serJitStr += "buffer.writeBoolean(this." + key + ");";
-                        break;
-                    case DataTypeObect:
-                        itemSerFuncStr = "arr[i].ser(buffer);";
-                        break;
-                }
-                serJitStr +=
-                    "\n            var arr = this." +
-                    key +
-                    "\n            for (let i = 0, j = arr.length; i < j; i++) {\n                " +
-                    itemSerFuncStr +
-                    "\n            }\n            ";
-            }
-        }
-        prototype.ser = Function("buffer", serJitStr);
-        var deserJitStr = "";
-        for (var i = 0, count = schema.count; i < count; i++) {
-            var prop = schema.props[i];
-            var type = prop.type;
-            var key = prop.propertyKey;
-            if (type.container === NONE_CONTAINER) {
-                switch (type.dataType) {
-                    case DataType.INT:
-                    case DataType.I32:
-                        deserJitStr += "this." + key + "=buffer.readInt();";
-                        break;
-                    case DataType.FLOAT:
-                    case DataType.F32:
-                        deserJitStr += "this." + key + "=buffer.readFloat();";
-                        break;
-                    case DataType.DOUBLE:
-                    case DataType.F64:
-                        deserJitStr += "this." + key + "=buffer.readDouble();";
-                        break;
-                    case DataType.BOOL:
-                        deserJitStr += "this." + key + "=buffer.readBoolean();";
-                        break;
-                    case DataTypeObect:
-                        deserJitStr += "this." + key + ".deser(buffer);";
-                        break;
-                }
-            } else {
-                deserJitStr +=
-                    "\n            if(!this." +
-                    key +
-                    ")this." +
-                    key +
-                    "=[];\n            var arr=this." +
-                    key +
-                    ";\n            arr.length=buffer.readInt();";
-                var itemSerFuncStr = "";
-                switch (type.dataType) {
-                    case DataType.INT:
-                    case DataType.I32:
-                        itemSerFuncStr = "arr[i]=buffer.readInt();";
-                        break;
-                    case DataType.FLOAT:
-                    case DataType.F32:
-                        itemSerFuncStr = "arr[i]=buffer.readFloat();";
-                        break;
-                    case DataType.DOUBLE:
-                    case DataType.F64:
-                        itemSerFuncStr = "arr[i]=buffer.readDouble();";
-                        break;
-                    case DataType.BOOL:
-                        deserJitStr += "arr[i]=buffer.readBoolean();";
-                        break;
-                    case DataTypeObect:
-                        itemSerFuncStr = "arr[i].deser(buffer);";
-                        break;
-                }
-                deserJitStr +=
-                    "\n            for (let i = 0, j = arr.length; i < j; i++) {\n                " +
-                    itemSerFuncStr +
-                    "\n            }\n            ";
-            }
-        }
-        prototype.deser = Function("buffer", deserJitStr);
-    }
-    function fixedupSerableRpc(prototype, schema) {
-        var rpcNames = Object.keys(schema.methods);
-        var _loop_1 = function (i, len) {
-            var name_2 = rpcNames[i];
-            var ms = schema.methods[name_2];
-            prototype["ser" + ms.hash] = function (buffer, args) {
-                for (var j = 0, len_1 = ms.paramCount; j < len_1; j++) {
-                    var value = args[j];
-                    serValue(ms.paramTypes[j], value, buffer);
-                }
-            };
-            prototype["deser" + ms.hash] = function (buffer) {
-                var args = new Array(ms.paramCount);
-                for (var j = 0, len_2 = ms.paramCount; j < len_2; j++) {
-                    args[j] = deserValue(
-                        ms.paramTypes[j],
-                        buffer,
-                        args[j],
-                        ms.paramTypes[j]
-                    );
-                }
-                return args;
-            };
-            var privateName = "__" + name_2 + "__";
-            prototype[privateName] = prototype[name_2];
-            prototype[name_2] = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                return __awaiter(this, void 0, void 0, function () {
-                    var domain;
-                    return __generator(this, function (_a) {
-                        domain = this.domain;
-                        if (domain == null) {
-                            return [
-                                2 /*return*/,
-                                Promise.reject("Domain is not valid!"),
-                            ];
+            }),
+                (t.deser = function (t) {
+                    for (var r = 0, n = e.count; r < n; r++) {
+                        var i = e.props[r],
+                            o = i.type,
+                            s = i.propertyKey;
+                        if (0 === o.container)
+                            this[s] = B(o.dataType, t, this[s], i.type.refCtr);
+                        else {
+                            this[s] || (this[s] = []);
+                            var a = this[s];
+                            a.length = t.readInt();
+                            for (var u = 0, c = a.length; u < c; u++)
+                                a[u] = B(o.dataType, t, a[u], i.type.refCtr);
                         }
-                        if (this.entity.role.local == ms.type) {
-                            return [
-                                2 /*return*/,
-                                this[privateName].apply(this, args),
-                            ];
-                        } else {
-                            return [
-                                2 /*return*/,
-                                domain.readonlyInternalMsgMng.sendRpc(
-                                    name_2,
-                                    this,
-                                    args,
-                                    domain.logicTime.duration
-                                ),
-                            ];
-                        }
-                    });
+                    }
                 });
-            };
-        };
-        for (var i = 0, len = rpcNames.length; i < len; i++) {
-            _loop_1(i);
-        }
-    }
-
-    var WhyPropertyKeyHasTheSameError = /** @class */ (function (_super) {
-        __extends(WhyPropertyKeyHasTheSameError, _super);
-        function WhyPropertyKeyHasTheSameError() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return WhyPropertyKeyHasTheSameError;
-    })(Error);
-    function sortComponentPropertyKey(a, b) {
-        var akey = a.propertyKey;
-        var bkey = b.propertyKey;
-        if (akey == bkey) throw new WhyPropertyKeyHasTheSameError();
-        return akey > bkey ? 1 : -1;
-    }
-    function NetSerable(name, genSerable) {
-        if (genSerable === void 0) {
-            genSerable = true;
-        }
-        return function (target) {
-            var s = getOrCreateScheme(target.prototype);
-            s.name = name;
-            s.hash = crc32.str(name);
-            hash2compName[s.hash] = s.name;
-            compName2ctr[s.name] = target;
-            s.count = s.raw.length;
-            if (s.count > 0) {
-                s.raw.sort(sortComponentPropertyKey);
-                for (var paramIndex = 0; paramIndex < s.count; paramIndex++) {
-                    var v = s.raw[paramIndex];
-                    v.paramIndex = paramIndex;
-                    s.props[paramIndex] = v;
-                    s.props[v.propertyKey] = v;
-                }
-            }
-            if (genSerable) {
-                {
-                    fixupSerableJIT(target.prototype);
-                }
-            }
-        };
-    }
-    function NetVar(type) {
-        return function (t, propertyKey) {
-            var s = getOrCreateScheme(t);
-            s.raw.push({
-                paramIndex: -1,
-                propertyKey: String(propertyKey),
-                type: {
-                    container: NONE_CONTAINER,
-                    dataType: typeof type === "number" ? type : DataTypeObect,
-                    refCtr: typeof type === "number" ? undefined : type,
-                },
-            });
-        };
-    }
-    var Crc32PropertyKeyHashConflict = /** @class */ (function (_super) {
-        __extends(Crc32PropertyKeyHashConflict, _super);
-        function Crc32PropertyKeyHashConflict() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return Crc32PropertyKeyHashConflict;
-    })(Error);
-    function Rpc(type, returnType) {
-        return function (t, propertyKey) {
-            // gen schema
-            var s = getOrCreateScheme(t);
-            if (!s.methods[propertyKey]) {
-                s.methods[propertyKey] = genMethodSchema();
-            }
-            var ms = s.methods[propertyKey];
-            ms.hash = crc32.str(propertyKey);
-            ms.name = propertyKey;
-            ms.type = type;
-            if (hash2RpcName[ms.hash] && hash2RpcName[ms.hash] != ms.name) {
-                throw new Crc32PropertyKeyHashConflict();
-            }
-            hash2RpcName[ms.hash] = ms.name;
-            if (typeof returnType === "undefined") {
-                ms.returnType = DataTypeVoid;
-            } else {
-                ms.returnType =
-                    typeof returnType === "number" ? returnType : DataTypeObect;
-                ms.returnRefCtr =
-                    typeof returnType === "number" ? undefined : returnType;
-            }
-            ms.paramCount = ms.paramTypes.length;
-            for (var i = 0, len = ms.paramCount; i < len; i++) {
-                if (!ms.paramTypes[i]) {
-                    console.warn(
-                        "[Netcode]Rpc function " +
-                            propertyKey +
-                            " at paramIndex(" +
-                            i +
-                            ") set the default type DataType.double"
-                    );
-                    ms.paramTypes[i] = DataType.DOUBLE;
-                }
-            }
-        };
-    }
-    function RpcVar(type) {
-        return function (t, propertyKey, parameterIndex) {
-            var s = getOrCreateScheme(t);
-            if (!s.methods[propertyKey]) {
-                s.methods[propertyKey] = genMethodSchema();
-            }
-            var ms = s.methods[propertyKey];
-            ms.paramTypes[parameterIndex] = type;
-        };
-    }
-
-    var ADirty = /** @class */ (function () {
-        function ADirty() {}
-        ADirty.prototype.getsetDirty = function () {
-            var old = this.dirty;
-            this.dirty = false;
-            return old;
-        };
-        return ADirty;
-    })();
-    /** @class */ (function (_super) {
-        __extends(Int, _super);
-        function Int(value) {
-            if (value === void 0) {
-                value = 0;
-            }
-            var _this = _super.call(this) || this;
-            _this.dirty = true;
-            _this._value = 0;
-            _this._value = value;
-            return _this;
-        }
-        Object.defineProperty(Int.prototype, "value", {
-            get: function () {
-                return this._value;
-            },
-            set: function (inValue) {
-                if (this._value !== inValue) {
-                    this._value = inValue;
-                    this.dirty = true;
-                }
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Int.prototype.ser = function (buffer) {
-            var dirty = this.getsetDirty();
-            buffer.writeBoolean(dirty);
-            if (dirty) {
-                buffer.writeInt(this._value);
-            }
-        };
-        Int.prototype.deser = function (buffer) {
-            this.dirty = buffer.readBoolean();
-            if (this.dirty) {
-                this._value = buffer.readInt();
-            }
-        };
-        __decorate([NetVar(DataType.BOOL)], Int.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.INT)], Int.prototype, "value", null);
-        Int = __decorate([NetSerable("Int", false)], Int);
-        return Int;
-    })(ADirty);
-    var Float = /** @class */ (function (_super) {
-        __extends(Float, _super);
-        function Float(value) {
-            if (value === void 0) {
-                value = 0;
-            }
-            var _this = _super.call(this) || this;
-            _this.dirty = true;
-            _this._value = 0;
-            _this._value = value;
-            return _this;
-        }
-        Object.defineProperty(Float.prototype, "value", {
-            get: function () {
-                return this._value;
-            },
-            set: function (inValue) {
-                if (this._value !== inValue) {
-                    this._value = inValue;
-                    this.dirty = true;
-                }
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Float.prototype.ser = function (buffer) {
-            var dirty = this.getsetDirty();
-            buffer.writeBoolean(dirty);
-            if (dirty) {
-                buffer.writeFloat(this._value);
-            }
-        };
-        Float.prototype.deser = function (buffer) {
-            this.dirty = buffer.readBoolean();
-            if (this.dirty) {
-                this._value = buffer.readFloat();
-            }
-        };
-        __decorate([NetVar(DataType.BOOL)], Float.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.FLOAT)], Float.prototype, "value", null);
-        Float = __decorate([NetSerable("Float", false)], Float);
-        return Float;
-    })(ADirty);
-    /** @class */ (function (_super) {
-        __extends(Long, _super);
-        function Long(value) {
-            if (value === void 0) {
-                value = 0;
-            }
-            var _this = _super.call(this) || this;
-            _this.dirty = true;
-            _this._value = 0;
-            _this._value = value;
-            return _this;
-        }
-        Object.defineProperty(Long.prototype, "value", {
-            get: function () {
-                return this._value;
-            },
-            set: function (inValue) {
-                if (this._value !== inValue) {
-                    this._value = inValue;
-                    this.dirty = true;
-                }
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Long.prototype.ser = function (buffer) {
-            var dirty = this.getsetDirty();
-            buffer.writeBoolean(dirty);
-            if (dirty) {
-                buffer.writeLong(this._value);
-            }
-        };
-        Long.prototype.deser = function (buffer) {
-            this.dirty = buffer.readBoolean();
-            if (this.dirty) {
-                this._value = buffer.readLong();
-            }
-        };
-        __decorate([NetVar(DataType.BOOL)], Long.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.LONG)], Long.prototype, "value", null);
-        Long = __decorate([NetSerable("Long", false)], Long);
-        return Long;
-    })(ADirty);
-    /** @class */ (function (_super) {
-        __extends(Uint, _super);
-        function Uint(value) {
-            if (value === void 0) {
-                value = 0;
-            }
-            var _this = _super.call(this) || this;
-            _this.dirty = true;
-            _this._value = 0;
-            _this._value = value;
-            return _this;
-        }
-        Object.defineProperty(Uint.prototype, "value", {
-            get: function () {
-                return this._value;
-            },
-            set: function (inValue) {
-                if (this._value !== inValue) {
-                    this._value = inValue;
-                    this.dirty = true;
-                }
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Uint.prototype.ser = function (buffer) {
-            var dirty = this.getsetDirty();
-            buffer.writeBoolean(dirty);
-            if (dirty) {
-                buffer.writeUint(this._value);
-            }
-        };
-        Uint.prototype.deser = function (buffer) {
-            this.dirty = buffer.readBoolean();
-            if (this.dirty) {
-                this._value = buffer.readUint();
-            }
-        };
-        __decorate([NetVar(DataType.BOOL)], Uint.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.uint)], Uint.prototype, "value", null);
-        Uint = __decorate([NetSerable("Uint", false)], Uint);
-        return Uint;
-    })(ADirty);
-    /** @class */ (function (_super) {
-        __extends(Double, _super);
-        function Double(value) {
-            if (value === void 0) {
-                value = 0;
-            }
-            var _this = _super.call(this) || this;
-            _this.dirty = true;
-            _this._value = 0;
-            _this._value = value;
-            return _this;
-        }
-        Object.defineProperty(Double.prototype, "value", {
-            get: function () {
-                return this._value;
-            },
-            set: function (inValue) {
-                if (this._value !== inValue) {
-                    this._value = inValue;
-                    this.dirty = true;
-                }
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Double.prototype.ser = function (buffer) {
-            var dirty = this.getsetDirty();
-            buffer.writeBoolean(dirty);
-            if (dirty) {
-                buffer.writeDouble(this._value);
-            }
-        };
-        Double.prototype.deser = function (buffer) {
-            this.dirty = buffer.readBoolean();
-            if (this.dirty) {
-                this._value = buffer.readDouble();
-            }
-        };
-        __decorate([NetVar(DataType.BOOL)], Double.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.DOUBLE)], Double.prototype, "value", null);
-        Double = __decorate([NetSerable("Double", false)], Double);
-        return Double;
-    })(ADirty);
-    /** @class */ (function (_super) {
-        __extends(Ulong, _super);
-        function Ulong(value) {
-            if (value === void 0) {
-                value = 0;
-            }
-            var _this = _super.call(this) || this;
-            _this.dirty = true;
-            _this._value = 0;
-            _this._value = value;
-            return _this;
-        }
-        Object.defineProperty(Ulong.prototype, "value", {
-            get: function () {
-                return this._value;
-            },
-            set: function (inValue) {
-                if (this._value !== inValue) {
-                    this._value = inValue;
-                    this.dirty = true;
-                }
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Ulong.prototype.ser = function (buffer) {
-            var dirty = this.getsetDirty();
-            buffer.writeBoolean(dirty);
-            if (dirty) {
-                buffer.writeUlong(this._value);
-            }
-        };
-        Ulong.prototype.deser = function (buffer) {
-            this.dirty = buffer.readBoolean();
-            if (this.dirty) {
-                this._value = buffer.readUlong();
-            }
-        };
-        __decorate([NetVar(DataType.BOOL)], Ulong.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.ulong)], Ulong.prototype, "value", null);
-        Ulong = __decorate([NetSerable("Ulong", false)], Ulong);
-        return Ulong;
-    })(ADirty);
-    var Short = /** @class */ (function (_super) {
-        __extends(Short, _super);
-        function Short(value) {
-            if (value === void 0) {
-                value = 0;
-            }
-            var _this = _super.call(this) || this;
-            _this.dirty = true;
-            _this._value = 0;
-            _this._value = value;
-            return _this;
-        }
-        Object.defineProperty(Short.prototype, "value", {
-            get: function () {
-                return this._value;
-            },
-            set: function (inValue) {
-                if (this._value !== inValue) {
-                    this._value = inValue;
-                    this.dirty = true;
-                }
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Short.prototype.ser = function (buffer) {
-            var dirty = this.getsetDirty();
-            buffer.writeBoolean(dirty);
-            if (dirty) {
-                buffer.writeShort(this._value);
-            }
-        };
-        Short.prototype.deser = function (buffer) {
-            this.dirty = buffer.readBoolean();
-            if (this.dirty) {
-                this._value = buffer.readShort();
-            }
-        };
-        __decorate([NetVar(DataType.BOOL)], Short.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.SHORT)], Short.prototype, "value", null);
-        Short = __decorate([NetSerable("Short", false)], Short);
-        return Short;
-    })(ADirty);
-    /** @class */ (function (_super) {
-        __extends(Ushort, _super);
-        function Ushort(value) {
-            if (value === void 0) {
-                value = 0;
-            }
-            var _this = _super.call(this) || this;
-            _this.dirty = true;
-            _this._value = 0;
-            _this._value = value;
-            return _this;
-        }
-        Object.defineProperty(Ushort.prototype, "value", {
-            get: function () {
-                return this._value;
-            },
-            set: function (inValue) {
-                if (this._value !== inValue) {
-                    this._value = inValue;
-                    this.dirty = true;
-                }
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Ushort.prototype.ser = function (buffer) {
-            var dirty = this.getsetDirty();
-            buffer.writeBoolean(dirty);
-            if (dirty) {
-                buffer.writeUshort(this._value);
-            }
-        };
-        Ushort.prototype.deser = function (buffer) {
-            this.dirty = buffer.readBoolean();
-            if (this.dirty) {
-                this._value = buffer.readUshort();
-            }
-        };
-        __decorate([NetVar(DataType.BOOL)], Ushort.prototype, "dirty", void 0);
-        __decorate([NetVar(DataType.ushort)], Ushort.prototype, "value", null);
-        Ushort = __decorate([NetSerable("Ulong", false)], Ushort);
-        return Ushort;
-    })(ADirty);
-
-    var LogicTimeComp = /** @class */ (function (_super) {
-        __extends(LogicTimeComp, _super);
-        function LogicTimeComp() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
-            _this.$delta = new Float(0);
-            _this.duration = 0;
-            return _this;
-        }
-        Object.defineProperty(LogicTimeComp.prototype, "delta", {
-            get: function () {
-                return this.$delta.value;
-            },
-            set: function (value) {
-                this.$delta.value = value;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        __decorate([NetVar(Float)], LogicTimeComp.prototype, "$delta", void 0);
-        __decorate(
-            [NetVar(DataType.DOUBLE)],
-            LogicTimeComp.prototype,
-            "duration",
-            void 0
-        );
-        LogicTimeComp = __decorate([NetSerable("logic_time")], LogicTimeComp);
-        return LogicTimeComp;
-    })(IComp);
-    var RenderTimeComp = /** @class */ (function (_super) {
-        __extends(RenderTimeComp, _super);
-        function RenderTimeComp() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
-            _this.delta = 0;
-            _this.duration = 0;
-            return _this;
-        }
-        RenderTimeComp = __decorate(
-            [NetSerable("render_time")],
-            RenderTimeComp
-        );
-        return RenderTimeComp;
-    })(IComp);
-
-    var RoleComp = /** @class */ (function (_super) {
-        __extends(RoleComp, _super);
-        function RoleComp() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
-            //#region property
-            _this.$local = new Short(Role.AUTHORITY);
-            _this.$remote = new Short(Role.SIMULATED_PROXY);
-            return _this;
-        }
-        Object.defineProperty(RoleComp.prototype, "local", {
-            get: function () {
-                return this.$local.value;
-            },
-            set: function (value) {
-                this.$local.value = value;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(RoleComp.prototype, "remote", {
-            get: function () {
-                return this.$remote.value;
-            },
-            set: function (value) {
-                this.$remote.value = value;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        //#endregion
-        //#region interface ISerable implement
-        RoleComp.prototype.ser = function (buffer) {
-            this.$local.ser(buffer);
-            this.$remote.ser(buffer);
-        };
-        RoleComp.prototype.deser = function (buffer) {
-            this.$remote.deser(buffer);
-            this.$local.deser(buffer);
-        };
-        //#endregion
-        RoleComp.prototype.upgrade = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    if (
-                        this.local != Role.AUTHORITY &&
-                        this.remote != Role.AUTONMOUS_PROXY
-                    ) {
-                        this.remote = Role.AUTONMOUS_PROXY;
-                        return [2 /*return*/, true];
-                    }
-                    return [2 /*return*/, false];
-                });
-            });
-        };
-        RoleComp.prototype.downgrade = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    if (
-                        this.local != Role.AUTHORITY &&
-                        this.remote != Role.SIMULATED_PROXY
-                    ) {
-                        this.remote = Role.SIMULATED_PROXY;
-                        return [2 /*return*/, true];
-                    }
-                    return [2 /*return*/, false];
-                });
-            });
-        };
-        __decorate([NetVar(Short)], RoleComp.prototype, "$local", void 0);
-        __decorate([NetVar(Short)], RoleComp.prototype, "$remote", void 0);
-        __decorate(
-            [Rpc(Role.AUTHORITY, DataType.BOOL)],
-            RoleComp.prototype,
-            "upgrade",
-            null
-        );
-        __decorate(
-            [Rpc(Role.AUTHORITY, DataType.BOOL)],
-            RoleComp.prototype,
-            "downgrade",
-            null
-        );
-        RoleComp = __decorate([NetSerable("role", false)], RoleComp);
-        return RoleComp;
-    })(IComp);
-
-    var ComponentHasNotDecorated = /** @class */ (function (_super) {
-        __extends(ComponentHasNotDecorated, _super);
-        function ComponentHasNotDecorated() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return ComponentHasNotDecorated;
-    })(Error);
-    /**
-     * The unit in a network.It can manager some component.
-     * It include id and version, plz don't modify then if you are not undersanding!
-     * It is sealed, PLZ NOT implement!!!
-     * @example
-     ```js
-     // Must do decoration
-     @NetComp
-     class ViewComponent {
-         @Param(DataType.bool)
-         active = false
-     }
-     const ent = new Entity();
-     ent.add(ViewComponent);
-     ent.has(ViewComponent);
-     ent.get(ViewComponent);
-     Domain.ref(ent);
-     ent.rm(ViewComponent);
-     ```
-     */
-    var Entity = /** @class */ (function () {
-        function Entity() {
-            var _comps = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                _comps[_i] = arguments[_i];
-            }
-            this._id = NULL_NUM;
-            this._version = NULL_NUM;
-            this.$comps = new Proxy(this, {
-                get: function (target, p, receiver) {
-                    return target.get(compName2ctr[String(p)]);
-                },
-            });
-            this.role = new RoleComp();
-            this._compMap = new Map();
-            this._initComp(this.role);
-            this._comps = _comps;
-            for (var i = 0, len = this._comps.length; i < len; i++) {
-                this._initComp(this._comps[i]);
-            }
-        }
-        Object.defineProperty(Entity.prototype, "id", {
-            get: function () {
-                return this._id;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(Entity.prototype, "version", {
-            get: function () {
-                return this._version;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(Entity.prototype, "domain", {
-            get: function () {
-                return this._domain;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(Entity.prototype, "comps", {
-            get: function () {
-                return this._comps;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Entity.prototype._initComp = function (c) {
-            var map = this._compMap;
-            c["_entity"] = this;
-            if (!c.__schema__ || c.__schema__.hash == NULL_NUM) {
-                throw new ComponentHasNotDecorated(
-                    "Component must use @NetComp"
-                );
-            }
-            var hash = c.__schema__.hash;
-            if (map.has(hash)) {
-                map.set(hash, [map.get(hash), c]);
-            } else {
-                map.set(hash, c);
-            }
-        };
-        Entity.prototype.toString = function () {
-            return "Entity: id=" + this._id + ",version=" + this._version;
-        };
-        Entity.prototype.get = function (ctr) {
-            var schema = ctr.prototype.__schema__;
-            if (!(schema && schema.name)) {
-                console.error("Componrnt must use @NetComp");
-                return null;
-            }
-            if (!this._compMap.has(schema.hash)) return null;
-            var insOrArr = this._compMap.get(schema.hash);
-            if (!Array.isArray(insOrArr)) return insOrArr;
-            return insOrArr[insOrArr.length - 1];
-        };
-        Entity.prototype.mget = function (ctr) {
-            var _a;
-            var schema = ctr.prototype.__schema__;
-            if (!(schema && schema.name)) {
-                console.error("Componrnt must use @NetComp");
-                return [];
-            }
-            return (_a = this._compMap.get(schema.hash)) !== null &&
-                _a !== void 0
-                ? _a
-                : [];
-        };
-        Entity.prototype.has = function (ctr) {
-            var schema = ctr.prototype.__schema__;
-            if (!(schema && schema.name)) {
-                console.error("Componrnt must use @NetComp");
-                return false;
-            }
-            return this._compMap.has(schema.hash);
-        };
-        Entity.prototype.indexOf = function (ins) {
-            if (ins == null) return -1;
-            return this._comps.indexOf(ins);
-        };
-        Entity.prototype._init = function () {
-            for (var i = 0, len = this._comps.length; i < len; i++) {
-                var c = this._comps[i];
-                c.init && c.init(i);
-            }
-        };
-        Entity.prototype._renderUpdate = function () {
-            for (var i = 0, len = this._comps.length; i < len; i++) {
-                var c = this._comps[i];
-                c.renderUpdate && c.renderUpdate(i);
-            }
-        };
-        Entity.prototype._logicUpdate = function () {
-            for (var i = 0, len = this._comps.length; i < len; i++) {
-                var c = this._comps[i];
-                c.logicUpdate && c.logicUpdate(i);
-            }
-        };
-        Entity.prototype._destroy = function () {
-            for (var i = 0, len = this._comps.length; i < len; i++) {
-                var c = this._comps[i];
-                c.destroy && c.destroy(i);
-                c["_entity"] = null;
-            }
-            this._comps.length = 0;
-            this._compMap.clear();
-        };
-        Entity.Event = {
-            REG_ENTITY: "reg-entity",
-            UNREG_ENTITY: "unreg-entity",
-        };
-        return Entity;
-    })();
-
-    var MessageType;
-    (function (MessageType) {
-        MessageType[(MessageType["UPDATE_COMPONENT"] = 0)] = "UPDATE_COMPONENT";
-        MessageType[(MessageType["RPC"] = 1)] = "RPC";
-    })(MessageType || (MessageType = {}));
-    var RpcCallbackUuidOutOfRange = /** @class */ (function (_super) {
-        __extends(RpcCallbackUuidOutOfRange, _super);
-        function RpcCallbackUuidOutOfRange() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return RpcCallbackUuidOutOfRange;
-    })(Error);
-    var MessageManager = /** @class */ (function () {
-        function MessageManager(BufferCtr) {
-            this._rpcCalls = [];
-            this._rpcDeferred = new Map();
-            this._uuid = 0;
-            this.inoutbuffer = new BufferCtr();
-            this.statebuffer = new BufferCtr();
-            this.rpcbuffer = new BufferCtr();
-            this.rpcCallbackBuffer = new BufferCtr();
-        }
-        MessageManager.prototype._getUuid = function () {
-            if (this._uuid >= RPC_MAX_UUID) {
-                console.warn(
-                    "[MessageManager#_getUuid]UUID is great than " +
-                        RPC_MAX_UUID
-                );
-                return 0;
-            }
-            return ++this._uuid;
-        };
-        MessageManager.prototype.startSendEntityAndComps = function () {
-            this.statebuffer.reset();
-        };
-        MessageManager.prototype.sendEntity = function (
-            entityId,
-            entityVersion,
-            compsLen,
-            toDestroy
-        ) {
-            var buf = this.statebuffer;
-            // entity id
-            buf.writeInt(entityId);
-            // entity compuse version
-            buf.writeInt(composeVersion(entityVersion, toDestroy));
-            // component count
-            buf.writeInt(compsLen);
-        };
-        MessageManager.prototype.sendComp = function (compIdx, comp) {
-            var buf = this.statebuffer;
-            // msg type -> compoent
-            // comp index
-            buf.writeInt(compIdx);
-            // comp hash
-            buf.writeLong(comp.__schema__.hash);
-            // ser comp
-            comp.ser(buf);
-            return true;
-        };
-        MessageManager.prototype.endSendEntityAndComps = function () {
-            this.statebuffer.reset();
-        };
-        MessageManager.prototype.startRecvEntityAndComps = function () {};
-        MessageManager.prototype.recvEntity = function () {
-            var buf = this.statebuffer;
-            if (!buf.hasNext()) return null;
-            // entity id
-            var entityId = buf.readInt();
-            // entity compuse version
-            var _a = decomposeVersion(buf.readInt()),
-                entityVersion = _a[0],
-                toDestory = _a[1];
-            // component length
-            var compCount = buf.readInt();
-            return {
-                entityId: entityId,
-                entityVersion: entityVersion,
-                destoryed: toDestory,
-                compCount: compCount,
-            };
-        };
-        MessageManager.prototype.recvCompHeader = function () {
-            var buf = this.statebuffer;
-            // comp index
-            var compIdx = buf.readInt();
-            // comp hash
-            var hash = buf.readLong();
-            // deser comp
-            return {
-                compIdx: compIdx,
-                hash: hash,
-            };
-        };
-        MessageManager.prototype.recvCompBody = function (comp) {
-            var buf = this.statebuffer;
-            comp.deser(buf);
-        };
-        MessageManager.prototype.endRecvEntityAndComps = function () {};
-        // callRpc(methodName: number, component: any, ...args: any) {
-        //     this._rpcCalls.push({ methodName, component, args });
-        // }
-        MessageManager.prototype.startSendRpc = function () {
-            // this.rpcbuffer.reset();
-        };
-        MessageManager.prototype.sendRpc = function (
-            methodName,
-            component,
-            params,
-            timestamp
-        ) {
-            var uuid = this._getUuid();
-            if (uuid < 0) {
-                return Promise.reject(new RpcCallbackUuidOutOfRange());
-            }
-            var comp = component;
-            var entity = comp.entity;
-            var compIdx = entity.indexOf(component);
-            var buf = this.rpcbuffer;
-            // schema
-            var s = comp.__schema__;
-            // method schema
-            var ms = s.methods[methodName];
-            // entity id
-            buf.writeInt(entity.id);
-            // comp index
-            buf.writeUshort(compIdx);
-            // method hash
-            buf.writeLong(ms.hash);
-            // timestamp
-            buf.writeLong(timestamp);
-            // uuid
-            buf.writeUint(uuid);
-            // param
-            component["ser" + ms.hash](buf, params);
-            if (ms.returnType == DataTypeVoid) {
-                return;
-            } else {
-                var deferred = new Deferred();
-                this._rpcDeferred.set(
-                    entity.id + "|" + compIdx + "|" + ms.hash + "|" + uuid,
-                    {
-                        deferred: deferred,
-                        timestamp: timestamp,
-                    }
-                );
-                return deferred.promise;
-            }
-        };
-        MessageManager.prototype.endSendRpc = function () {
-            this.rpcbuffer.reset();
-            this._uuid = 0;
-        };
-        MessageManager.prototype.startRecvRpc = function () {};
-        MessageManager.prototype.recvRpc = function () {
-            if (!this.rpcbuffer.hasNext()) return null;
-            var buf = this.rpcbuffer;
-            // entity id
-            var entityId = buf.readInt();
-            // comp index
-            var compIdx = buf.readUshort();
-            // method hash
-            var methodHash = buf.readLong();
-            // timestamp
-            var timestamp = buf.readLong();
-            // uuid
-            var uuid = buf.readUint();
-            return {
-                entityId: entityId,
-                compIdx: compIdx,
-                methodHash: methodHash,
-                timestamp: timestamp,
-                uuid: uuid,
-            };
-        };
-        MessageManager.prototype.endRecvRpc = function () {};
-        MessageManager.prototype.startSendRpcCallback = function () {};
-        MessageManager.prototype.sendRpcCallback = function (info) {
-            var buf = this.rpcCallbackBuffer;
-            buf.writeInt(info.entityId);
-            buf.writeUshort(info.compIdx);
-            buf.writeLong(info.methodHash);
-            buf.writeUint(info.uuid);
-        };
-        MessageManager.prototype.endSendRpcCallback = function () {
-            this.rpcCallbackBuffer.reset();
-        };
-        MessageManager.prototype.startRecvRpcCallback = function () {};
-        MessageManager.prototype.recvRpcCallback = function () {
-            if (!this.rpcCallbackBuffer.hasNext()) return null;
-            var buf = this.rpcCallbackBuffer;
-            var entityId = buf.readInt();
-            var compIdx = buf.readUshort();
-            var methodHash = buf.readLong();
-            var uuid = buf.readUint();
-            return {
-                entityId: entityId,
-                compIdx: compIdx,
-                methodHash: methodHash,
-                uuid: uuid,
-            };
-        };
-        MessageManager.prototype.endRecvRpcCallback = function () {};
-        MessageManager.prototype.getRpcCallbackRecord = function (param) {
-            return this._rpcDeferred.get(
-                param.entityId +
-                    "|" +
-                    param.compIdx +
-                    "|" +
-                    param.methodHash +
-                    "|" +
-                    param.uuid
-            );
-        };
-        return MessageManager;
-    })();
-
-    var tempTypedBuffer = {
-        int: new Int32Array(1),
-        uint: new Uint32Array(1),
-        short: new Int16Array(1),
-        ushort: new Uint16Array(1),
-        long: new Int32Array(1),
-        ulong: new Uint32Array(1),
-        float: new Float32Array(1),
-        double: new Float64Array(1),
-    };
-    var StringDataBufferOutOfRange = /** @class */ (function (_super) {
-        __extends(StringDataBufferOutOfRange, _super);
-        function StringDataBufferOutOfRange() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return StringDataBufferOutOfRange;
-    })(Error);
-    var StringDataBuffer = /** @class */ (function () {
-        function StringDataBuffer() {
-            this.writeBuffer = [];
-            this.writerCursor = 0;
-            this.readBuffer = [];
-            this.readerCursor = 0;
-            this.readerStart = 0;
-            this.readerEnd = 0;
-        }
-        StringDataBuffer.prototype.check = function (increment) {
-            if (increment === void 0) {
-                increment = 0;
-            }
-            if (
-                this.writerCursor + increment >= this.readBuffer.length &&
-                this.writerCursor + increment >= this.readerEnd
-            ) {
-                throw new StringDataBufferOutOfRange(
-                    "Cursor: (" +
-                        this.writerCursor +
-                        "), buffer's length: (" +
-                        this.writeBuffer.length +
-                        ")"
-                );
-            }
-        };
-        StringDataBuffer.prototype.reset = function () {
-            this.writerCursor = 0;
-            this.readerCursor = 0;
-            this.readBuffer.length = 0;
-            this.writeBuffer.length = 0;
-        };
-        StringDataBuffer.prototype.readInt = function () {
-            this.check();
-            var temp = tempTypedBuffer.int;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUint = function () {
-            this.check();
-            var temp = tempTypedBuffer.uint;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readShort = function () {
-            this.check();
-            var temp = tempTypedBuffer.short;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUshort = function () {
-            this.check();
-            var temp = tempTypedBuffer.ushort;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readLong = function () {
-            this.check();
-            var temp = tempTypedBuffer.long;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readUlong = function () {
-            this.check();
-            var temp = tempTypedBuffer.ulong;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readFloat = function () {
-            this.check();
-            var temp = tempTypedBuffer.float;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readDouble = function () {
-            this.check();
-            var temp = tempTypedBuffer.double;
-            temp[0] = this.readBuffer[this.readerCursor++];
-            return temp[0];
-        };
-        StringDataBuffer.prototype.readBoolean = function () {
-            this.check();
-            return Boolean(this.readBuffer[this.readerCursor++]);
-        };
-        StringDataBuffer.prototype.set = function (source, start, end) {
-            if (start === void 0) {
-                start = 0;
-            }
-            if (end === void 0) {
-                end = -1;
-            }
-            this.writerCursor = 0;
-            var dst = JSON.parse(source);
-            var dstChecked = Array.isArray(dst) ? dst : [];
-            if (end < 0) {
-                end += dstChecked.length;
-            }
-            this.readerStart = this.readerCursor = start;
-            this.readerEnd = end;
-            this.readBuffer = dstChecked;
-        };
-        StringDataBuffer.prototype.writeInt = function (source) {
-            var temp = tempTypedBuffer.int;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUint = function (source) {
-            var temp = tempTypedBuffer.uint;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeShort = function (source) {
-            var temp = tempTypedBuffer.short;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUshort = function (source) {
-            var temp = tempTypedBuffer.ushort;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeLong = function (source) {
-            var temp = tempTypedBuffer.long;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeUlong = function (source) {
-            var temp = tempTypedBuffer.ulong;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeFloat = function (source) {
-            var temp = tempTypedBuffer.float;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeDouble = function (source) {
-            var temp = tempTypedBuffer.double;
-            temp[0] = source;
-            this.writeBuffer[this.writerCursor++] = source;
-            return this;
-        };
-        StringDataBuffer.prototype.writeBoolean = function (source) {
-            this.writeBuffer[this.writerCursor++] = source ? 1 : 0;
-            return this;
-        };
-        StringDataBuffer.prototype.get = function () {
-            this.writeBuffer.length = this.writerCursor;
-            return JSON.stringify(this.writeBuffer);
-        };
-        StringDataBuffer.prototype.hasNext = function () {
-            return (
-                this.readerCursor < this.readBuffer.length &&
-                this.readerCursor < this.readerEnd
-            );
-        };
-        StringDataBuffer.prototype.append = function (other) {
-            this.writeBuffer.push.apply(this.writeBuffer, other.writeBuffer);
-            this.writerCursor += other.writerCursor;
-            return this;
-        };
-        return StringDataBuffer;
-    })();
-
-    var EntityNotValidError = /** @class */ (function (_super) {
-        __extends(EntityNotValidError, _super);
-        function EntityNotValidError() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return EntityNotValidError;
-    })(Error);
-    var EntityRepeatRegisteredError = /** @class */ (function (_super) {
-        __extends(EntityRepeatRegisteredError, _super);
-        function EntityRepeatRegisteredError() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return EntityRepeatRegisteredError;
-    })(Error);
-    var EntityGroupOutOfRangeYouCanOpenAutoResize = /** @class */ (function (
-        _super
-    ) {
-        __extends(EntityGroupOutOfRangeYouCanOpenAutoResize, _super);
-        function EntityGroupOutOfRangeYouCanOpenAutoResize() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return EntityGroupOutOfRangeYouCanOpenAutoResize;
-    })(Error);
-    var DomainDuplicated = /** @class */ (function (_super) {
-        __extends(DomainDuplicated, _super);
-        function DomainDuplicated() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return DomainDuplicated;
-    })(Error);
-    /** @class */ (function (_super) {
-        __extends(DomainLengthLimit, _super);
-        function DomainLengthLimit() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return DomainLengthLimit;
-    })(Error);
-    var DomainCompCountNotMatch = /** @class */ (function (_super) {
-        __extends(DomainCompCountNotMatch, _super);
-        function DomainCompCountNotMatch() {
-            return (_super !== null && _super.apply(this, arguments)) || this;
-        }
-        return DomainCompCountNotMatch;
-    })(Error);
-    function HandleDomainDefautlValue(option) {
-        if (typeof option.dataBufCtr === "undefined") {
-            option.dataBufCtr = StringDataBuffer;
-        }
-        if (typeof option.capacity === "undefined") {
-            option.capacity = 50;
-        }
-        if (typeof option.autoResize === "undefined") {
-            option.autoResize = true;
-        }
-        if (typeof option.fixedTimeSec === "undefined") {
-            option.fixedTimeSec = 0.2;
-        }
-        return option;
-    }
-    var Domain = /** @class */ (function () {
-        //#endregion
-        function Domain(name, option, uuid) {
-            this.name = name;
-            this.uuid = uuid;
-            this._index = -1;
-            this._entitiesLength = 0;
-            this._entityIdCursor = 0;
-            this._fixedSecAccumulator = 0;
-            var requiredOption = HandleDomainDefautlValue(option);
-            this._option = requiredOption;
-            this._entities = new Array(requiredOption.capacity);
-            this._entityVersion = new Array(requiredOption.capacity);
-            this._entityVersion.fill(0);
-            this._destroyEntityId = new Array();
-            this._internalMsgMng = new MessageManager(
-                requiredOption.dataBufCtr
-            );
-            this.readonlyInternalMsgMng = this._internalMsgMng;
-            this.logicTime = new LogicTimeComp();
-            this.renderTime = new RenderTimeComp();
-            this.time = new Entity(this.logicTime, this.renderTime);
-            this.logicTime.delta = this.option.fixedTimeSec;
-            this.reg(this.time);
-        }
-        //#region static methods
-        Domain.Create = function (name, option, uuid) {
-            if (uuid === void 0) {
-                uuid = crc32.str(name);
-            }
-            if (this._name2domainMap.has(name)) {
-                throw new DomainDuplicated(name);
-            }
-            var news = new Domain(name, option, uuid);
-            var domainIndex = this._name2domainMap.set(name, news);
-            news._index = domainIndex;
-            return news;
-        };
-        Domain.Get = function (name) {
-            if (name === void 0) {
-                name = "main";
-            }
-            return this._name2domainMap.get(name);
-        };
-        Domain.GetByEntity = function (entity) {
-            var domainIndex = entity.id;
-            var domain = this._name2domainMap.values[domainIndex];
-            if (domain.isValid(entity)) {
-                return domain;
-            }
-            return null;
-        };
-        Domain.Clear = function () {
-            this._name2domainMap.clear();
-        };
-        Object.defineProperty(Domain.prototype, "index", {
-            //#endregion
-            //#region member variables
-            get: function () {
-                return this._index;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(Domain.prototype, "entities", {
-            get: function () {
-                return this._entities;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(Domain.prototype, "length", {
-            get: function () {
-                return this._entitiesLength;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        Object.defineProperty(Domain.prototype, "option", {
-            get: function () {
-                return this._option;
-            },
-            enumerable: false,
-            configurable: true,
-        });
-        //#region public methods
-        Domain.prototype.reg = function (entity) {
-            if (this.isValid(entity))
-                throw new EntityRepeatRegisteredError(entity.toString());
-            if (this._entityIdCursor == this._option.capacity) {
-                if (this._option.autoResize) {
-                    this.resize(Math.ceil(this._option.capacity * 1.5));
-                } else
-                    throw new EntityGroupOutOfRangeYouCanOpenAutoResize(
-                        "Domain: capacity: " +
-                            this._option.capacity +
-                            "; " +
-                            entity.toString()
-                    );
-            }
-            var id = this._getEntityId();
-            var version = this._entityVersion[id];
-            this._reg(entity, id, version);
-            entity["_init"]();
-        };
-        Domain.prototype.hasReg = function (entity) {
-            return this.isValid(entity);
-        };
-        Domain.prototype.unregWithoutValidation = function (entity) {
-            var index = entity.id;
-            this._entityVersion[index]++;
-            this._unreg(entity);
-            this._destroyEntityId.push(entity.id);
-            this._entities[index] = null;
-            entity["_destroy"]();
-        };
-        Domain.prototype.unreg = function (entity) {
-            if (!this.isValid(entity))
-                throw new EntityNotValidError(entity.toString());
-            this.unregWithoutValidation(entity);
-        };
-        Domain.prototype.get = function (id) {
-            return this._entities[id];
-        };
-        Domain.prototype.resize = function (newSize) {
-            var oldSize = this._option.capacity;
-            this._entities.length = newSize;
-            this._entityVersion.length = newSize;
-            this._entityVersion.fill(0, oldSize, newSize);
-            this._option.capacity = newSize;
-        };
-        Domain.prototype.isValid = function (entity) {
-            return (
-                entity.id != NULL_NUM &&
-                entity.version != NULL_NUM &&
-                entity.version == this._entityVersion[entity.id]
-            );
-        };
-        Domain.prototype.asData = function () {
-            var isServer = this._option.type == RpcType.SERVER;
-            var outBuf = this._internalMsgMng.inoutbuffer;
-            var stateBuf = this._internalMsgMng.statebuffer;
-            var rpcBuf = this._internalMsgMng.rpcbuffer;
-            var rpcCbBuf = this._internalMsgMng.rpcCallbackBuffer;
-            outBuf.reset();
-            outBuf.writeInt(this.uuid).writeBoolean(isServer);
-            if (isServer) {
-                this._internalMsgMng.startSendEntityAndComps();
-                this._internalMsgMng.startSendRpc();
-                this._internalMsgMng.startSendRpcCallback();
-                this._serEntityAndComps();
-                var stateLen = stateBuf.writerCursor;
-                var rpcLen = rpcBuf.writerCursor;
-                var rpcCbLen = rpcCbBuf.writerCursor;
-                outBuf
-                    .writeUlong(stateLen)
-                    .writeUlong(rpcLen)
-                    .writeUlong(rpcCbLen)
-                    .append(stateBuf)
-                    .append(rpcBuf)
-                    .append(rpcCbBuf);
-                this._internalMsgMng.endSendEntityAndComps();
-                this._internalMsgMng.endSendRpc();
-                this._internalMsgMng.endSendRpcCallback();
-            } else {
-                this._internalMsgMng.startSendRpc();
-                this._internalMsgMng.startSendRpcCallback();
-                var rpcLen = rpcBuf.writerCursor;
-                var rpcCbLen = rpcCbBuf.writerCursor;
-                outBuf
-                    .writeUlong(rpcLen)
-                    .writeUlong(rpcCbLen)
-                    .append(rpcBuf)
-                    .append(rpcCbBuf);
-                this._internalMsgMng.endSendRpc();
-                this._internalMsgMng.endSendRpcCallback();
-            }
-            return outBuf.get();
-        };
-        Domain.prototype.setData = function (source) {
-            var inBuf = this._internalMsgMng.inoutbuffer;
-            var stateBuf = this._internalMsgMng.statebuffer;
-            var rpcBuf = this._internalMsgMng.rpcbuffer;
-            var rpcCbBuf = this._internalMsgMng.rpcCallbackBuffer;
-            inBuf.set(source);
-            var uuid = inBuf.readInt();
-            console.log(
-                "uuid: " +
-                    uuid +
-                    ", type: " +
-                    RpcType[this.option.type] +
-                    ", bufLen: " +
-                    inBuf.readerEnd
-            );
-            var isServer = inBuf.readBoolean();
-            if (isServer) {
-                var stateLen = inBuf.readUlong();
-                var rpcLen = inBuf.readUlong();
-                var rpcCbLen = inBuf.readUlong();
-                var stateStart = inBuf.readerCursor;
-                var stateEnd = stateStart + stateLen;
-                var rpcStart = stateEnd;
-                var rpcEnd = rpcStart + rpcLen;
-                var rpcCbStart = rpcEnd;
-                var rpcCbEnd = rpcCbStart + rpcCbLen;
-                stateBuf.set(source, stateStart, stateEnd);
-                rpcBuf.set(source, rpcStart, rpcEnd);
-                rpcCbBuf.set(source, rpcCbStart, rpcCbEnd);
-                this._internalMsgMng.startRecvEntityAndComps();
-                this._derEntityAndComps();
-                this._internalMsgMng.endRecvEntityAndComps();
-                this._internalMsgMng.startRecvRpc();
-                this._deserRpcs();
-                this._internalMsgMng.endRecvRpc();
-                this._internalMsgMng.startRecvRpcCallback();
-                this._deserRpcCallbacks();
-                this._internalMsgMng.endRecvRpcCallback();
-            } else {
-                var rpcLen = inBuf.readUlong();
-                var rpcCbLen = inBuf.readUlong();
-                var rpcStart = inBuf.readerCursor;
-                var rpcEnd = rpcStart + rpcLen;
-                var rpcCbStart = rpcEnd;
-                var rpcCbEnd = rpcCbStart + rpcCbLen;
-                rpcBuf.set(source, rpcStart, rpcEnd);
-                rpcCbBuf.set(source, rpcCbStart, rpcCbEnd);
-                this._internalMsgMng.startRecvRpc();
-                this._deserRpcs();
-                this._internalMsgMng.endRecvRpc();
-                this._internalMsgMng.startRecvRpcCallback();
-                this._deserRpcCallbacks();
-                this._internalMsgMng.endRecvRpcCallback();
-            }
-        };
-        Domain.prototype.update = function (dtSec) {
-            this._fixedSecAccumulator += dtSec;
-            var fixedDeltaTime = this.logicTime.delta;
-            while (this._fixedSecAccumulator > fixedDeltaTime) {
-                this._fixedSecAccumulator -= fixedDeltaTime;
-                this.logicTime.duration += fixedDeltaTime;
-                for (var i = 0, len = this._entitiesLength; i < len; i++) {
-                    var ent = this._entities[i];
-                    if (!ent) continue;
-                    if (
-                        ent.role.local === Role.AUTHORITY ||
-                        ent.role.local === Role.AUTONMOUS_PROXY
-                    ) {
-                        ent["_logicUpdate"]();
-                    }
-                }
-            }
-            this.renderTime.delta = dtSec;
-            this.renderTime.duration += dtSec;
-            for (var i = 0, len = this._entitiesLength; i < len; i++) {
-                var ent = this._entities[i];
-                if (!ent) continue;
-                ent["_renderUpdate"]();
-            }
-        };
-        //#endregion
-        //#region protected methods
-        Domain.prototype._reg = function (entity, id, version) {
-            entity["_id"] = id;
-            entity["_version"] = version;
-            entity["_domain"] = this;
-            var index = entity.id;
-            this._entities[index] = entity;
-            if (index >= this._entitiesLength) {
-                this._entitiesLength = index + 1;
-            }
-        };
-        Domain.prototype._unreg = function (entity) {
-            entity["_id"] = NULL_NUM;
-            entity["_version"] = NULL_NUM;
-            entity["_domain"] = undefined;
-        };
-        Domain.prototype._serEntityAndComps = function () {
-            for (var i = 0, len = this._entitiesLength; i < len; i++) {
-                var ent = this._entities[i];
-                if (!ent) {
-                    this._internalMsgMng.sendEntity(
-                        i,
-                        this._entityVersion[i],
-                        0,
-                        true
-                    );
-                    continue;
-                }
-                this._internalMsgMng.sendEntity(
-                    ent.id,
-                    ent.version,
-                    ent.comps.length,
-                    false
-                );
-                var comps = ent.comps;
+        })(t, e),
+            (function (t, e) {
                 for (
-                    var compIdx = 0, len_1 = comps.length;
-                    compIdx < len_1;
-                    compIdx++
-                ) {
-                    var comp = comps[compIdx];
-                    var serableComp = asSerable(comp);
-                    if (!serableComp) {
-                        console.warn(
-                            "[Domain#_ser(compIdx: " +
-                                compIdx +
-                                ", entity: " +
-                                ent +
-                                ")]comp is not Serable!"
-                        );
-                        continue;
+                    var r = Object.keys(e.methods),
+                        n = function (n, i) {
+                            var o = r[n],
+                                s = e.methods[o];
+                            (t["ser" + s.hash] = function (t, e) {
+                                for (var r = 0, n = s.paramCount; r < n; r++) {
+                                    var i = e[r];
+                                    M(s.paramTypes[r], i, t);
+                                }
+                            }),
+                                (t["deser" + s.hash] = function (t) {
+                                    for (
+                                        var e = new Array(s.paramCount),
+                                            r = 0,
+                                            n = s.paramCount;
+                                        r < n;
+                                        r++
+                                    )
+                                        e[r] = B(
+                                            s.paramTypes[r],
+                                            t,
+                                            e[r],
+                                            s.paramTypes[r]
+                                        );
+                                    return e;
+                                });
+                            var a = "__" + o + "__";
+                            (t[a] = t[o]),
+                                (t[o] = function () {
+                                    for (
+                                        var t = [], e = 0;
+                                        e < arguments.length;
+                                        e++
+                                    )
+                                        t[e] = arguments[e];
+                                    if (this.entity.role.local == s.type)
+                                        return this[a].apply(this, t);
+                                    var r = this.domain;
+                                    return null == r
+                                        ? Promise.reject("Domain is not valid!")
+                                        : r.readonlyInternalMsgMng.sendRpc(
+                                              o,
+                                              this,
+                                              t,
+                                              r.logicTime.duration
+                                          );
+                                });
+                        },
+                        i = 0,
+                        o = r.length;
+                    i < o;
+                    i++
+                )
+                    n(i);
+            })(t, e);
+    }
+    function L(t) {
+        var e = t.__schema__;
+        !(function (t, e) {
+            for (var r = "", n = 0, i = e.count; n < i; n++) {
+                var o = (p = e.props[n]).type,
+                    s = p.propertyKey;
+                if (0 === o.container)
+                    switch (o.dataType) {
+                        case c.INT:
+                        case c.I32:
+                            r += "buffer.writeInt(this." + s + ");";
+                            break;
+                        case c.FLOAT:
+                        case c.F32:
+                            r += "buffer.writeFloat(this." + s + ");";
+                            break;
+                        case c.DOUBLE:
+                        case c.F64:
+                            r += "buffer.writeDouble(this." + s + ");";
+                            break;
+                        case c.BOOL:
+                            r += "buffer.writeBoolean(this." + s + ");";
+                            break;
+                        case l:
+                            r += "this." + s + ".ser(buffer);";
                     }
-                    this._internalMsgMng.sendComp(compIdx, serableComp);
+                else {
+                    r += "buffer.writeInt(this." + s + ".length);";
+                    var a = "";
+                    switch (o.dataType) {
+                        case c.INT:
+                        case c.I32:
+                            a = "buffer.writeInt(arr[i]);";
+                            break;
+                        case c.FLOAT:
+                        case c.F32:
+                            a = "buffer.writeFloat(arr[i]);";
+                            break;
+                        case c.DOUBLE:
+                        case c.F64:
+                            a = "buffer.writeDouble(arr[i]);";
+                            break;
+                        case c.BOOL:
+                            r += "buffer.writeBoolean(this." + s + ");";
+                            break;
+                        case l:
+                            a = "arr[i].ser(buffer);";
+                    }
+                    r +=
+                        "\n            var arr = this." +
+                        s +
+                        "\n            for (let i = 0, j = arr.length; i < j; i++) {\n                " +
+                        a +
+                        "\n            }\n            ";
                 }
-                ent.role.ser(this._internalMsgMng.statebuffer);
             }
-        };
-        Domain.prototype._derEntityAndComps = function () {
-            var params;
-            while ((params = this._internalMsgMng.recvEntity())) {
-                var ent = this._entities[params.entityId];
-                if (
-                    ent &&
-                    (ent.version != params.entityVersion || params.destoryed)
+            t.ser = Function("buffer", r);
+            var u = "";
+            for (n = 0, i = e.count; n < i; n++) {
+                var p;
+                (o = (p = e.props[n]).type), (s = p.propertyKey);
+                if (0 === o.container)
+                    switch (o.dataType) {
+                        case c.INT:
+                        case c.I32:
+                            u += "this." + s + "=buffer.readInt();";
+                            break;
+                        case c.FLOAT:
+                        case c.F32:
+                            u += "this." + s + "=buffer.readFloat();";
+                            break;
+                        case c.DOUBLE:
+                        case c.F64:
+                            u += "this." + s + "=buffer.readDouble();";
+                            break;
+                        case c.BOOL:
+                            u += "this." + s + "=buffer.readBoolean();";
+                            break;
+                        case l:
+                            u += "this." + s + ".deser(buffer);";
+                    }
+                else {
+                    u +=
+                        "\n            if(!this." +
+                        s +
+                        ")this." +
+                        s +
+                        "=[];\n            var arr=this." +
+                        s +
+                        ";\n            arr.length=buffer.readInt();";
+                    a = "";
+                    switch (o.dataType) {
+                        case c.INT:
+                        case c.I32:
+                            a = "arr[i]=buffer.readInt();";
+                            break;
+                        case c.FLOAT:
+                        case c.F32:
+                            a = "arr[i]=buffer.readFloat();";
+                            break;
+                        case c.DOUBLE:
+                        case c.F64:
+                            a = "arr[i]=buffer.readDouble();";
+                            break;
+                        case c.BOOL:
+                            u += "arr[i]=buffer.readBoolean();";
+                            break;
+                        case l:
+                            a = "arr[i].deser(buffer);";
+                    }
+                    u +=
+                        "\n            for (let i = 0, j = arr.length; i < j; i++) {\n                " +
+                        a +
+                        "\n            }\n            ";
+                }
+            }
+            t.deser = Function("buffer", u);
+        })(t, e),
+            (function (t, e) {
+                for (
+                    var r = Object.keys(e.methods), n = 0, i = r.length;
+                    n < i;
+                    n++
                 ) {
-                    this.unreg(ent);
-                    ent = null;
+                    var o = r[n],
+                        s = e.methods[o],
+                        a =
+                            "\n" +
+                            I(s.paramTypes, 0, s.paramCount, "args", "buffer") +
+                            "\n        ";
+                    t["ser" + s.hash] = Function("buffer", "args", a);
+                    var u =
+                        "\nconst args = new Array(" +
+                        s.paramCount +
+                        ");\n" +
+                        U(s.paramTypes, 0, s.paramCount, "args", "buffer") +
+                        "\nreturn args;\n        ";
+                    t["deser" + s.hash] = Function("buffer", u);
+                    var c = "__" + o + "__";
+                    t[c] = t[o];
+                    var p =
+                        "\nif (this.entity.role.local == " +
+                        s.type +
+                        ') {\n    return this["' +
+                        c +
+                        '"](...args);\n} else {\n    const domain = this.domain;\n    if (domain == null) {\n        return Promise.reject("Domain is not valid!")\n    }\n    return domain.readonlyInternalMsgMng.sendRpc(\n        "' +
+                        o +
+                        '",\n        this,\n        args,\n        domain.logicTime.duration\n    );\n}\n        ';
+                    t[o] = Function("...args", p);
                 }
-                if (!params.destoryed) {
-                    ent = ent
-                        ? this._derEntityAndCompsUnderExisted(params, ent)
-                        : this._derEntityAndCompsUnderUnExsited(params);
+            })(t, e);
+    }
+    var k = (function (t) {
+        function e() {
+            return (null !== t && t.apply(this, arguments)) || this;
+        }
+        return r(e, t), e;
+    })(Error);
+    function S(t, e) {
+        var r = t.propertyKey,
+            n = e.propertyKey;
+        if (r == n) throw new k();
+        return r > n ? 1 : -1;
+    }
+    function D(t, e) {
+        return (
+            void 0 === e && (e = !0),
+            function (r) {
+                var n = y(r.prototype);
+                if (
+                    ((n.name = t),
+                    (n.hash = b.str(t)),
+                    (O[n.hash] = n.name),
+                    (C[n.name] = r),
+                    (n.count = n.raw.length),
+                    n.count > 0)
+                ) {
+                    n.raw.sort(S);
+                    for (var i = 0; i < n.count; i++) {
+                        var o = n.raw[i];
+                        (o.paramIndex = i),
+                            (n.props[i] = o),
+                            (n.props[o.propertyKey] = o);
+                    }
                 }
+                e && (w ? L(r.prototype) : A(r.prototype));
             }
+        );
+    }
+    function x(t) {
+        return function (e, r) {
+            y(e).raw.push({
+                paramIndex: -1,
+                propertyKey: String(r),
+                type: {
+                    container: 0,
+                    dataType: "number" == typeof t ? t : l,
+                    refCtr: "number" == typeof t ? void 0 : t,
+                },
+            });
         };
-        Domain.prototype._derEntityAndCompsUnderExisted = function (
-            params,
-            entity
-        ) {
-            var entComps = entity.comps;
-            assert(
-                params.compCount == entComps.length,
-                DomainCompCountNotMatch
+    }
+    var P = (function (t) {
+        function e() {
+            return (null !== t && t.apply(this, arguments)) || this;
+        }
+        return r(e, t), e;
+    })(Error);
+    function j(t, e) {
+        return function (r, n) {
+            var i = y(r);
+            i.methods[n] || (i.methods[n] = f());
+            var o = i.methods[n];
+            if (
+                ((o.hash = b.str(n)),
+                (o.name = n),
+                (o.type = t),
+                T[o.hash] && T[o.hash] != o.name)
+            )
+                throw new P();
+            (T[o.hash] = o.name),
+                void 0 === e
+                    ? (o.returnType = 98)
+                    : ((o.returnType = "number" == typeof e ? e : l),
+                      (o.returnRefCtr = "number" == typeof e ? void 0 : e)),
+                (o.paramCount = o.paramTypes.length);
+            for (var s = 0, a = o.paramCount; s < a; s++)
+                o.paramTypes[s] ||
+                    (console.warn(
+                        "[Netcode]Rpc function " +
+                            n +
+                            " at paramIndex(" +
+                            s +
+                            ") set the default type DataType.double"
+                    ),
+                    (o.paramTypes[s] = c.DOUBLE));
+        };
+    }
+    function F(t) {
+        return function (e, r, n) {
+            var i = y(e);
+            i.methods[r] || (i.methods[r] = f()),
+                (i.methods[r].paramTypes[n] = t);
+        };
+    }
+    var N = (function () {
+        function t() {}
+        return (
+            (t.prototype.getsetDirty = function () {
+                var t = this.dirty;
+                return (this.dirty = !1), t;
+            }),
+            t
+        );
+    })();
+    !(function (t) {
+        function e(e) {
+            void 0 === e && (e = 0);
+            var r = t.call(this) || this;
+            return (r.dirty = !0), (r._value = 0), (r._value = e), r;
+        }
+        r(e, t),
+            Object.defineProperty(e.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                set: function (t) {
+                    this._value !== t && ((this._value = t), (this.dirty = !0));
+                },
+                enumerable: !1,
+                configurable: !0,
+            }),
+            (e.prototype.ser = function (t) {
+                var e = this.getsetDirty();
+                t.writeBoolean(e), e && t.writeInt(this._value);
+            }),
+            (e.prototype.deser = function (t) {
+                (this.dirty = t.readBoolean()),
+                    this.dirty && (this._value = t.readInt());
+            }),
+            n([x(c.BOOL)], e.prototype, "dirty", void 0),
+            n([x(c.INT)], e.prototype, "value", null),
+            (e = n([D("Int", !1)], e));
+    })(N);
+    var V = (function (t) {
+        function e(e) {
+            void 0 === e && (e = 0);
+            var r = t.call(this) || this;
+            return (r.dirty = !0), (r._value = 0), (r._value = e), r;
+        }
+        return (
+            r(e, t),
+            Object.defineProperty(e.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                set: function (t) {
+                    this._value !== t && ((this._value = t), (this.dirty = !0));
+                },
+                enumerable: !1,
+                configurable: !0,
+            }),
+            (e.prototype.ser = function (t) {
+                var e = this.getsetDirty();
+                t.writeBoolean(e), e && t.writeFloat(this._value);
+            }),
+            (e.prototype.deser = function (t) {
+                (this.dirty = t.readBoolean()),
+                    this.dirty && (this._value = t.readFloat());
+            }),
+            n([x(c.BOOL)], e.prototype, "dirty", void 0),
+            n([x(c.FLOAT)], e.prototype, "value", null),
+            (e = n([D("Float", !1)], e))
+        );
+    })(N);
+    !(function (t) {
+        function e(e) {
+            void 0 === e && (e = 0);
+            var r = t.call(this) || this;
+            return (r.dirty = !0), (r._value = 0), (r._value = e), r;
+        }
+        r(e, t),
+            Object.defineProperty(e.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                set: function (t) {
+                    this._value !== t && ((this._value = t), (this.dirty = !0));
+                },
+                enumerable: !1,
+                configurable: !0,
+            }),
+            (e.prototype.ser = function (t) {
+                var e = this.getsetDirty();
+                t.writeBoolean(e), e && t.writeLong(this._value);
+            }),
+            (e.prototype.deser = function (t) {
+                (this.dirty = t.readBoolean()),
+                    this.dirty && (this._value = t.readLong());
+            }),
+            n([x(c.BOOL)], e.prototype, "dirty", void 0),
+            n([x(c.LONG)], e.prototype, "value", null),
+            (e = n([D("Long", !1)], e));
+    })(N),
+        (function (t) {
+            function e(e) {
+                void 0 === e && (e = 0);
+                var r = t.call(this) || this;
+                return (r.dirty = !0), (r._value = 0), (r._value = e), r;
+            }
+            r(e, t),
+                Object.defineProperty(e.prototype, "value", {
+                    get: function () {
+                        return this._value;
+                    },
+                    set: function (t) {
+                        this._value !== t &&
+                            ((this._value = t), (this.dirty = !0));
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                (e.prototype.ser = function (t) {
+                    var e = this.getsetDirty();
+                    t.writeBoolean(e), e && t.writeUint(this._value);
+                }),
+                (e.prototype.deser = function (t) {
+                    (this.dirty = t.readBoolean()),
+                        this.dirty && (this._value = t.readUint());
+                }),
+                n([x(c.BOOL)], e.prototype, "dirty", void 0),
+                n([x(c.uint)], e.prototype, "value", null),
+                (e = n([D("Uint", !1)], e));
+        })(N),
+        (function (t) {
+            function e(e) {
+                void 0 === e && (e = 0);
+                var r = t.call(this) || this;
+                return (r.dirty = !0), (r._value = 0), (r._value = e), r;
+            }
+            r(e, t),
+                Object.defineProperty(e.prototype, "value", {
+                    get: function () {
+                        return this._value;
+                    },
+                    set: function (t) {
+                        this._value !== t &&
+                            ((this._value = t), (this.dirty = !0));
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                (e.prototype.ser = function (t) {
+                    var e = this.getsetDirty();
+                    t.writeBoolean(e), e && t.writeDouble(this._value);
+                }),
+                (e.prototype.deser = function (t) {
+                    (this.dirty = t.readBoolean()),
+                        this.dirty && (this._value = t.readDouble());
+                }),
+                n([x(c.BOOL)], e.prototype, "dirty", void 0),
+                n([x(c.DOUBLE)], e.prototype, "value", null),
+                (e = n([D("Double", !1)], e));
+        })(N),
+        (function (t) {
+            function e(e) {
+                void 0 === e && (e = 0);
+                var r = t.call(this) || this;
+                return (r.dirty = !0), (r._value = 0), (r._value = e), r;
+            }
+            r(e, t),
+                Object.defineProperty(e.prototype, "value", {
+                    get: function () {
+                        return this._value;
+                    },
+                    set: function (t) {
+                        this._value !== t &&
+                            ((this._value = t), (this.dirty = !0));
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                (e.prototype.ser = function (t) {
+                    var e = this.getsetDirty();
+                    t.writeBoolean(e), e && t.writeUlong(this._value);
+                }),
+                (e.prototype.deser = function (t) {
+                    (this.dirty = t.readBoolean()),
+                        this.dirty && (this._value = t.readUlong());
+                }),
+                n([x(c.BOOL)], e.prototype, "dirty", void 0),
+                n([x(c.ulong)], e.prototype, "value", null),
+                (e = n([D("Ulong", !1)], e));
+        })(N);
+    var Y = (function (t) {
+        function e(e) {
+            void 0 === e && (e = 0);
+            var r = t.call(this) || this;
+            return (r.dirty = !0), (r._value = 0), (r._value = e), r;
+        }
+        return (
+            r(e, t),
+            Object.defineProperty(e.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                set: function (t) {
+                    this._value !== t && ((this._value = t), (this.dirty = !0));
+                },
+                enumerable: !1,
+                configurable: !0,
+            }),
+            (e.prototype.ser = function (t) {
+                var e = this.getsetDirty();
+                t.writeBoolean(e), e && t.writeShort(this._value);
+            }),
+            (e.prototype.deser = function (t) {
+                (this.dirty = t.readBoolean()),
+                    this.dirty && (this._value = t.readShort());
+            }),
+            n([x(c.BOOL)], e.prototype, "dirty", void 0),
+            n([x(c.SHORT)], e.prototype, "value", null),
+            (e = n([D("Short", !1)], e))
+        );
+    })(N);
+    !(function (t) {
+        function e(e) {
+            void 0 === e && (e = 0);
+            var r = t.call(this) || this;
+            return (r.dirty = !0), (r._value = 0), (r._value = e), r;
+        }
+        r(e, t),
+            Object.defineProperty(e.prototype, "value", {
+                get: function () {
+                    return this._value;
+                },
+                set: function (t) {
+                    this._value !== t && ((this._value = t), (this.dirty = !0));
+                },
+                enumerable: !1,
+                configurable: !0,
+            }),
+            (e.prototype.ser = function (t) {
+                var e = this.getsetDirty();
+                t.writeBoolean(e), e && t.writeUshort(this._value);
+            }),
+            (e.prototype.deser = function (t) {
+                (this.dirty = t.readBoolean()),
+                    this.dirty && (this._value = t.readUshort());
+            }),
+            n([x(c.BOOL)], e.prototype, "dirty", void 0),
+            n([x(c.ushort)], e.prototype, "value", null),
+            (e = n([D("Ulong", !1)], e));
+    })(N);
+    var H,
+        $ = (function (t) {
+            function e() {
+                var e = (null !== t && t.apply(this, arguments)) || this;
+                return (e.$delta = new V(0)), (e.duration = 0), e;
+            }
+            return (
+                r(e, t),
+                Object.defineProperty(e.prototype, "delta", {
+                    get: function () {
+                        return this.$delta.value;
+                    },
+                    set: function (t) {
+                        this.$delta.value = t;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                n([x(V)], e.prototype, "$delta", void 0),
+                n([x(c.DOUBLE)], e.prototype, "duration", void 0),
+                (e = n([D("logic_time")], e))
             );
-            for (var i = 0, len = params.compCount; i < len; i++) {
-                var compHeaderInfo = this._internalMsgMng.recvCompHeader();
-                var comp = asSerable(entComps[compHeaderInfo.compIdx]);
-                if (!comp) continue;
-                this._internalMsgMng.recvCompBody(comp);
+        })(p),
+        K = (function (t) {
+            function e() {
+                var e = (null !== t && t.apply(this, arguments)) || this;
+                return (e.delta = 0), (e.duration = 0), e;
             }
-            entity.role.deser(this._internalMsgMng.statebuffer);
-            return entity;
-        };
-        Domain.prototype._derEntityAndCompsUnderUnExsited = function (params) {
-            var compArr = new Array(params.compCount);
-            for (var i = 0, len = params.compCount; i < len; i++) {
-                var compHeaderInfo = this._internalMsgMng.recvCompHeader();
-                var compName = hash2compName[compHeaderInfo.hash];
-                var CompCtr = compName2ctr[compName];
-                var comp = new CompCtr();
-                this._internalMsgMng.recvCompBody(comp);
-                compArr[compHeaderInfo.compIdx] = comp;
-            }
-            var e = new (Entity.bind.apply(
-                Entity,
-                __spreadArray([void 0], compArr)
-            ))();
-            e.role.deser(this._internalMsgMng.statebuffer);
-            this.reg(e);
-            return e;
-        };
-        Domain.prototype._deserRpcs = function () {
-            var _this = this;
-            var param;
-            var _loop_1 = function () {
-                var ent = this_1.get(param.entityId);
-                if (!ent) return "continue";
-                var comp = ent.comps[param.compIdx];
-                if (!comp) return "continue";
-                var argus = comp["deser" + param.methodHash](
-                    this_1._internalMsgMng.rpcbuffer
+            return r(e, t), (e = n([D("render_time")], e));
+        })(p),
+        X = (function (t) {
+            function e() {
+                var e = (null !== t && t.apply(this, arguments)) || this;
+                return (
+                    (e.$local = new Y(u.AUTHORITY)),
+                    (e.$remote = new Y(u.SIMULATED_PROXY)),
+                    e
                 );
-                var methodName = hash2RpcName[param.methodHash];
-                var unknown = comp[methodName].apply(comp, argus);
-                var s = comp[SCHEME_KEY];
-                var ms = s.methods[methodName];
-                if (ms.returnType != DataTypeVoid) {
-                    var w_1 = param;
-                    unknown === null || unknown === void 0
-                        ? void 0
-                        : unknown.then(function (result) {
-                              _this._internalMsgMng.sendRpcCallback(w_1);
-                              serValue(
-                                  ms.returnType,
-                                  result,
-                                  _this._internalMsgMng.rpcCallbackBuffer
-                              );
-                          });
-                }
-            };
-            var this_1 = this;
-            while ((param = this._internalMsgMng.recvRpc())) {
-                _loop_1();
             }
-        };
-        Domain.prototype._deserRpcCallbacks = function () {
-            var param;
-            while ((param = this._internalMsgMng.recvRpcCallback())) {
-                var ent = this.get(param.entityId);
-                if (!ent) continue;
-                var comp = ent.comps[param.compIdx];
-                if (!comp) continue;
-                var s = comp[SCHEME_KEY];
-                var methodName = hash2RpcName[param.methodHash];
-                var ms = s.methods[methodName];
-                var result = void 0;
-                if (ms.returnType != DataTypeVoid) {
-                    result = deserValue(
-                        ms.returnType,
-                        this._internalMsgMng.rpcCallbackBuffer,
-                        undefined,
-                        ms.returnRefCtr
+            return (
+                r(e, t),
+                Object.defineProperty(e.prototype, "local", {
+                    get: function () {
+                        return this.$local.value;
+                    },
+                    set: function (t) {
+                        this.$local.value = t;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(e.prototype, "remote", {
+                    get: function () {
+                        return this.$remote.value;
+                    },
+                    set: function (t) {
+                        this.$remote.value = t;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                (e.prototype.ser = function (t) {
+                    this.$local.ser(t), this.$remote.ser(t);
+                }),
+                (e.prototype.deser = function (t) {
+                    this.$remote.deser(t), this.$local.deser(t);
+                }),
+                (e.prototype.upgrade = function () {
+                    return o(this, void 0, void 0, function () {
+                        return s(this, function (t) {
+                            return this.local != u.AUTHORITY &&
+                                this.remote != u.AUTONMOUS_PROXY
+                                ? ((this.remote = u.AUTONMOUS_PROXY), [2, !0])
+                                : [2, !1];
+                        });
+                    });
+                }),
+                (e.prototype.downgrade = function () {
+                    return o(this, void 0, void 0, function () {
+                        return s(this, function (t) {
+                            return this.local != u.AUTHORITY &&
+                                this.remote != u.SIMULATED_PROXY
+                                ? ((this.remote = u.SIMULATED_PROXY), [2, !0])
+                                : [2, !1];
+                        });
+                    });
+                }),
+                (e.prototype.init = function () {
+                    var t = this.domain.option.type;
+                    (this.$local.value =
+                        t === a.SERVER ? u.AUTHORITY : u.SIMULATED_PROXY),
+                        (this.$remote.value =
+                            t === a.SERVER ? u.SIMULATED_PROXY : u.AUTHORITY);
+                }),
+                n([x(Y)], e.prototype, "$local", void 0),
+                n([x(Y)], e.prototype, "$remote", void 0),
+                n([j(u.AUTHORITY, c.BOOL)], e.prototype, "upgrade", null),
+                n([j(u.AUTHORITY, c.BOOL)], e.prototype, "downgrade", null),
+                (e = n([D("role", !1)], e))
+            );
+        })(p),
+        G = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
+            }
+            return r(e, t), e;
+        })(Error),
+        z = (function () {
+            function t() {
+                for (var t = [], e = 0; e < arguments.length; e++)
+                    t[e] = arguments[e];
+                (this._id = h),
+                    (this._version = h),
+                    (this.$comps = new Proxy(this, {
+                        get: function (t, e, r) {
+                            return t.get(C[String(e)]);
+                        },
+                    })),
+                    (this.role = new X()),
+                    (this._compMap = new Map()),
+                    this._initComp(this.role),
+                    (this._comps = t);
+                for (var r = 0, n = this._comps.length; r < n; r++)
+                    this._initComp(this._comps[r]);
+            }
+            return (
+                Object.defineProperty(t.prototype, "id", {
+                    get: function () {
+                        return this._id;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t.prototype, "version", {
+                    get: function () {
+                        return this._version;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t.prototype, "domain", {
+                    get: function () {
+                        return this._domain;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t.prototype, "comps", {
+                    get: function () {
+                        return this._comps;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                (t.prototype._initComp = function (t) {
+                    var e = this._compMap;
+                    if (
+                        ((t._entity = this),
+                        !t.__schema__ || t.__schema__.hash == h)
+                    )
+                        throw new G("Component must use @NetComp");
+                    var r = t.__schema__.hash;
+                    e.has(r) ? e.set(r, [e.get(r), t]) : e.set(r, t);
+                }),
+                (t.prototype.toString = function () {
+                    return (
+                        "Entity: id=" + this._id + ",version=" + this._version
                     );
-                }
-                var callbackRecord =
-                    this._internalMsgMng.getRpcCallbackRecord(param);
-                if (!callbackRecord) continue;
-                callbackRecord.deferred.resolve(result);
+                }),
+                (t.prototype.get = function (t) {
+                    var e = t.prototype.__schema__;
+                    if (!e || !e.name)
+                        return (
+                            console.error("Componrnt must use @NetComp"), null
+                        );
+                    if (!this._compMap.has(e.hash)) return null;
+                    var r = this._compMap.get(e.hash);
+                    return Array.isArray(r) ? r[r.length - 1] : r;
+                }),
+                (t.prototype.mget = function (t) {
+                    var e,
+                        r = t.prototype.__schema__;
+                    return r && r.name
+                        ? null !== (e = this._compMap.get(r.hash)) &&
+                          void 0 !== e
+                            ? e
+                            : []
+                        : (console.error("Componrnt must use @NetComp"), []);
+                }),
+                (t.prototype.has = function (t) {
+                    var e = t.prototype.__schema__;
+                    return e && e.name
+                        ? this._compMap.has(e.hash)
+                        : (console.error("Componrnt must use @NetComp"), !1);
+                }),
+                (t.prototype.indexOf = function (t) {
+                    return null == t ? -1 : this._comps.indexOf(t);
+                }),
+                (t.prototype._init = function () {
+                    for (var t = 0, e = this._comps.length; t < e; t++) {
+                        var r = this._comps[t];
+                        r.init && r.init(t);
+                    }
+                }),
+                (t.prototype._renderUpdate = function () {
+                    for (var t = 0, e = this._comps.length; t < e; t++) {
+                        var r = this._comps[t];
+                        r.renderUpdate && r.renderUpdate(t);
+                    }
+                }),
+                (t.prototype._logicUpdate = function () {
+                    for (var t = 0, e = this._comps.length; t < e; t++) {
+                        var r = this._comps[t];
+                        r.logicUpdate && r.logicUpdate(t);
+                    }
+                }),
+                (t.prototype._destroy = function () {
+                    for (var t = 0, e = this._comps.length; t < e; t++) {
+                        var r = this._comps[t];
+                        r.destroy && r.destroy(t), (r._entity = null);
+                    }
+                    (this._comps.length = 0), this._compMap.clear();
+                }),
+                (t.Event = {
+                    REG_ENTITY: "reg-entity",
+                    UNREG_ENTITY: "unreg-entity",
+                }),
+                t
+            );
+        })();
+    !(function (t) {
+        (t[(t.UPDATE_COMPONENT = 0)] = "UPDATE_COMPONENT"),
+            (t[(t.RPC = 1)] = "RPC");
+    })(H || (H = {}));
+    var J = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
             }
-        };
-        Domain.prototype._getEntityId = function () {
-            return this._destroyEntityId.length > 0
-                ? this._destroyEntityId.unshift()
-                : this._entityIdCursor++;
-        };
-        Domain._name2domainMap = new ArrayMap();
-        return Domain;
-    })();
+            return r(e, t), e;
+        })(Error),
+        W = (function () {
+            function t(t) {
+                (this._rpcCalls = []),
+                    (this._rpcDeferred = new Map()),
+                    (this._uuid = 0),
+                    (this.inoutbuffer = new t()),
+                    (this.statebuffer = new t()),
+                    (this.rpcbuffer = new t()),
+                    (this.rpcCallbackBuffer = new t());
+            }
+            return (
+                (t.prototype._getUuid = function () {
+                    return this._uuid >= 255
+                        ? (console.warn(
+                              "[MessageManager#_getUuid]UUID is great than 255"
+                          ),
+                          0)
+                        : ++this._uuid;
+                }),
+                (t.prototype.startSendEntityAndComps = function () {
+                    this.statebuffer.reset();
+                }),
+                (t.prototype.sendEntity = function (t, e, r, n) {
+                    var i,
+                        o = this.statebuffer;
+                    o.writeInt(t),
+                        o.writeInt(((i = e), (i %= 1073741823), n ? -i : i)),
+                        o.writeInt(r);
+                }),
+                (t.prototype.sendComp = function (t, e) {
+                    var r = this.statebuffer;
+                    return (
+                        r.writeInt(t),
+                        r.writeLong(e.__schema__.hash),
+                        e.ser(r),
+                        !0
+                    );
+                }),
+                (t.prototype.endSendEntityAndComps = function () {
+                    this.statebuffer.reset();
+                }),
+                (t.prototype.startRecvEntityAndComps = function () {}),
+                (t.prototype.recvEntity = function () {
+                    var t = this.statebuffer;
+                    if (!t.hasNext()) return null;
+                    var e,
+                        r = t.readInt(),
+                        n = [(e = t.readInt()) > 0 ? e : -e, e < 0];
+                    return {
+                        entityId: r,
+                        entityVersion: n[0],
+                        destoryed: n[1],
+                        compCount: t.readInt(),
+                    };
+                }),
+                (t.prototype.recvCompHeader = function () {
+                    var t = this.statebuffer;
+                    return { compIdx: t.readInt(), hash: t.readLong() };
+                }),
+                (t.prototype.recvCompBody = function (t) {
+                    var e = this.statebuffer;
+                    t.deser(e);
+                }),
+                (t.prototype.endRecvEntityAndComps = function () {}),
+                (t.prototype.startSendRpc = function () {}),
+                (t.prototype.sendRpc = function (t, e, r, n) {
+                    var i = this._getUuid();
+                    if (i < 0) return Promise.reject(new J());
+                    var o = e,
+                        s = o.entity,
+                        a = s.indexOf(e),
+                        u = this.rpcbuffer,
+                        c = o.__schema__.methods[t];
+                    if (
+                        (u.writeInt(s.id),
+                        u.writeUshort(a),
+                        u.writeLong(c.hash),
+                        u.writeLong(n),
+                        u.writeUint(i),
+                        e["ser" + c.hash](u, r),
+                        98 != c.returnType)
+                    ) {
+                        var p = new g();
+                        return (
+                            this._rpcDeferred.set(
+                                s.id + "|" + a + "|" + c.hash + "|" + i,
+                                { deferred: p, timestamp: n }
+                            ),
+                            p.promise
+                        );
+                    }
+                }),
+                (t.prototype.endSendRpc = function () {
+                    this.rpcbuffer.reset(), (this._uuid = 0);
+                }),
+                (t.prototype.startRecvRpc = function () {}),
+                (t.prototype.recvRpc = function () {
+                    if (!this.rpcbuffer.hasNext()) return null;
+                    var t = this.rpcbuffer;
+                    return {
+                        entityId: t.readInt(),
+                        compIdx: t.readUshort(),
+                        methodHash: t.readLong(),
+                        timestamp: t.readLong(),
+                        uuid: t.readUint(),
+                    };
+                }),
+                (t.prototype.endRecvRpc = function () {}),
+                (t.prototype.startSendRpcCallback = function () {}),
+                (t.prototype.sendRpcCallback = function (t) {
+                    var e = this.rpcCallbackBuffer;
+                    e.writeInt(t.entityId),
+                        e.writeUshort(t.compIdx),
+                        e.writeLong(t.methodHash),
+                        e.writeUint(t.uuid);
+                }),
+                (t.prototype.endSendRpcCallback = function () {
+                    this.rpcCallbackBuffer.reset();
+                }),
+                (t.prototype.startRecvRpcCallback = function () {}),
+                (t.prototype.recvRpcCallback = function () {
+                    if (!this.rpcCallbackBuffer.hasNext()) return null;
+                    var t = this.rpcCallbackBuffer;
+                    return {
+                        entityId: t.readInt(),
+                        compIdx: t.readUshort(),
+                        methodHash: t.readLong(),
+                        uuid: t.readUint(),
+                    };
+                }),
+                (t.prototype.endRecvRpcCallback = function () {}),
+                (t.prototype.getRpcCallbackRecord = function (t) {
+                    return this._rpcDeferred.get(
+                        t.entityId +
+                            "|" +
+                            t.compIdx +
+                            "|" +
+                            t.methodHash +
+                            "|" +
+                            t.uuid
+                    );
+                }),
+                t
+            );
+        })(),
+        q = {
+            int: new Int32Array(1),
+            uint: new Uint32Array(1),
+            short: new Int16Array(1),
+            ushort: new Uint16Array(1),
+            long: new Int32Array(1),
+            ulong: new Uint32Array(1),
+            float: new Float32Array(1),
+            double: new Float64Array(1),
+        },
+        Q = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
+            }
+            return r(e, t), e;
+        })(Error),
+        Z = (function () {
+            function t() {
+                (this.writeBuffer = []),
+                    (this.writerCursor = 0),
+                    (this.readBuffer = []),
+                    (this.readerCursor = 0),
+                    (this.readerStart = 0),
+                    (this.readerEnd = 0);
+            }
+            return (
+                (t.prototype.check = function (t) {
+                    if (
+                        (void 0 === t && (t = 0),
+                        this.writerCursor + t >= this.readBuffer.length &&
+                            this.writerCursor + t >= this.readerEnd)
+                    )
+                        throw new Q(
+                            "Cursor: (" +
+                                this.writerCursor +
+                                "), buffer's length: (" +
+                                this.writeBuffer.length +
+                                ")"
+                        );
+                }),
+                (t.prototype.reset = function () {
+                    (this.writerCursor = 0),
+                        (this.readerCursor = 0),
+                        (this.readBuffer.length = 0),
+                        (this.writeBuffer.length = 0);
+                }),
+                (t.prototype.readInt = function () {
+                    this.check();
+                    var t = q.int;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readUint = function () {
+                    this.check();
+                    var t = q.uint;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readShort = function () {
+                    this.check();
+                    var t = q.short;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readUshort = function () {
+                    this.check();
+                    var t = q.ushort;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readLong = function () {
+                    this.check();
+                    var t = q.long;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readUlong = function () {
+                    this.check();
+                    var t = q.ulong;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readFloat = function () {
+                    this.check();
+                    var t = q.float;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readDouble = function () {
+                    this.check();
+                    var t = q.double;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readBoolean = function () {
+                    return (
+                        this.check(),
+                        Boolean(this.readBuffer[this.readerCursor++])
+                    );
+                }),
+                (t.prototype.set = function (t, e, r) {
+                    void 0 === e && (e = 0),
+                        void 0 === r && (r = -1),
+                        (this.writerCursor = 0);
+                    var n = JSON.parse(t),
+                        i = Array.isArray(n) ? n : [];
+                    r < 0 && (r += i.length),
+                        (this.readerStart = this.readerCursor = e),
+                        (this.readerEnd = r),
+                        (this.readBuffer = i);
+                }),
+                (t.prototype.writeInt = function (t) {
+                    return (
+                        (q.int[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeUint = function (t) {
+                    return (
+                        (q.uint[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeShort = function (t) {
+                    return (
+                        (q.short[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeUshort = function (t) {
+                    return (
+                        (q.ushort[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeLong = function (t) {
+                    return (
+                        (q.long[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeUlong = function (t) {
+                    return (
+                        (q.ulong[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeFloat = function (t) {
+                    return (
+                        (q.float[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeDouble = function (t) {
+                    return (
+                        (q.double[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeBoolean = function (t) {
+                    return (
+                        (this.writeBuffer[this.writerCursor++] = t ? 1 : 0),
+                        this
+                    );
+                }),
+                (t.prototype.get = function () {
+                    return (
+                        (this.writeBuffer.length = this.writerCursor),
+                        JSON.stringify(this.writeBuffer)
+                    );
+                }),
+                (t.prototype.hasNext = function () {
+                    return (
+                        this.readerCursor < this.readBuffer.length &&
+                        this.readerCursor < this.readerEnd
+                    );
+                }),
+                (t.prototype.append = function (t) {
+                    return (
+                        this.writeBuffer.push.apply(
+                            this.writeBuffer,
+                            t.writeBuffer
+                        ),
+                        (this.writerCursor += t.writerCursor),
+                        this
+                    );
+                }),
+                t
+            );
+        })(),
+        tt = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
+            }
+            return r(e, t), e;
+        })(Error),
+        et = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
+            }
+            return r(e, t), e;
+        })(Error),
+        rt = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
+            }
+            return r(e, t), e;
+        })(Error),
+        nt = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
+            }
+            return r(e, t), e;
+        })(Error);
+    !(function (t) {
+        function e() {
+            return (null !== t && t.apply(this, arguments)) || this;
+        }
+        r(e, t);
+    })(Error);
+    var it = (function (t) {
+        function e() {
+            return (null !== t && t.apply(this, arguments)) || this;
+        }
+        return r(e, t), e;
+    })(Error);
+    var ot = (function () {
+            function t(t, e, r) {
+                (this.name = t),
+                    (this.uuid = r),
+                    (this._index = -1),
+                    (this._entitiesLength = 0),
+                    (this._entityIdCursor = 0),
+                    (this._fixedSecAccumulator = 0);
+                var n = (function (t) {
+                    return (
+                        void 0 === t.dataBufCtr && (t.dataBufCtr = Z),
+                        void 0 === t.capacity && (t.capacity = 50),
+                        void 0 === t.autoResize && (t.autoResize = !0),
+                        void 0 === t.fixedTimeSec && (t.fixedTimeSec = 0.2),
+                        t
+                    );
+                })(e);
+                (this._option = n),
+                    (this._entities = new Array(n.capacity)),
+                    (this._entityVersion = new Array(n.capacity)),
+                    this._entityVersion.fill(0),
+                    (this._destroyEntityId = new Array()),
+                    (this._internalMsgMng = new W(n.dataBufCtr)),
+                    (this.readonlyInternalMsgMng = this._internalMsgMng),
+                    (this.logicTime = new $()),
+                    (this.renderTime = new K()),
+                    (this.time = new z(this.logicTime, this.renderTime)),
+                    (this.logicTime.delta = this.option.fixedTimeSec),
+                    this.reg(this.time);
+            }
+            return (
+                (t.Create = function (e, r, n) {
+                    if (
+                        (void 0 === n && (n = b.str(e)),
+                        this._name2domainMap.has(e))
+                    )
+                        throw new nt(e);
+                    var i = new t(e, r, n),
+                        o = this._name2domainMap.set(e, i);
+                    return (i._index = o), i;
+                }),
+                (t.Get = function (t) {
+                    return (
+                        void 0 === t && (t = "main"),
+                        this._name2domainMap.get(t)
+                    );
+                }),
+                (t.GetByEntity = function (t) {
+                    var e = t.id,
+                        r = this._name2domainMap.values[e];
+                    return r.isValid(t) ? r : null;
+                }),
+                (t.Clear = function () {
+                    this._name2domainMap.clear();
+                }),
+                Object.defineProperty(t.prototype, "index", {
+                    get: function () {
+                        return this._index;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t.prototype, "entities", {
+                    get: function () {
+                        return this._entities;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t.prototype, "length", {
+                    get: function () {
+                        return this._entitiesLength;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t.prototype, "option", {
+                    get: function () {
+                        return this._option;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                (t.prototype.reg = function (t) {
+                    if (this.isValid(t)) throw new et(t.toString());
+                    if (this._entityIdCursor == this._option.capacity) {
+                        if (!this._option.autoResize)
+                            throw new rt(
+                                "Domain: capacity: " +
+                                    this._option.capacity +
+                                    "; " +
+                                    t.toString()
+                            );
+                        this.resize(Math.ceil(1.5 * this._option.capacity));
+                    }
+                    var e = this._getEntityId(),
+                        r = this._entityVersion[e];
+                    this._reg(t, e, r), t._init();
+                }),
+                (t.prototype.hasReg = function (t) {
+                    return this.isValid(t);
+                }),
+                (t.prototype.unregWithoutValidation = function (t) {
+                    var e = t.id;
+                    this._entityVersion[e]++,
+                        this._unreg(t),
+                        this._destroyEntityId.push(t.id),
+                        (this._entities[e] = null),
+                        t._destroy();
+                }),
+                (t.prototype.unreg = function (t) {
+                    if (!this.isValid(t)) throw new tt(t.toString());
+                    this.unregWithoutValidation(t);
+                }),
+                (t.prototype.get = function (t) {
+                    return this._entities[t];
+                }),
+                (t.prototype.resize = function (t) {
+                    var e = this._option.capacity;
+                    (this._entities.length = t),
+                        (this._entityVersion.length = t),
+                        this._entityVersion.fill(0, e, t),
+                        (this._option.capacity = t);
+                }),
+                (t.prototype.isValid = function (t) {
+                    return (
+                        t.id != h &&
+                        t.version != h &&
+                        t.version == this._entityVersion[t.id]
+                    );
+                }),
+                (t.prototype.asData = function () {
+                    var t = this._option.type == a.SERVER,
+                        e = this._internalMsgMng.inoutbuffer,
+                        r = this._internalMsgMng.statebuffer,
+                        n = this._internalMsgMng.rpcbuffer,
+                        i = this._internalMsgMng.rpcCallbackBuffer;
+                    if ((e.reset(), e.writeInt(this.uuid).writeBoolean(t), t)) {
+                        this._internalMsgMng.startSendEntityAndComps(),
+                            this._internalMsgMng.startSendRpc(),
+                            this._internalMsgMng.startSendRpcCallback(),
+                            this._serEntityAndComps();
+                        var o = r.writerCursor,
+                            s = n.writerCursor,
+                            u = i.writerCursor;
+                        e
+                            .writeUlong(o)
+                            .writeUlong(s)
+                            .writeUlong(u)
+                            .append(r)
+                            .append(n)
+                            .append(i),
+                            this._internalMsgMng.endSendEntityAndComps(),
+                            this._internalMsgMng.endSendRpc(),
+                            this._internalMsgMng.endSendRpcCallback();
+                    } else {
+                        this._internalMsgMng.startSendRpc(),
+                            this._internalMsgMng.startSendRpcCallback();
+                        (s = n.writerCursor), (u = i.writerCursor);
+                        e.writeUlong(s).writeUlong(u).append(n).append(i),
+                            this._internalMsgMng.endSendRpc(),
+                            this._internalMsgMng.endSendRpcCallback();
+                    }
+                    return e.get();
+                }),
+                (t.prototype.setData = function (t) {
+                    var e = this._internalMsgMng.inoutbuffer,
+                        r = this._internalMsgMng.statebuffer,
+                        n = this._internalMsgMng.rpcbuffer,
+                        i = this._internalMsgMng.rpcCallbackBuffer;
+                    if ((e.set(t), e.readInt(), e.readBoolean())) {
+                        var o = e.readUlong(),
+                            s = e.readUlong(),
+                            a = e.readUlong(),
+                            u = e.readerCursor,
+                            c = u + o,
+                            p = (f = l = (h = c) + s) + a;
+                        r.set(t, u, c),
+                            n.set(t, h, l),
+                            i.set(t, f, p),
+                            this._internalMsgMng.startRecvEntityAndComps(),
+                            this._derEntityAndComps(),
+                            this._internalMsgMng.endRecvEntityAndComps(),
+                            this._internalMsgMng.startRecvRpc(),
+                            this._deserRpcs(),
+                            this._internalMsgMng.endRecvRpc(),
+                            this._internalMsgMng.startRecvRpcCallback(),
+                            this._deserRpcCallbacks(),
+                            this._internalMsgMng.endRecvRpcCallback();
+                    } else {
+                        var h, l, f;
+                        (s = e.readUlong()),
+                            (a = e.readUlong()),
+                            (p = (f = l = (h = e.readerCursor) + s) + a);
+                        n.set(t, h, l),
+                            i.set(t, f, p),
+                            this._internalMsgMng.startRecvRpc(),
+                            this._deserRpcs(),
+                            this._internalMsgMng.endRecvRpc(),
+                            this._internalMsgMng.startRecvRpcCallback(),
+                            this._deserRpcCallbacks(),
+                            this._internalMsgMng.endRecvRpcCallback();
+                    }
+                }),
+                (t.prototype.update = function (t) {
+                    this._fixedSecAccumulator += t;
+                    for (
+                        var e = this.logicTime.delta;
+                        this._fixedSecAccumulator > e;
 
-    var Net = /** @class */ (function () {
-        function Net() {}
-        Net.send = function (obj) {
-            var _this = this;
-            var promise = new Promise(function (resolve) {
-                setTimeout(
-                    resolve,
-                    _this.delay + Math.random() * _this.jitter,
-                    obj
+                    ) {
+                        (this._fixedSecAccumulator -= e),
+                            (this.logicTime.duration += e);
+                        for (var r = 0, n = this._entitiesLength; r < n; r++) {
+                            (i = this._entities[r]) &&
+                                ((i.role.local !== u.AUTHORITY &&
+                                    i.role.local !== u.AUTONMOUS_PROXY) ||
+                                    i._logicUpdate());
+                        }
+                    }
+                    (this.renderTime.delta = t),
+                        (this.renderTime.duration += t);
+                    for (r = 0, n = this._entitiesLength; r < n; r++) {
+                        var i;
+                        (i = this._entities[r]) && i._renderUpdate();
+                    }
+                }),
+                (t.prototype._reg = function (t, e, r) {
+                    (t._id = e), (t._version = r), (t._domain = this);
+                    var n = t.id;
+                    (this._entities[n] = t),
+                        n >= this._entitiesLength &&
+                            (this._entitiesLength = n + 1);
+                }),
+                (t.prototype._unreg = function (t) {
+                    (t._id = h), (t._version = h), (t._domain = void 0);
+                }),
+                (t.prototype._serEntityAndComps = function () {
+                    for (var t = 0, e = this._entitiesLength; t < e; t++) {
+                        var r = this._entities[t];
+                        if (r) {
+                            this._internalMsgMng.sendEntity(
+                                r.id,
+                                r.version,
+                                r.comps.length,
+                                !1
+                            );
+                            for (
+                                var n = r.comps, i = 0, o = n.length;
+                                i < o;
+                                i++
+                            ) {
+                                var s = _(n[i]);
+                                s
+                                    ? this._internalMsgMng.sendComp(i, s)
+                                    : console.warn(
+                                          "[Domain#_ser(compIdx: " +
+                                              i +
+                                              ", entity: " +
+                                              r +
+                                              ")]comp is not Serable!"
+                                      );
+                            }
+                            r.role.ser(this._internalMsgMng.statebuffer);
+                        } else
+                            this._internalMsgMng.sendEntity(
+                                t,
+                                this._entityVersion[t],
+                                0,
+                                !0
+                            );
+                    }
+                }),
+                (t.prototype._derEntityAndComps = function () {
+                    for (var t; (t = this._internalMsgMng.recvEntity()); ) {
+                        var e = this._entities[t.entityId];
+                        e &&
+                            (e.version != t.entityVersion || t.destoryed) &&
+                            (this.unreg(e), (e = null)),
+                            t.destoryed ||
+                                (e = e
+                                    ? this._derEntityAndCompsUnderExisted(t, e)
+                                    : this._derEntityAndCompsUnderUnExsited(t));
+                    }
+                }),
+                (t.prototype._derEntityAndCompsUnderExisted = function (t, e) {
+                    var r = e.comps;
+                    !(function (t, e) {
+                        if (!t) throw new e();
+                    })(t.compCount == r.length, it);
+                    for (var n = 0, i = t.compCount; n < i; n++) {
+                        var o = _(
+                            r[this._internalMsgMng.recvCompHeader().compIdx]
+                        );
+                        o && this._internalMsgMng.recvCompBody(o);
+                    }
+                    return e.role.deser(this._internalMsgMng.statebuffer), e;
+                }),
+                (t.prototype._derEntityAndCompsUnderUnExsited = function (t) {
+                    for (
+                        var e = new Array(t.compCount), r = 0, n = t.compCount;
+                        r < n;
+                        r++
+                    ) {
+                        var i = this._internalMsgMng.recvCompHeader(),
+                            o = O[i.hash],
+                            s = new (0, C[o])();
+                        this._internalMsgMng.recvCompBody(s),
+                            (e[i.compIdx] = s);
+                    }
+                    var a = new (z.bind.apply(
+                        z,
+                        (function (t, e) {
+                            for (
+                                var r = 0, n = e.length, i = t.length;
+                                r < n;
+                                r++, i++
+                            )
+                                t[i] = e[r];
+                            return t;
+                        })([void 0], e)
+                    ))();
+                    return (
+                        a.role.deser(this._internalMsgMng.statebuffer),
+                        this.reg(a),
+                        a
+                    );
+                }),
+                (t.prototype._deserRpcs = function () {
+                    for (
+                        var t,
+                            e = this,
+                            r = function () {
+                                var r = n.get(t.entityId);
+                                if (!r) return "continue";
+                                var i = r.comps[t.compIdx];
+                                if (!i) return "continue";
+                                var o = i["deser" + t.methodHash](
+                                        n._internalMsgMng.rpcbuffer
+                                    ),
+                                    s = T[t.methodHash],
+                                    a = i[s].apply(i, o),
+                                    u = i.__schema__.methods[s];
+                                if (98 != u.returnType) {
+                                    var c = t;
+                                    null == a ||
+                                        a.then(function (t) {
+                                            e._internalMsgMng.sendRpcCallback(
+                                                c
+                                            ),
+                                                M(
+                                                    u.returnType,
+                                                    t,
+                                                    e._internalMsgMng
+                                                        .rpcCallbackBuffer
+                                                );
+                                        });
+                                }
+                            },
+                            n = this;
+                        (t = this._internalMsgMng.recvRpc());
+
+                    )
+                        r();
+                }),
+                (t.prototype._deserRpcCallbacks = function () {
+                    for (
+                        var t;
+                        (t = this._internalMsgMng.recvRpcCallback());
+
+                    ) {
+                        var e = this.get(t.entityId);
+                        if (e) {
+                            var r = e.comps[t.compIdx];
+                            if (r) {
+                                var n = r.__schema__,
+                                    i = T[t.methodHash],
+                                    o = n.methods[i],
+                                    s = void 0;
+                                98 != o.returnType &&
+                                    (s = B(
+                                        o.returnType,
+                                        this._internalMsgMng.rpcCallbackBuffer,
+                                        void 0,
+                                        o.returnRefCtr
+                                    ));
+                                var a =
+                                    this._internalMsgMng.getRpcCallbackRecord(
+                                        t
+                                    );
+                                a && a.deferred.resolve(s);
+                            }
+                        }
+                    }
+                }),
+                (t.prototype._getEntityId = function () {
+                    return this._destroyEntityId.length > 0
+                        ? this._destroyEntityId.unshift()
+                        : this._entityIdCursor++;
+                }),
+                (t._name2domainMap = new v()),
+                t
+            );
+        })(),
+        st = (function () {
+            function t() {
+                this._arr = [];
+            }
+            return (
+                (t.prototype.send = function (t) {
+                    this._arr.push(t);
+                }),
+                (t.prototype.update = function () {
+                    for (
+                        var t, e;
+                        this._arr.length >= 1 &&
+                        (e = this._arr[0]).isFulfilled();
+
+                    )
+                        null === (t = this.receiver) ||
+                            void 0 === t ||
+                            t.receive(e.value),
+                            this._arr.shift();
+                }),
+                t
+            );
+        })(),
+        at = (function () {
+            function t() {}
+            return (
+                Object.defineProperty(t, "server", {
+                    set: function (t) {
+                        this._serverTcp.receiver = t;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t, "client1", {
+                    set: function (t) {
+                        this._client1Tcp.receiver = t;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                Object.defineProperty(t, "client2", {
+                    set: function (t) {
+                        this._client2Tcp.receiver = t;
+                    },
+                    enumerable: !1,
+                    configurable: !0,
+                }),
+                (t.clone = function (t) {
+                    return t;
+                }),
+                (t.send = function (t) {
+                    var e = this;
+                    return {
+                        server: function () {
+                            var r = new g();
+                            setTimeout(function () {
+                                return r.resolve(e.clone(t));
+                            }, e.delay + Math.random() * e.jitter),
+                                e._serverTcp.send(r);
+                        },
+                        c1: function () {
+                            var r = new g();
+                            setTimeout(function () {
+                                return r.resolve(e.clone(t));
+                            }, e.delay + Math.random() * e.jitter),
+                                e._client1Tcp.send(r);
+                        },
+                        c2: function () {
+                            var r = new g();
+                            setTimeout(function () {
+                                return r.resolve(e.clone(t));
+                            }, e.delay + Math.random() * e.jitter),
+                                e._client2Tcp.send(r);
+                        },
+                    };
+                }),
+                (t.startUpdate = function () {
+                    var t = this;
+                    setTimeout(function () {
+                        return t.startUpdate();
+                    }),
+                        this._serverTcp.update(),
+                        this._client1Tcp.update(),
+                        this._client2Tcp.update();
+                }),
+                (t.delay = 0),
+                (t.jitter = 0),
+                (t._serverTcp = new st()),
+                (t._client1Tcp = new st()),
+                (t._client2Tcp = new st()),
+                t
+            );
+        })(),
+        ut = (function () {
+            function t() {
+                (this.x = 0), (this.y = 0);
+            }
+            return (
+                n([x(c.INT)], t.prototype, "x", void 0),
+                n([x(c.INT)], t.prototype, "y", void 0),
+                (t = n([D("vec")], t))
+            );
+        })(),
+        ct = (function (t) {
+            function e() {
+                var e = (null !== t && t.apply(this, arguments)) || this;
+                return (e.pos = new ut()), e;
+            }
+            return (
+                r(e, t),
+                (e.prototype.serverMove = function (t, e) {
+                    (0 == t && 0 == e) || console.log(t + " : " + e),
+                        (this.pos.x += t),
+                        (this.pos.y += e);
+                }),
+                n([x(ut)], e.prototype, "pos", void 0),
+                n(
+                    [j(u.AUTHORITY), i(0, F(c.FLOAT)), i(1, F(c.FLOAT))],
+                    e.prototype,
+                    "serverMove",
+                    null
+                ),
+                (e = n([D("trans")], e))
+            );
+        })(p),
+        pt = (function (t) {
+            function e() {
+                var e = (null !== t && t.apply(this, arguments)) || this;
+                return (e.color = 16777215), e;
+            }
+            var o;
+            return (
+                r(e, t),
+                (o = e),
+                (e.prototype.changeColor = function (t) {
+                    this.color = t;
+                }),
+                (e.prototype.bindCanvas = function (t) {
+                    this._ctx = t;
+                }),
+                (e.prototype.renderUpdate = function () {
+                    var t = this.get(ct),
+                        e = this.get(o);
+                    this._ctx &&
+                        t &&
+                        e &&
+                        this.drawBall(
+                            this._ctx,
+                            t.pos,
+                            "#" + e.color.toString(16)
+                        );
+                }),
+                (e.prototype.drawBall = function (t, e, r) {
+                    (t.fillStyle = r),
+                        t.beginPath(),
+                        t.arc(e.x, e.y, 26, 0, 2 * Math.PI),
+                        t.fill();
+                }),
+                n([x(c.INT)], e.prototype, "color", void 0),
+                n(
+                    [j(u.AUTHORITY), i(0, F(c.INT))],
+                    e.prototype,
+                    "changeColor",
+                    null
+                ),
+                (e = o = n([D("view")], e))
+            );
+        })(p),
+        ht = (function (t) {
+            function e() {
+                var e = t.call(this) || this;
+                return (
+                    (e._input = { isLeft: !1, isRight: !1 }),
+                    (e._enable = !1),
+                    (e._onKeyDownDel = e.onKeyDown.bind(e)),
+                    (e._onKeyUpDel = e.onKeyUp.bind(e)),
+                    e
                 );
-            });
-            return {
-                server: function () {
-                    return promise.then(function (res) {
-                        _this.server.receive(res);
-                    });
-                },
-                c1: function () {
-                    return promise.then(function (res) {
-                        _this.client1.receive(res);
-                    });
-                },
-                c2: function () {
-                    return promise.then(function (res) {
-                        _this.client2.receive(res);
-                    });
-                },
-            };
-        };
-        Net.delay = 0;
-        Net.jitter = 0;
-        return Net;
-    })();
-
-    var Vector = /** @class */ (function () {
-        function Vector() {
-            this.x = 0;
-            this.y = 0;
-        }
-        __decorate([NetVar(DataType.INT)], Vector.prototype, "x", void 0);
-        __decorate([NetVar(DataType.INT)], Vector.prototype, "y", void 0);
-        Vector = __decorate([NetSerable("vec")], Vector);
-        return Vector;
-    })();
-    var Transform = /** @class */ (function (_super) {
-        __extends(Transform, _super);
-        function Transform() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
-            _this.pos = new Vector();
-            return _this;
-        }
-        Transform.prototype.serverMove = function (x, y) {
-            this.pos.x += x;
-            this.pos.y += y;
-        };
-        __decorate([NetVar(Vector)], Transform.prototype, "pos", void 0);
-        __decorate(
-            [
-                Rpc(Role.AUTHORITY),
-                __param(0, RpcVar(DataType.INT)),
-                __param(1, RpcVar(DataType.INT)),
-            ],
-            Transform.prototype,
-            "serverMove",
-            null
-        );
-        Transform = __decorate([NetSerable("trans")], Transform);
-        return Transform;
-    })(IComp);
-    var View = /** @class */ (function (_super) {
-        __extends(View, _super);
-        function View() {
-            var _this =
-                (_super !== null && _super.apply(this, arguments)) || this;
-            _this.color = 0xffffff;
-            return _this;
-        }
-        View_1 = View;
-        View.prototype.changeColor = function (inColor) {
-            this.color = inColor;
-        };
-        View.prototype.bindCanvas = function (ctx) {
-            this._ctx = ctx;
-        };
-        View.prototype.renderUpdate = function () {
-            var trs = this.get(Transform);
-            var view = this.get(View_1);
-            if (!this._ctx || !trs || !view) return;
-            this.drawBall(this._ctx, trs.pos, "#" + view.color.toString(16));
-        };
-        View.prototype.drawBall = function (ctx, pos, color) {
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, 26, 0, 2 * Math.PI);
-            ctx.fill();
-        };
-        var View_1;
-        __decorate([NetVar(DataType.INT)], View.prototype, "color", void 0);
-        __decorate(
-            [Rpc(Role.AUTHORITY), __param(0, RpcVar(DataType.INT))],
-            View.prototype,
-            "changeColor",
-            null
-        );
-        View = View_1 = __decorate([NetSerable("view")], View);
-        return View;
-    })(IComp);
-    var Controller = /** @class */ (function (_super) {
-        __extends(Controller, _super);
-        function Controller(controlMap) {
-            var _this = _super.call(this) || this;
-            _this.controlMap = controlMap;
-            _this._input = { isLeft: false, isRight: false };
-            window.addEventListener("keydown", _this.onKeyDown.bind(_this));
-            window.addEventListener("keyup", _this.onKeyUp.bind(_this));
-            return _this;
-        }
-        Controller.prototype.onKeyDown = function (ev) {
-            var map = this.controlMap;
-            if (ev.key === map.left) {
-                this._input.isLeft = true;
-            } else if (ev.key === map.right) {
-                this._input.isRight = true;
             }
-        };
-        Controller.prototype.onKeyUp = function (ev) {
-            var map = this.controlMap;
-            if (ev.key === map.left) {
-                this._input.isLeft = false;
-            } else if (ev.key === map.right) {
-                this._input.isRight = false;
+            return (
+                r(e, t),
+                (e.prototype.getEnable = function () {
+                    return this._enable;
+                }),
+                (e.prototype.setEnable = function (t, e) {
+                    this._enable != t &&
+                        ((this.controlMap = e),
+                        t
+                            ? (window.addEventListener(
+                                  "keydown",
+                                  this._onKeyDownDel
+                              ),
+                              window.addEventListener(
+                                  "keyup",
+                                  this._onKeyUpDel
+                              ))
+                            : (window.removeEventListener(
+                                  "keydown",
+                                  this._onKeyDownDel
+                              ),
+                              window.removeEventListener(
+                                  "keyup",
+                                  this._onKeyUpDel
+                              )),
+                        (this._enable = t));
+                }),
+                (e.prototype.onKeyDown = function (t) {
+                    var e = this.controlMap;
+                    t.key === e.left
+                        ? (this._input.isLeft = !0)
+                        : t.key === e.right && (this._input.isRight = !0);
+                }),
+                (e.prototype.onKeyUp = function (t) {
+                    var e = this.controlMap;
+                    t.key === e.left
+                        ? (this._input.isLeft = !1)
+                        : t.key === e.right && (this._input.isRight = !1);
+                }),
+                (e.prototype.renderUpdate = function () {
+                    if (this._enable) {
+                        var t = this._input,
+                            e = this.get(ct),
+                            r = (t.isLeft ? -1 : 0) + (t.isRight ? 1 : 0);
+                        e.serverMove(r * this.domain.renderTime.delta * 100, 0);
+                    }
+                }),
+                (e = n([D("controller")], e))
+            );
+        })(p),
+        lt = { 1: { left: "a", right: "d" }, 2: { left: "", right: "" } },
+        ft = (function () {
+            function t(t, e, r) {
+                (this.canvas = e),
+                    (this.bg = "#947A6D"),
+                    (this.isPrediction = !1),
+                    (this.isInterpolation = !1),
+                    (this.isRollback = !1),
+                    (this.lastTimeStamp = 0),
+                    (this.actorArr = []),
+                    (this.domain = ot.Create(t, { dataBufCtr: Z, type: r })),
+                    (this.ctx = e.getContext("2d")),
+                    (this.canvas.width = 950),
+                    (this.canvas.height = 70),
+                    (this.ctx.fillStyle = this.bg),
+                    this.ctx.fillRect(
+                        0,
+                        0,
+                        this.canvas.width,
+                        this.canvas.height
+                    ),
+                    (this.myLoop = this.loop.bind(this)),
+                    this.initScene(),
+                    this.loop(0);
             }
-        };
-        Controller.prototype.logicUpdate = function () {
-            var input = this._input;
-            var trans = this.get(Transform);
-            var dirX = (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0);
-            trans.serverMove(dirX * this.domain.logicTime.delta * 0.1, 0);
-        };
-        return Controller;
-    })(IComp);
-
-    var Base = /** @class */ (function () {
-        function Base(name, canvas, rpcType) {
-            this.canvas = canvas;
-            this.bg = "#947A6D";
-            this.isPrediction = false;
-            this.isInterpolation = false;
-            this.isRollback = false;
-            this.lastTimeStamp = 0;
-            this.actorArr = [];
-            this.domain = Domain.Create(name, {
-                dataBufCtr: StringDataBuffer,
-                type: rpcType,
-            });
-            this.ctx = canvas.getContext("2d");
-            this.canvas.width = 950;
-            this.canvas.height = 70;
-            this.ctx.fillStyle = this.bg;
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            this.myLoop = this.loop.bind(this);
-            this.initScene();
-            this.loop(0);
-        }
-        Base.prototype.loop = function (timestamp) {
-            requestAnimationFrame(this.myLoop);
-            var dt =
-                this.lastTimeStamp == 0 ? 0 : timestamp - this.lastTimeStamp;
-            this.lastTimeStamp = timestamp;
-            this.renderBg();
-            this.domain.update(dt / 1000);
-        };
-        Base.prototype.initScene = function () {
-            var v1 = new View();
-            v1.bindCanvas(this.ctx);
-            var t1 = new Transform();
-            t1.pos.x = 30;
-            t1.pos.y = 35;
-            var c1 = new Entity(v1, t1);
-            var v2 = new View();
-            v2.bindCanvas(this.ctx);
-            var t2 = new Transform();
-            t2.pos.x = 50;
-            t2.pos.y = 35;
-            var c2 = new Entity(v2, t2);
-            this.domain.reg(c1);
-            this.domain.reg(c2);
-            this.actorArr.push(c1, c2);
-        };
-        Base.prototype.renderBg = function () {
-            this.canvas.width = this.canvas.width;
-            var ctx = this.ctx;
-            ctx.fillStyle = this.bg;
-            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        };
-        Base.prototype.onKeyDown = function (ev) {};
-        Base.prototype.onKeyUp = function (ev) {};
-        Base.prototype.receive = function (data) {
-            if (this.isPrediction) return;
-            this.domain.setData(data);
-        };
-        return Base;
-    })();
-    var Server = /** @class */ (function (_super) {
-        __extends(Server, _super);
-        function Server(canvas) {
-            var _this =
-                _super.call(this, "server", canvas, RpcType.SERVER) || this;
-            _this.canvas = canvas;
-            return _this;
-        }
-        Server.prototype.loop = function (dt) {
-            _super.prototype.loop.call(this, dt);
-            var outData = this.domain.asData();
-            Net.send(outData).c1();
-            Net.send(outData).c2();
-        };
-        return Server;
-    })(Base);
-    var Client = /** @class */ (function (_super) {
-        __extends(Client, _super);
-        function Client(index, canvas) {
-            var _this =
-                _super.call(this, "client" + index, canvas, RpcType.CLIENT) ||
-                this;
-            _this.index = index;
-            _this.canvas = canvas;
-            return _this;
-        }
-        Client.prototype.loop = function (dt) {
-            _super.prototype.loop.call(this, dt);
-            var outData = this.domain.asData();
-            Net.send(outData).server();
-        };
-        return Client;
-    })(Base);
-
-    exports.Base = Base;
-    exports.Client = Client;
-    exports.Controller = Controller;
-    exports.Net = Net;
-    exports.Server = Server;
-    exports.Transform = Transform;
-    exports.Vector = Vector;
-    exports.View = View;
-
-    Object.defineProperty(exports, "__esModule", { value: true });
-
-    return exports;
+            return (
+                (t.prototype.loop = function (t) {
+                    var e =
+                        0 == this.lastTimeStamp ? 0 : t - this.lastTimeStamp;
+                    (this.lastTimeStamp = t),
+                        this.renderBg(),
+                        this.domain.update(e / 1e3);
+                }),
+                (t.prototype.initScene = function () {
+                    var t = new pt();
+                    t.bindCanvas(this.ctx);
+                    var e = new ct();
+                    (e.pos.x = 30), (e.pos.y = 35);
+                    var r = new z(t, e, new ht()),
+                        n = new pt();
+                    n.bindCanvas(this.ctx);
+                    var i = new ct();
+                    (i.pos.x = 50), (i.pos.y = 35);
+                    var o = new z(n, i, new ht());
+                    this.domain.reg(r),
+                        this.domain.reg(o),
+                        t.changeColor(16243020),
+                        n.changeColor(16303053),
+                        this.actorArr.push(r, o);
+                }),
+                (t.prototype.renderBg = function () {
+                    this.canvas.width = this.canvas.width;
+                    var t = this.ctx;
+                    (t.fillStyle = this.bg),
+                        t.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                }),
+                (t.prototype.receive = function (t) {
+                    this.isPrediction || this.domain.setData(t);
+                }),
+                t
+            );
+        })(),
+        dt = (function (t) {
+            function e(e) {
+                var r = t.call(this, "server", e, a.SERVER) || this;
+                return (r.canvas = e), (r.sendAccumulator = 0), r;
+            }
+            return (
+                r(e, t),
+                (e.prototype.loop = function (e) {
+                    if (
+                        (t.prototype.loop.call(this, e),
+                        (this.sendAccumulator += this.domain.renderTime.delta),
+                        this.sendAccumulator >= 0.05)
+                    ) {
+                        var r = this.domain.asData();
+                        at.send(r).c1(),
+                            at.send(r).c2(),
+                            (this.sendAccumulator = 0);
+                    }
+                }),
+                e
+            );
+        })(ft),
+        yt = (function (t) {
+            function e(e, r) {
+                var n,
+                    i = t.call(this, "client" + e, r, a.CLIENT) || this;
+                return (
+                    (i.index = e),
+                    (i.canvas = r),
+                    null === (n = i.actorArr[e - 1].get(ht)) ||
+                        void 0 === n ||
+                        n.setEnable(!0, lt[e]),
+                    i
+                );
+            }
+            return (
+                r(e, t),
+                (e.prototype.loop = function (e) {
+                    t.prototype.loop.call(this, e);
+                    var r = this.domain.asData();
+                    at.send(r).server();
+                }),
+                e
+            );
+        })(ft);
+    return (
+        (t.Base = ft),
+        (t.Client = yt),
+        (t.Controller = ht),
+        (t.MockTcp = st),
+        (t.Net = at),
+        (t.Server = dt),
+        (t.Transform = ct),
+        (t.Vector = ut),
+        (t.View = pt),
+        Object.defineProperty(t, "__esModule", { value: !0 }),
+        t
+    );
 })({});
+//# sourceMappingURL=bundle.js.map

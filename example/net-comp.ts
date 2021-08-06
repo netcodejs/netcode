@@ -24,9 +24,12 @@ export class Transform extends IComp {
 
     @Rpc(Role.AUTHORITY)
     serverMove(
-        @RpcVar(DataType.INT) x: number,
-        @RpcVar(DataType.INT) y: number
+        @RpcVar(DataType.FLOAT) x: number,
+        @RpcVar(DataType.FLOAT) y: number
     ) {
+        if (x != 0 || y != 0) {
+            console.log(`${x} : ${y}`);
+        }
         this.pos.x += x;
         this.pos.y += y;
     }
@@ -77,13 +80,36 @@ export interface UserInput {
     isRight: boolean;
 }
 
+@NetSerable("controller")
 export class Controller extends IComp {
     private _input: UserInput = { isLeft: false, isRight: false };
+    private _onKeyDownDel: any;
+    private _onKeyUpDel: any;
+    private _enable = false;
+    controlMap!: ControlKeyboarnMap;
+    getEnable() {
+        return this._enable;
+    }
 
-    constructor(readonly controlMap: ControlKeyboarnMap) {
+    setEnable(value: false): void;
+    setEnable(value: true, controlMap: ControlKeyboarnMap): void;
+    setEnable(value: boolean, controlMap?: ControlKeyboarnMap): void {
+        if (this._enable == value) return;
+        this.controlMap = controlMap!;
+        if (value) {
+            window.addEventListener("keydown", this._onKeyDownDel);
+            window.addEventListener("keyup", this._onKeyUpDel);
+        } else {
+            window.removeEventListener("keydown", this._onKeyDownDel);
+            window.removeEventListener("keyup", this._onKeyUpDel);
+        }
+        this._enable = value;
+    }
+
+    constructor() {
         super();
-        window.addEventListener("keydown", this.onKeyDown.bind(this));
-        window.addEventListener("keyup", this.onKeyUp.bind(this));
+        this._onKeyDownDel = this.onKeyDown.bind(this);
+        this._onKeyUpDel = this.onKeyUp.bind(this);
     }
 
     onKeyDown(ev: KeyboardEvent) {
@@ -104,10 +130,11 @@ export class Controller extends IComp {
         }
     }
 
-    logicUpdate() {
+    renderUpdate() {
+        if (!this._enable) return;
         const input = this._input;
         const trans = this.get(Transform)!;
         const dirX = (input.isLeft ? -1 : 0) + (input.isRight ? 1 : 0);
-        trans.serverMove(dirX * this.domain.logicTime.delta * 0.1, 0);
+        trans.serverMove(dirX * this.domain.renderTime.delta * 100, 0);
     }
 }

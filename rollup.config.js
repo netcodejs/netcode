@@ -29,7 +29,7 @@ export default [
             cjs(),
             typescript(),
             replace({
-                "process.env.ENABLE_JIT": true,
+                "typeof eval && typeof Function": true,
                 preventAssignment: true,
             }),
         ],
@@ -44,7 +44,7 @@ export default [
             cjs(),
             typescript(),
             replace({
-                "process.env.ENABLE_JIT": true,
+                "typeof eval && typeof Function": true,
                 preventAssignment: true,
             }),
         ],
@@ -59,7 +59,7 @@ export default [
             cjs(),
             typescript(),
             replace({
-                "process.env.ENABLE_JIT": false,
+                "typeof eval && typeof Function": false,
                 preventAssignment: true,
             }),
         ],
@@ -74,7 +74,7 @@ export default [
             cjs(),
             typescript(),
             replace({
-                "process.env.ENABLE_JIT": false,
+                "typeof eval && typeof Function": false,
                 preventAssignment: true,
             }),
         ],

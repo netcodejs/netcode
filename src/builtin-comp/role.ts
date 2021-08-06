@@ -6,7 +6,7 @@ import {
     IDatabufferWriter,
     ISerable,
 } from "../data/serializable";
-import { DataType, Role } from "../comp-schema";
+import { DataType, Role, RpcType } from "../comp-schema";
 
 @NetSerable("role", false)
 export class RoleComp extends IComp implements ISerable {
@@ -64,5 +64,13 @@ export class RoleComp extends IComp implements ISerable {
             return true;
         }
         return false;
+    }
+
+    init() {
+        const type = this.domain.option.type;
+        this.$local.value =
+            type === RpcType.SERVER ? Role.AUTHORITY : Role.SIMULATED_PROXY;
+        this.$remote.value =
+            type === RpcType.SERVER ? Role.SIMULATED_PROXY : Role.AUTHORITY;
     }
 }

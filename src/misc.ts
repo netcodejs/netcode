@@ -78,6 +78,10 @@ export class Deferred<T = unknown> {
 
     private _resolve!: (value: T | PromiseLike<T>) => void;
     private _reject!: (reason?: any) => void;
+    private _value: any;
+    public get value() {
+        return this._value;
+    }
 
     constructor() {
         this.state = "pending";
@@ -87,7 +91,10 @@ export class Deferred<T = unknown> {
             this._reject = reject;
         });
         this.promise.then(
-            () => (this.state = "fulfilled"),
+            (res) => {
+                this.state = "fulfilled";
+                this._value = res;
+            },
             () => (this.state = "rejected")
         );
     }

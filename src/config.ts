@@ -1,3 +1,3 @@
 export const Config = {
-    JIT: process.env.ENABLE_JIT,
+    JIT: typeof eval && typeof Function,
 };

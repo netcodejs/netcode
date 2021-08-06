@@ -228,13 +228,13 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
             this: IComp & ISchema & Record<string, Function>,
             ...args: any[]
         ) {
-            const domain = this.domain;
-            if (domain == null) {
-                return Promise.reject("Domain is not valid!");
-            }
             if (this.entity.role.local == ms.type) {
                 return this[privateName](...args);
             } else {
+                const domain = this.domain;
+                if (domain == null) {
+                    return Promise.reject("Domain is not valid!");
+                }
                 return domain.readonlyInternalMsgMng.sendRpc(
                     name,
                     this,
@@ -394,13 +394,13 @@ return args;
         const privateName = "__" + name + "__";
         prototype[privateName] = prototype[name];
         let jitStr = `
-const domain = this.domain;
-if (domain == null) {
-    return Promise.reject("Domain is not valid!")
-}
 if (this.entity.role.local == ${ms.type}) {
     return this["${privateName}"](...args);
 } else {
+    const domain = this.domain;
+    if (domain == null) {
+        return Promise.reject("Domain is not valid!")
+    }
     return domain.readonlyInternalMsgMng.sendRpc(
         "${name}",
         this,

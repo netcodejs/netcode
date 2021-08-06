@@ -1,11 +1,15 @@
 import { Domain, Entity, Rpc, RpcType, StringDataBuffer } from "../src";
 import { Net } from "./mock-net";
-import { Transform, Vector, View } from "./net-comp";
+import { Controller, Transform, Vector, View } from "./net-comp";
 export * from "./net-comp";
 export * from "./mock-net";
 
 const COLOR_YELLOW = 0xf7d94c;
 const COLOR_WHITE = 0xf8c3cd;
+const CONTROLLER_MAP = {
+    1: { left: "a", right: "d" },
+    2: { left: "", right: "" },
+} as any;
 export abstract class Base {
     readonly domain: Domain;
     protected ctx: CanvasRenderingContext2D;
@@ -39,7 +43,6 @@ export abstract class Base {
     }
 
     loop(timestamp: number) {
-        requestAnimationFrame(this.myLoop);
         const dt = this.lastTimeStamp == 0 ? 0 : timestamp - this.lastTimeStamp;
         this.lastTimeStamp = timestamp;
         this.renderBg();
@@ -52,17 +55,20 @@ export abstract class Base {
         const t1 = new Transform();
         t1.pos.x = 30;
         t1.pos.y = 35;
-        const c1 = new Entity(v1, t1);
+        const c1 = new Entity(v1, t1, new Controller());
 
         const v2 = new View();
         v2.bindCanvas(this.ctx);
         const t2 = new Transform();
         t2.pos.x = 50;
         t2.pos.y = 35;
-        const c2 = new Entity(v2, t2);
+        const c2 = new Entity(v2, t2, new Controller());
 
         this.domain.reg(c1);
         this.domain.reg(c2);
+
+        v1.changeColor(COLOR_YELLOW);
+        v2.changeColor(COLOR_WHITE);
 
         this.actorArr.push(c1, c2);
     }
@@ -75,10 +81,6 @@ export abstract class Base {
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    onKeyDown(ev: KeyboardEvent): void {}
-
-    onKeyUp(ev: KeyboardEvent): void {}
-
     receive(data: any) {
         if (this.isPrediction) return;
         this.domain.setData(data);
@@ -86,21 +88,29 @@ export abstract class Base {
 }
 
 export class Server extends Base {
+    sendAccumulator = 0;
     constructor(readonly canvas: HTMLCanvasElement) {
         super("server", canvas, RpcType.SERVER);
     }
 
     loop(dt: number) {
         super.loop(dt);
-        const outData = this.domain.asData();
-        Net.send(outData).c1();
-        Net.send(outData).c2();
+        this.sendAccumulator += this.domain.renderTime.delta;
+        if (this.sendAccumulator >= 1 / 20) {
+            const outData = this.domain.asData();
+            Net.send(outData).c1();
+            Net.send(outData).c2();
+            this.sendAccumulator = 0;
+        }
     }
 }
 
 export class Client extends Base {
     constructor(readonly index: number, readonly canvas: HTMLCanvasElement) {
         super("client" + index, canvas, RpcType.CLIENT);
+        this.actorArr[index - 1]
+            .get(Controller)
+            ?.setEnable(true, CONTROLLER_MAP[index]);
     }
 
     loop(dt: number) {
