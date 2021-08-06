@@ -9,5 +9,3 @@ export * from "./domain";
 export * from "./base-dirty-data";
 export * from "./data/string-databuffer";
 export * from "./builtin-comp/";
-export * from "./comp-fixup";
-// import "./test";

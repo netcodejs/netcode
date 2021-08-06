@@ -21,6 +21,7 @@ import { ArrayMap } from "./array-map";
 import { compName2ctr, hash2compName, hash2RpcName } from "./global-record";
 import { StringDataBuffer } from "./data/string-databuffer";
 import { deserValue, serValue } from "./comp-fixup";
+import { str as hash } from "./lib/crc-32";
 
 class EntityNotValidError extends Error {}
 class EntityRepeatRegisteredError extends Error {}
@@ -61,12 +62,13 @@ export class Domain<T extends SupportNetDataType = any> {
     //#region static methods
     static Create<T extends SupportNetDataType = any>(
         name: string,
-        option: DomainOption<T>
+        option: DomainOption<T>,
+        uuid: number = hash(name)
     ) {
         if (this._name2domainMap.has(name)) {
             throw new DomainDuplicated(name);
         }
-        const news: Domain<T> = new Domain(name, option);
+        const news: Domain<T> = new Domain(name, option, uuid);
         const domainIndex = this._name2domainMap.set(name, news);
         news._index = domainIndex;
         return news;
@@ -115,11 +117,16 @@ export class Domain<T extends SupportNetDataType = any> {
     public readonly renderTime: RenderTimeComp;
 
     private readonly _option: DomainOption<T>;
+
     get option() {
         return this._option as Required<Readonly<DomainOption<T>>>;
     }
     //#endregion
-    protected constructor(readonly name: string, option: DomainOption<T>) {
+    protected constructor(
+        readonly name: string,
+        option: DomainOption<T>,
+        readonly uuid: number
+    ) {
         var requiredOption = HandleDomainDefautlValue(option);
         this._option = requiredOption;
         this._entities = new Array<Entity>(requiredOption.capacity);
@@ -204,6 +211,7 @@ export class Domain<T extends SupportNetDataType = any> {
         const rpcCbBuf = this._internalMsgMng.rpcCallbackBuffer;
 
         outBuf.reset();
+        outBuf.writeInt(this.uuid).writeBoolean(isServer);
 
         if (isServer) {
             this._internalMsgMng.startSendEntityAndComps();
@@ -216,7 +224,6 @@ export class Domain<T extends SupportNetDataType = any> {
             const rpcCbLen = rpcCbBuf.writerCursor;
 
             outBuf
-                .writeBoolean(isServer)
                 .writeUlong(stateLen)
                 .writeUlong(rpcLen)
                 .writeUlong(rpcCbLen)
@@ -235,7 +242,6 @@ export class Domain<T extends SupportNetDataType = any> {
             const rpcCbLen = rpcCbBuf.writerCursor;
 
             outBuf
-                .writeBoolean(isServer)
                 .writeUlong(rpcLen)
                 .writeUlong(rpcCbLen)
                 .append(rpcBuf)
@@ -255,6 +261,7 @@ export class Domain<T extends SupportNetDataType = any> {
         const rpcCbBuf = this._internalMsgMng.rpcCallbackBuffer;
 
         inBuf.set(source);
+        const uuid = inBuf.readInt();
         const isServer = inBuf.readBoolean();
 
         if (isServer) {

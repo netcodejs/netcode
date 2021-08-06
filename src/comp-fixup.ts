@@ -36,6 +36,42 @@ export function serValue(
     }
 }
 
+export function genSerValueJit(
+    type: DataType,
+    valueStr: string,
+    bufferStr: string
+) {
+    switch (type) {
+        case DataType.INT:
+        case DataType.I32:
+            return `${bufferStr}.writeInt(${valueStr});`;
+        case DataType.FLOAT:
+        case DataType.F32:
+            return `${bufferStr}.writeFloat(${valueStr});`;
+        case DataType.DOUBLE:
+        case DataType.F64:
+            return `${bufferStr}.writeDouble(${valueStr});`;
+        case DataType.BOOL:
+            return `${bufferStr}.writeBoolean(${valueStr});`;
+        case DataTypeObect:
+            return `${valueStr}.ser(${bufferStr});`;
+    }
+}
+
+export function genForeachSerValueJit(
+    type: DataType[],
+    from: number,
+    to: number,
+    arrStr: string,
+    bufferStr: string
+) {
+    let outStr = "";
+    for (let i = from; i < to; i++) {
+        outStr += genSerValueJit(type[i], `${arrStr}[${i}]`, bufferStr);
+    }
+    return outStr;
+}
+
 export function deserValue(
     type: DataType,
     buffer: IDataBufferReader,
@@ -61,14 +97,55 @@ export function deserValue(
     }
 }
 
-export function fixupSerable<T extends Record<string, any>>(target: {
-    new (): T;
-}) {
-    target.prototype.ser = function (
+function genForeachDeserValueJit(
+    type: DataType[],
+    from: number,
+    to: number,
+    recevierStr: string,
+    bufferStr: string
+) {
+    let outStr = "";
+    for (let i = from; i < to; i++) {
+        outStr += genDeserValueJit(type[i], bufferStr, `${recevierStr}[${i}]`);
+    }
+    return outStr;
+}
+
+export function genDeserValueJit(
+    type: DataType,
+    bufferStr: string,
+    recevierStr: string
+) {
+    switch (type) {
+        case DataType.INT:
+        case DataType.I32:
+            return `${recevierStr} = ${bufferStr}.readInt();`;
+        case DataType.FLOAT:
+        case DataType.F32:
+            return `${recevierStr} = ${bufferStr}.readFloat();`;
+        case DataType.DOUBLE:
+        case DataType.F64:
+            return `${recevierStr} = ${bufferStr}.readDouble();`;
+        case DataType.BOOL:
+            return `${recevierStr} = ${bufferStr}.readBoolean();`;
+        case DataTypeObect:
+            return `
+${recevierStr}.deser(${bufferStr})
+            `;
+    }
+}
+
+export function fixupSerable(prototype: any) {
+    const schema = prototype[SCHEME_KEY] as Schema;
+    fixedupSerableState(prototype, schema);
+    fixedupSerableRpc(prototype, schema);
+}
+
+export function fixedupSerableState(prototype: any, schema: Schema) {
+    prototype.ser = function (
         this: ISchema & Record<string, any>,
         buffer: IDatabufferWriter
     ) {
-        const schema = this[SCHEME_KEY];
         for (let i = 0, count = schema.count; i < count; i++) {
             const prop = schema.props[i];
             const type = prop.type;
@@ -84,11 +161,10 @@ export function fixupSerable<T extends Record<string, any>>(target: {
             }
         }
     };
-    target.prototype.deser = function (
+    prototype.deser = function (
         this: ISchema & Record<string, any>,
         buffer: IDataBufferReader
     ) {
-        const schema = this[SCHEME_KEY];
         for (let i = 0, count = schema.count; i < count; i++) {
             const prop = schema.props[i];
             const type = prop.type;
@@ -119,10 +195,61 @@ export function fixupSerable<T extends Record<string, any>>(target: {
     };
 }
 
+export function fixedupSerableRpc(prototype: any, schema: Schema) {
+    const rpcNames = Object.keys(schema.methods);
+    for (let i = 0, len = rpcNames.length; i < len; i++) {
+        const name = rpcNames[i];
+        const ms = schema.methods[name];
+        prototype["ser" + ms.hash] = function (
+            buffer: IDatabufferWriter,
+            args: any[]
+        ) {
+            for (let j = 0, len = ms.paramCount; j < len; j++) {
+                const value = args[j];
+                serValue(ms.paramTypes[j], value, buffer);
+            }
+        };
+        prototype["deser" + ms.hash] = function (buffer: IDataBufferReader) {
+            const args = new Array(ms.paramCount);
+            for (let j = 0, len = ms.paramCount; j < len; j++) {
+                args[j] = deserValue(
+                    ms.paramTypes[j],
+                    buffer,
+                    args[j],
+                    ms.paramTypes[j]
+                );
+            }
+            return args;
+        };
+
+        const privateName = "__" + name + "__";
+        prototype[privateName] = prototype[name];
+        prototype[name] = function (
+            this: IComp & ISchema & Record<string, Function>,
+            ...args: any[]
+        ) {
+            if (this.entity.role.local == ms.type) {
+                return this[privateName](...args);
+            } else {
+                const domain = this.domain;
+                if (domain == null) {
+                    return Promise.reject("Domain is not valid!");
+                }
+                return domain.readonlyInternalMsgMng.sendRpc(
+                    name,
+                    this,
+                    args,
+                    domain.logicTime.duration
+                );
+            }
+        };
+    }
+}
+
 export function fixupSerableJIT(prototype: any) {
     const schema = prototype[SCHEME_KEY] as Schema;
     fixedupSerableStateJit(prototype, schema);
-    fixedupSerableRpc(prototype, schema);
+    fixedupSerableRpcJit(prototype, schema);
 }
 
 export function fixedupSerableStateJit(prototype: any, schema: Schema) {
@@ -253,61 +380,35 @@ export function fixedupSerableRpcJit(prototype: any, schema: Schema) {
         const ms = schema.methods[name];
 
         let serJitStr = `
+${genForeachSerValueJit(ms.paramTypes, 0, ms.paramCount, "args", "buffer")}
         `;
-        prototype["ser" + ms.hash] = Function("buffer", serJitStr);
+        prototype["ser" + ms.hash] = Function("buffer", "args", serJitStr);
 
-        let deserJitStr = "";
+        let deserJitStr = `
+const args = new Array(${ms.paramCount});
+${genForeachDeserValueJit(ms.paramTypes, 0, ms.paramCount, "args", "buffer")}
+return args;
+        `;
         prototype["deser" + ms.hash] = Function("buffer", deserJitStr);
-    }
-}
-
-export function fixedupSerableRpc(prototype: any, schema: Schema) {
-    const rpcNames = Object.keys(schema.methods);
-    for (let i = 0, len = rpcNames.length; i < len; i++) {
-        const name = rpcNames[i];
-        const ms = schema.methods[name];
-        prototype["ser" + ms.hash] = function (
-            buffer: IDatabufferWriter,
-            args: any[]
-        ) {
-            for (let j = 0, len = ms.paramCount; j < len; j++) {
-                const value = args[j];
-                serValue(ms.paramTypes[j], value, buffer);
-            }
-        };
-        prototype["deser" + ms.hash] = function (buffer: IDataBufferReader) {
-            const args = new Array(ms.paramCount);
-            for (let j = 0, len = ms.paramCount; j < len; j++) {
-                args[j] = deserValue(
-                    ms.paramTypes[j],
-                    buffer,
-                    args[j],
-                    ms.paramTypes[j]
-                );
-            }
-            return args;
-        };
 
         const privateName = "__" + name + "__";
         prototype[privateName] = prototype[name];
-        prototype[name] = async function (
-            this: IComp & ISchema & Record<string, Function>,
-            ...args: any[]
-        ) {
-            const domain = this.domain;
-            if (domain == null) {
-                return Promise.reject("Domain is not valid!");
-            }
-            if (this.entity.role.local == ms.type) {
-                return this[privateName](...args);
-            } else {
-                return domain.readonlyInternalMsgMng.sendRpc(
-                    name,
-                    this,
-                    args,
-                    domain.logicTime.duration
-                );
-            }
-        };
+        let jitStr = `
+if (this.entity.role.local == ${ms.type}) {
+    return this["${privateName}"](...args);
+} else {
+    const domain = this.domain;
+    if (domain == null) {
+        return Promise.reject("Domain is not valid!")
+    }
+    return domain.readonlyInternalMsgMng.sendRpc(
+        "${name}",
+        this,
+        args,
+        domain.logicTime.duration
+    );
+}
+        `;
+        prototype[name] = Function("...args", jitStr);
     }
 }

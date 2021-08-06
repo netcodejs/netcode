@@ -1,3 +1,3 @@
 export const Config = {
-    JIT: true,
+    JIT: typeof eval && typeof Function,
 };

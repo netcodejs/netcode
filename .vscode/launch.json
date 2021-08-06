@@ -15,7 +15,8 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "disableOptimisticBPs": true,
-            "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "runtimeExecutable": "/home/coder/.nvm/versions/node/v14.17.4/bin/node"
         }
     ]
 }

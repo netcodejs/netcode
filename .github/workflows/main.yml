@@ -38,6 +38,11 @@ jobs:
 
       - name: Test
         run: yarn test --ci --coverage --maxWorkers=2
+      
+      - name: Test - Jit
+        run: yarn test --ci --coverage --maxWorkers=2
+        env:
+          ENABLE_JIT: true
 
       - name: Build
         run: yarn build

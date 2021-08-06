@@ -26,16 +26,14 @@
         </div>
 
         <div style="border-style: solid; padding: 20px 20px; margin: 10px 0px;">
-            Server, Status: delay({{statusDelay}}), jitter({{statusJitter}})
+            Server, Status: delay({{status.delay}}), jitter({{status.jitter}})
             <br>
             Delay:
-            <input style="width: 50px; font-size: 15px;" type="number" id="serverDelay" @click="checkboxClick"
-                value="100">
+            <input style="width: 50px; font-size: 15px;" type="number" id="serverDelay" v-model="status.delay">
             ms,
             </input>
             Jitter:
-            <input style="width: 50px; font-size: 15px;" type="number" id="serverJitter" @click="checkboxClick"
-                value="20">
+            <input style="width: 50px; font-size: 15px;" type="number" id="serverJitter" v-model="status.jitter">
             ms
             </input>
             <canvas id="server" style="width: 950px; height: 70px; display: block; padding-top: 10px;"></canvas>
@@ -57,27 +55,32 @@
 </body>
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script>
-    const data = { hello: "1111", statusDelay: 0, statusJitter: 0 };
-    const vm = new Vue({ el: "#app", data });
-
-    const client1 = new StateSync.Client(
+    const Net = netcode.Net
+    const data = { hello: "1111", status: { delay: 0, jitter: 0} };
+    const vm = new Vue({ el: "#app", data, watch: {
+        "status.delay": function(val) {
+            Net.delay = Number(val) / 2 || 0
+        },
+        "status.jitter": function(val) {
+            Net.jitter = Number(val) / 2 || 0
+        }
+    } });
+    const client1 = new netcode.Client(
         1,
         document.getElementById("client1"),
         { left: "a", right: "d" }
     );
-    const client2 = new StateSync.Client(
+    const client2 = new netcode.Client(
         2,
         document.getElementById("client2"),
         { left: "ArrowLeft", right: "ArrowRight" }
     );
-    const server = new StateSync.Server(document.getElementById("server"));
+    const server = new netcode.Server(document.getElementById("server"));
 
-    const Net = StateSync.Net
     vm.hello = "aaaa";
-    Net.delay = 100;
-    Net.jitter = 20;
-    data.statusDelay = Net.delay;
-    data.statusJitter = Net.jitter;
+    data.status.delay = 100;
+    data.status.jitter = 20;
+
     Net.client1 = client1;
     Net.client2 = client2;
     Net.server = server;
@@ -86,18 +89,20 @@
         const t = event.target;
         console.log(t.id, t.checked, t.value);
         switch (t.id) {
-            case "serverJitter":
-                Net.jitter = Number(t.value);
-                data.statusJitter = Net.jitter;
-                break;
-            case "serverDelay":
-                Net.delay = Number(t.value);
-                data.statusDelay = Net.delay;
-                break;
             case "client1Predict":
                 client1.isPrediction = t.checked
         }
     }
+
+    function loop(timestamp) {
+        server.loop(timestamp);
+        client1.loop(timestamp);
+        client2.loop(timestamp);
+        requestAnimationFrame(loop);
+    }
+
+    loop(0);
+    Net.startUpdate();
 </script>
 
 </html>
