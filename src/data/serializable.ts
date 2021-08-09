@@ -26,19 +26,19 @@ export interface IDataBufferReader<T extends SupportNetDataType = any> {
 }
 
 export interface IDatabufferWriter<T extends SupportNetDataType = any> {
-    writeInt(source: number): IDatabufferWriter<T>;
-    writeUint(source: number): IDatabufferWriter<T>;
-    writeLong(source: number): IDatabufferWriter<T>;
-    writeUlong(source: number): IDatabufferWriter<T>;
-    writeShort(source: number): IDatabufferWriter<T>;
-    writeUshort(source: number): IDatabufferWriter<T>;
-    writeFloat(source: number): IDatabufferWriter<T>;
-    writeDouble(source: number): IDatabufferWriter<T>;
-    writeBoolean(source: boolean): IDatabufferWriter<T>;
+    writeInt(source: number): this;
+    writeUint(source: number): this;
+    writeLong(source: number): this;
+    writeUlong(source: number): this;
+    writeShort(source: number): this;
+    writeUshort(source: number): this;
+    writeFloat(source: number): this;
+    writeDouble(source: number): this;
+    writeBoolean(source: boolean): this;
     get(): T;
     reset(): void;
 
-    append(other: IDatabufferWriter<T>): IDatabufferWriter<T>;
+    append(other: this): this;
 
     readonly writerCursor: number;
     readonly writeBuffer: any;
