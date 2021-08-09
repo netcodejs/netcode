@@ -1,6 +1,5 @@
 import typescript from "rollup-plugin-typescript2";
 import cjs from "@rollup/plugin-commonjs";
-import { terser } from "rollup-plugin-terser";
 
 export default [
     {
@@ -19,7 +18,6 @@ export default [
                     },
                 },
             }),
-            terser(),
         ],
     },
     {
@@ -38,7 +36,6 @@ export default [
                     },
                 },
             }),
-            terser(),
         ],
     },
 ];
