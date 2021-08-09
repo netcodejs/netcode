@@ -1,6 +1,6 @@
 {
   "name": "netcodejs",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A js game framework for state-synchronization.",
   "module": "dist/netcode.esm.js",
   "exports": "./dist/netcode.cjs.js",
@@ -38,6 +38,7 @@
   },
   "scripts": {
     "build": "rimraf dist/ & yarn run rollup -c",
+    "build:dev": "rimraf dist/ & yarn run rollup -c rollup.config.dev.js",
     "build:nojit": "rimraf dist/ & yarn run rollup -c rollup.config.nojit.js",
     "test": "jest",
     "example": "yarn run rollup -c rollup.config.example.js --watch",
