@@ -14,13 +14,11 @@ export default [
         plugins: [
             cjs(),
             typescript(),
-            replace(
-                {
-                    preventAssignment: true,
-                    [CONFIG_JIT_REPLACE_STR]: false,
-                },
-                terser()
-            ),
+            replace({
+                preventAssignment: true,
+                [CONFIG_JIT_REPLACE_STR]: false,
+            }),
+            terser(),
         ],
     },
     {
@@ -32,13 +30,11 @@ export default [
         plugins: [
             cjs(),
             typescript(),
-            replace(
-                {
-                    preventAssignment: true,
-                    [CONFIG_JIT_REPLACE_STR]: false,
-                },
-                terser()
-            ),
+            replace({
+                preventAssignment: true,
+                [CONFIG_JIT_REPLACE_STR]: false,
+            }),
+            terser(),
         ],
     },
 ];
