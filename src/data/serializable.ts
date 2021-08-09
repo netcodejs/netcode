@@ -1,6 +1,6 @@
 export type SupportNetDataType = string | ArrayBuffer;
 export interface ISerable<T extends SupportNetDataType = any> {
-    ser(buffer: IDatabufferWriter<T>): void;
+    ser(buffer: IDataBufferWriter<T>): void;
     deser(buffer: IDataBufferReader<T>): void;
 }
 
@@ -25,7 +25,7 @@ export interface IDataBufferReader<T extends SupportNetDataType = any> {
     readonly readerEnd: number;
 }
 
-export interface IDatabufferWriter<T extends SupportNetDataType = any> {
+export interface IDataBufferWriter<T extends SupportNetDataType = any> {
     writeInt(source: number): this;
     writeUint(source: number): this;
     writeLong(source: number): this;
@@ -35,7 +35,7 @@ export interface IDatabufferWriter<T extends SupportNetDataType = any> {
     writeFloat(source: number): this;
     writeDouble(source: number): this;
     writeBoolean(source: boolean): this;
-    get(): T;
+    flush(): T;
     reset(): void;
 
     append(other: this): this;
@@ -43,7 +43,3 @@ export interface IDatabufferWriter<T extends SupportNetDataType = any> {
     readonly writerCursor: number;
     readonly writeBuffer: any;
 }
-
-export interface IDataBuffer<T extends SupportNetDataType>
-    extends IDataBufferReader<T>,
-        IDatabufferWriter<T> {}

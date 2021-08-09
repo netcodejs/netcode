@@ -2,7 +2,7 @@ import { DataType } from "./comp-schema";
 import { NetSerable, NetVar } from "./comp-decorator";
 import {
     IDataBufferReader,
-    IDatabufferWriter,
+    IDataBufferWriter,
     ISerable,
 } from "./data/serializable";
 
@@ -40,7 +40,7 @@ export class Int extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
         if (dirty) {
@@ -78,7 +78,7 @@ export class Float extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
         if (dirty) {
@@ -116,7 +116,7 @@ export class Long extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
         if (dirty) {
@@ -154,7 +154,7 @@ export class Uint extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
         if (dirty) {
@@ -192,7 +192,7 @@ export class Double extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
         if (dirty) {
@@ -230,7 +230,7 @@ export class Ulong extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
         if (dirty) {
@@ -268,7 +268,7 @@ export class Short extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
         if (dirty) {
@@ -306,7 +306,7 @@ export class Ushort extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         const dirty = this.getsetDirty();
         buffer.writeBoolean(dirty);
         if (dirty) {

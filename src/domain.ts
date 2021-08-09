@@ -6,20 +6,20 @@ import {
     Role,
     SCHEME_KEY,
 } from "./comp-schema";
-import { IDataBuffer, SupportNetDataType } from "./data/serializable";
+import { SupportNetDataType } from "./data/serializable";
 import { Entity } from "./entity";
 import { IComp } from "./comp-interface";
 import { NULL_NUM } from "./macro";
 import {
     MessageEntityInfo,
     MessageManager,
+    MessageManagerBufferInitializer,
     MessageRpcCallbackInfo,
     MessageRpcInfo,
 } from "./message-manager";
 import { asSerable, assert } from "./misc";
 import { ArrayMap } from "./array-map";
 import { compName2ctr, hash2compName, hash2RpcName } from "./global-record";
-import { StringDataBuffer } from "./data/string-databuffer";
 import { deserValue, serValue } from "./comp-fixup";
 import { str as hash } from "./lib/crc-32";
 
@@ -33,28 +33,15 @@ class DomainCompCountNotMatch extends Error {}
 export type DomainConstructorParamters<TT extends new (...args: any) => any> =
     TT extends new (_: any, ...args: infer P) => Domain ? P : never;
 
-export interface DomainOption<T extends SupportNetDataType = string> {
-    dataBufCtr?: { new (...args: any[]): IDataBuffer<T> };
-    type: RpcType;
-    capacity?: number;
-    autoResize?: boolean;
-    fixedTimeSec?: number;
-}
+export class DomainOption<T extends SupportNetDataType = string> {
+    capacity: number = 50;
+    autoResize: boolean = true;
+    fixedTimeSec: number = 0.2;
 
-function HandleDomainDefautlValue<T extends DomainOption<any>>(option: T) {
-    if (typeof option.dataBufCtr === "undefined") {
-        option.dataBufCtr = StringDataBuffer;
-    }
-    if (typeof option.capacity === "undefined") {
-        option.capacity = 50;
-    }
-    if (typeof option.autoResize === "undefined") {
-        option.autoResize = true;
-    }
-    if (typeof option.fixedTimeSec === "undefined") {
-        option.fixedTimeSec = 0.2;
-    }
-    return option as Required<Readonly<T>>;
+    constructor(
+        readonly initializer: MessageManagerBufferInitializer<T>,
+        readonly type: RpcType
+    ) {}
 }
 
 export class Domain<T extends SupportNetDataType = any> {
@@ -127,13 +114,12 @@ export class Domain<T extends SupportNetDataType = any> {
         option: DomainOption<T>,
         readonly uuid: number
     ) {
-        var requiredOption = HandleDomainDefautlValue(option);
-        this._option = requiredOption;
-        this._entities = new Array<Entity>(requiredOption.capacity);
-        this._entityVersion = new Array<number>(requiredOption.capacity);
+        this._option = option;
+        this._entities = new Array<Entity>(option.capacity);
+        this._entityVersion = new Array<number>(option.capacity);
         this._entityVersion.fill(0);
         this._destroyEntityId = new Array<number>();
-        this._internalMsgMng = new MessageManager(requiredOption.dataBufCtr);
+        this._internalMsgMng = new MessageManager(option.initializer);
         this.readonlyInternalMsgMng = this._internalMsgMng;
 
         this.logicTime = new LogicTimeComp();
@@ -205,10 +191,10 @@ export class Domain<T extends SupportNetDataType = any> {
 
     asData(): T {
         const isServer = this._option.type == RpcType.SERVER;
-        const outBuf = this._internalMsgMng.inoutbuffer;
-        const stateBuf = this._internalMsgMng.statebuffer;
-        const rpcBuf = this._internalMsgMng.rpcbuffer;
-        const rpcCbBuf = this._internalMsgMng.rpcCallbackBuffer;
+        const outBuf = this._internalMsgMng.outbufferWriter;
+        const stateBuf = this._internalMsgMng.statebufferWriter;
+        const rpcBuf = this._internalMsgMng.rpcbufferWriter;
+        const rpcCbBuf = this._internalMsgMng.rpcCallbackBufferWriter;
 
         outBuf.reset();
         outBuf.writeInt(this.uuid).writeBoolean(isServer);
@@ -251,14 +237,14 @@ export class Domain<T extends SupportNetDataType = any> {
             this._internalMsgMng.endSendRpcCallback();
         }
 
-        return outBuf.get();
+        return outBuf.flush();
     }
 
     setData(source: T) {
-        const inBuf = this._internalMsgMng.inoutbuffer;
-        const stateBuf = this._internalMsgMng.statebuffer;
-        const rpcBuf = this._internalMsgMng.rpcbuffer;
-        const rpcCbBuf = this._internalMsgMng.rpcCallbackBuffer;
+        const inBuf = this._internalMsgMng.inbufferReader;
+        const stateBuf = this._internalMsgMng.statebufferReader;
+        const rpcBuf = this._internalMsgMng.rpcbufferReader;
+        const rpcCbBuf = this._internalMsgMng.rpcCallbackBufferReader;
 
         inBuf.set(source);
         const uuid = inBuf.readInt();
@@ -397,7 +383,7 @@ export class Domain<T extends SupportNetDataType = any> {
                 }
                 this._internalMsgMng.sendComp(compIdx, serableComp);
             }
-            ent.role.ser(this._internalMsgMng.statebuffer);
+            ent.role.ser(this._internalMsgMng.statebufferWriter);
         }
     }
 
@@ -432,7 +418,7 @@ export class Domain<T extends SupportNetDataType = any> {
             if (!comp) continue;
             this._internalMsgMng.recvCompBody(comp);
         }
-        entity.role.deser(this._internalMsgMng.statebuffer);
+        entity.role.deser(this._internalMsgMng.statebufferReader);
         return entity;
     }
 
@@ -447,7 +433,7 @@ export class Domain<T extends SupportNetDataType = any> {
             compArr[compHeaderInfo.compIdx] = comp;
         }
         const e = new Entity(...compArr);
-        e.role.deser(this._internalMsgMng.statebuffer);
+        e.role.deser(this._internalMsgMng.statebufferReader);
         this.reg(e);
         return e;
     }
@@ -462,7 +448,7 @@ export class Domain<T extends SupportNetDataType = any> {
                 Record<string, Function>;
             if (!comp) continue;
             const argus = comp["deser" + param.methodHash](
-                this._internalMsgMng.rpcbuffer
+                this._internalMsgMng.rpcbufferReader
             );
             const methodName = hash2RpcName[param.methodHash];
             const unknown = comp[methodName].apply(comp, argus);
@@ -476,7 +462,7 @@ export class Domain<T extends SupportNetDataType = any> {
                     serValue(
                         ms.returnType,
                         result,
-                        this._internalMsgMng.rpcCallbackBuffer
+                        this._internalMsgMng.rpcCallbackBufferWriter
                     );
                 });
             }
@@ -499,7 +485,7 @@ export class Domain<T extends SupportNetDataType = any> {
             if (ms.returnType != DataTypeVoid) {
                 result = deserValue(
                     ms.returnType,
-                    this._internalMsgMng.rpcCallbackBuffer,
+                    this._internalMsgMng.rpcCallbackBufferReader,
                     undefined,
                     ms.returnRefCtr
                 );

@@ -1,4 +1,4 @@
-import { IDataBuffer, IDatabufferWriter } from "./serializable";
+import { IDataBufferReader, IDataBufferWriter } from "./serializable";
 
 const tempTypedBuffer = {
     int: new Int32Array(1),
@@ -13,9 +13,12 @@ const tempTypedBuffer = {
 
 export class StringDataBufferOutOfRange extends Error {}
 
-export class StringDataBuffer implements IDataBuffer<string> {
+export class StringDataBuffer
+    implements IDataBufferWriter<string>, IDataBufferReader<string>
+{
     public writeBuffer: any[] = [];
     public writerCursor = 0;
+
     public readBuffer: any[] = [];
     public readerCursor = 0;
     public readerStart = 0;
@@ -155,9 +158,11 @@ export class StringDataBuffer implements IDataBuffer<string> {
         return this;
     }
 
-    get(): string {
+    flush(): string {
         this.writeBuffer.length = this.writerCursor;
-        return JSON.stringify(this.writeBuffer);
+        const outValue = JSON.stringify(this.writeBuffer);
+        this.reset();
+        return outValue;
     }
 
     hasNext(): boolean {
@@ -170,6 +175,7 @@ export class StringDataBuffer implements IDataBuffer<string> {
     append(other: this): this {
         this.writeBuffer.push.apply(this.writeBuffer, other.writeBuffer);
         this.writerCursor += other.writerCursor;
+        other.reset();
         return this;
     }
 }

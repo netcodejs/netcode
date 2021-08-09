@@ -15,10 +15,9 @@ import {
     ISchema,
     getSchemaByPrototype,
     IComp,
-    StringDataBuffer,
-    RpcVar,
     Float,
 } from "../src";
+import { StringDomainOption } from "../src/data/string-domain-option";
 
 @NetSerable("view")
 export class ViewComponent extends IComp {
@@ -222,35 +221,31 @@ describe("Version-Check", () => {
 
 describe("Domain-instance", () => {
     test("Domain-main", () => {
-        Domain.Create("main", {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-            capacity: 50,
-        });
+        Domain.Create("main", new StringDomainOption(RpcType.SERVER));
         // expect(Domain.main).toBeTruthy();
     });
 
     test("Domain-create/get", () => {
-        const domain1 = Domain.Create("other", {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-        });
+        const domain1 = Domain.Create(
+            "other",
+            new StringDomainOption(RpcType.CLIENT)
+        );
         const domain2 = Domain.Get("other");
         expect(domain1).toStrictEqual(domain2);
     });
 
     test("Domain-create-duplicate", () => {
         const domainName = "Domain-create-duplicate-other";
-        const domain1 = Domain.Create(domainName, {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-        });
+        const domain1 = Domain.Create(
+            domainName,
+            new StringDomainOption(RpcType.CLIENT)
+        );
         expect(domain1).toBeTruthy();
         expect(() => {
-            const domain2 = Domain.Create(domainName, {
-                type: RpcType.CLIENT,
-                dataBufCtr: StringDataBuffer,
-            });
+            const domain2 = Domain.Create(
+                domainName,
+                new StringDomainOption(RpcType.CLIENT)
+            );
         }).toThrow();
     });
 });
@@ -260,10 +255,10 @@ describe("Serable", () => {
         // ser
         const view = new ViewComponent();
         const ent = new Entity(view);
-        const domain = Domain.Create("main", {
-            type: RpcType.SERVER,
-            dataBufCtr: StringDataBuffer,
-        });
+        const domain = Domain.Create(
+            "main",
+            new StringDomainOption(RpcType.SERVER)
+        );
         view.width = 123;
         view.height = 456;
         domain.reg(ent);
@@ -273,10 +268,10 @@ describe("Serable", () => {
         // ]);
         // expect(domain.asData()).toEqual(template);
         // deser
-        const otherDomain = Domain.Create<string>("other-main", {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-        });
+        const otherDomain = Domain.Create<string>(
+            "other-main",
+            new StringDomainOption(RpcType.CLIENT)
+        );
         otherDomain.setData(domain.asData());
         const otherEnt = otherDomain.get(ent.id)!!;
         expect(otherEnt).toBeTruthy();
@@ -288,10 +283,10 @@ describe("Serable", () => {
     });
 
     test("ser-deser-array", () => {
-        const serDomain = Domain.Create("ser-domain", {
-            type: RpcType.SERVER,
-            dataBufCtr: StringDataBuffer,
-        });
+        const serDomain = Domain.Create(
+            "ser-domain",
+            new StringDomainOption(RpcType.SERVER)
+        );
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
         const serArr = new ArrComp();
@@ -300,10 +295,10 @@ describe("Serable", () => {
         serArr.arr.push(1, 2, 3, 4);
         const data = serDomain.asData();
 
-        const deserDomain = Domain.Create("deser-domain", {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-        });
+        const deserDomain = Domain.Create(
+            "deser-domain",
+            new StringDomainOption(RpcType.CLIENT)
+        );
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.get(serEnt1.id)!;
         expect(deserEnt1.$comps.arr.arr).toMatchObject(serArr.arr);
@@ -316,10 +311,10 @@ describe("Serable", () => {
     });
 
     test("ser-deser-obj", () => {
-        const serDomain = Domain.Create("ser-domain", {
-            type: RpcType.SERVER,
-            dataBufCtr: StringDataBuffer,
-        });
+        const serDomain = Domain.Create(
+            "ser-domain",
+            new StringDomainOption(RpcType.SERVER)
+        );
         const serEnt0 = new Entity();
         serDomain.reg(serEnt0);
         const serLogic = new LogicComponent();
@@ -330,10 +325,10 @@ describe("Serable", () => {
 
         const data = serDomain.asData();
 
-        const deserDomain = Domain.Create("deser-domain", {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-        });
+        const deserDomain = Domain.Create(
+            "deser-domain",
+            new StringDomainOption(RpcType.CLIENT)
+        );
         deserDomain.setData(data);
         const deserEnt1 = deserDomain.get(serEnt1.id)!;
         expect(deserEnt1.$comps.logic.alive).toEqual(serLogic.alive);

@@ -3,7 +3,7 @@ import { Short } from "../base-dirty-data";
 import { NetSerable, NetVar, Rpc } from "../comp-decorator";
 import {
     IDataBufferReader,
-    IDatabufferWriter,
+    IDataBufferWriter,
     ISerable,
 } from "../data/serializable";
 import { DataType, Role, RpcType } from "../comp-schema";
@@ -31,7 +31,7 @@ export class RoleComp extends IComp implements ISerable {
     //#endregion
 
     //#region interface ISerable implement
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         this.$local.ser(buffer);
         this.$remote.ser(buffer);
     }

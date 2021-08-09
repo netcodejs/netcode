@@ -1,3 +1,4 @@
 export const Config = {
-    JIT: typeof eval && typeof Function,
+    // Attention! Rollup config dependents the code format!
+    JIT: typeof eval !== "undefined" && typeof Function !== "undefined",
 };

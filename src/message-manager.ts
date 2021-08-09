@@ -1,6 +1,11 @@
 import { composeVersion, decomposeVersion, Deferred } from "./misc";
-import { IDataBuffer, ISerable, SupportNetDataType } from "./data/serializable";
-import { DataTypeVoid, ISchema } from "./comp-schema";
+import {
+    IDataBufferReader,
+    IDataBufferWriter,
+    ISerable,
+    SupportNetDataType,
+} from "./data/serializable";
+import { DataTypeVoid, ISchema, RpcType } from "./comp-schema";
 import { RPC_MAX_UUID } from "./macro";
 import { IComp } from "./comp-interface";
 
@@ -43,21 +48,60 @@ export interface MessageRpcCallbackRecord {
 }
 export class RpcCallbackUuidOutOfRange extends Error {}
 
+export enum MessageManagerBufferType {
+    // The real net package on sending or receiving.
+    IN_OR_OUT,
+    STATE,
+    RPC,
+    RPC_CALLBACK,
+}
+
+export interface MessageManagerBufferInitializer<T extends SupportNetDataType> {
+    newBufferReader(bufferType: MessageManagerBufferType): IDataBufferReader<T>;
+    newBufferWriter(bufferType: MessageManagerBufferType): IDataBufferWriter<T>;
+}
+
 export class MessageManager<T extends SupportNetDataType> {
     protected _rpcCalls: RpcCall[] = [];
     protected _rpcDeferred: Map<string, MessageRpcCallbackRecord> = new Map();
     protected _uuid = 0;
 
-    readonly inoutbuffer: IDataBuffer<T>;
-    readonly statebuffer: IDataBuffer<T>;
-    readonly rpcbuffer: IDataBuffer<T>;
-    readonly rpcCallbackBuffer: IDataBuffer<T>;
+    readonly inbufferReader: IDataBufferReader<T>;
+    readonly statebufferReader: IDataBufferReader<T>;
+    readonly rpcbufferReader: IDataBufferReader<T>;
+    readonly rpcCallbackBufferReader: IDataBufferReader<T>;
 
-    constructor(BufferCtr: new () => IDataBuffer<T>) {
-        this.inoutbuffer = new BufferCtr();
-        this.statebuffer = new BufferCtr();
-        this.rpcbuffer = new BufferCtr();
-        this.rpcCallbackBuffer = new BufferCtr();
+    readonly outbufferWriter: IDataBufferWriter<T>;
+    readonly statebufferWriter: IDataBufferWriter<T>;
+    readonly rpcbufferWriter: IDataBufferWriter<T>;
+    readonly rpcCallbackBufferWriter: IDataBufferWriter<T>;
+
+    constructor(initializer: MessageManagerBufferInitializer<T>) {
+        this.inbufferReader = initializer.newBufferReader(
+            MessageManagerBufferType.IN_OR_OUT
+        );
+        this.statebufferReader = initializer.newBufferReader(
+            MessageManagerBufferType.STATE
+        );
+        this.rpcbufferReader = initializer.newBufferReader(
+            MessageManagerBufferType.RPC
+        );
+        this.rpcCallbackBufferReader = initializer.newBufferReader(
+            MessageManagerBufferType.RPC_CALLBACK
+        );
+
+        this.outbufferWriter = initializer.newBufferWriter(
+            MessageManagerBufferType.IN_OR_OUT
+        );
+        this.statebufferWriter = initializer.newBufferWriter(
+            MessageManagerBufferType.STATE
+        );
+        this.rpcbufferWriter = initializer.newBufferWriter(
+            MessageManagerBufferType.RPC
+        );
+        this.rpcCallbackBufferWriter = initializer.newBufferWriter(
+            MessageManagerBufferType.RPC_CALLBACK
+        );
     }
 
     private _getUuid() {
@@ -71,7 +115,7 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     startSendEntityAndComps() {
-        this.statebuffer.reset();
+        this.statebufferWriter.reset();
     }
 
     sendEntity(
@@ -80,7 +124,7 @@ export class MessageManager<T extends SupportNetDataType> {
         compsLen: number,
         toDestroy: boolean
     ) {
-        const buf = this.statebuffer;
+        const buf = this.statebufferWriter;
         // entity id
         buf.writeInt(entityId);
         // entity compuse version
@@ -90,7 +134,7 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     sendComp(compIdx: number, comp: ISerable & IComp & ISchema): boolean {
-        const buf = this.statebuffer;
+        const buf = this.statebufferWriter;
         // msg type -> compoent
 
         // comp index
@@ -104,13 +148,13 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     endSendEntityAndComps() {
-        this.statebuffer.reset();
+        this.statebufferWriter.reset();
     }
 
     startRecvEntityAndComps() {}
 
     recvEntity(): MessageEntityInfo | null {
-        const buf = this.statebuffer;
+        const buf = this.statebufferReader;
         if (!buf.hasNext()) return null;
         // entity id
         const entityId = buf.readInt();
@@ -127,7 +171,7 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     recvCompHeader() {
-        const buf = this.statebuffer;
+        const buf = this.statebufferReader;
 
         // comp index
         const compIdx = buf.readInt();
@@ -141,7 +185,7 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     recvCompBody(comp: ISerable & IComp) {
-        const buf = this.statebuffer;
+        const buf = this.statebufferReader;
         comp.deser(buf);
     }
 
@@ -169,7 +213,7 @@ export class MessageManager<T extends SupportNetDataType> {
         const comp = component;
         const entity = comp.entity;
         const compIdx = entity.indexOf(component);
-        const buf = this.rpcbuffer;
+        const buf = this.rpcbufferWriter;
         // schema
         const s = comp.__schema__;
         // method schema
@@ -202,15 +246,15 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     endSendRpc() {
-        this.rpcbuffer.reset();
+        this.rpcbufferWriter.reset();
         this._uuid = 0;
     }
 
     startRecvRpc() {}
 
     recvRpc(): MessageRpcInfo | null {
-        if (!this.rpcbuffer.hasNext()) return null;
-        const buf = this.rpcbuffer;
+        if (!this.rpcbufferReader.hasNext()) return null;
+        const buf = this.rpcbufferReader;
         // entity id
         const entityId = buf.readInt();
         // comp index
@@ -229,7 +273,7 @@ export class MessageManager<T extends SupportNetDataType> {
     startSendRpcCallback() {}
 
     sendRpcCallback(info: MessageRpcInfo) {
-        const buf = this.rpcCallbackBuffer;
+        const buf = this.rpcCallbackBufferWriter;
         buf.writeInt(info.entityId);
         buf.writeUshort(info.compIdx);
         buf.writeLong(info.methodHash);
@@ -237,14 +281,14 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     endSendRpcCallback() {
-        this.rpcCallbackBuffer.reset();
+        this.rpcCallbackBufferWriter.reset();
     }
 
     startRecvRpcCallback() {}
 
     recvRpcCallback(): MessageRpcCallbackInfo | null {
-        if (!this.rpcCallbackBuffer.hasNext()) return null;
-        const buf = this.rpcCallbackBuffer;
+        if (!this.rpcCallbackBufferReader.hasNext()) return null;
+        const buf = this.rpcCallbackBufferReader;
         const entityId = buf.readInt();
         const compIdx = buf.readUshort();
         const methodHash = buf.readLong();
