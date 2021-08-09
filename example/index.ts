@@ -1,4 +1,11 @@
-import { Domain, Entity, Rpc, RpcType, StringDataBuffer } from "../src";
+import {
+    Domain,
+    Entity,
+    Rpc,
+    RpcType,
+    StringDataBuffer,
+    StringDomainOption,
+} from "../src";
 import { Net } from "./mock-net";
 import { Controller, Transform, Vector, View } from "./net-comp";
 export * from "./net-comp";
@@ -28,10 +35,7 @@ export abstract class Base {
         readonly canvas: HTMLCanvasElement,
         rpcType: RpcType
     ) {
-        this.domain = Domain.Create(name, {
-            dataBufCtr: StringDataBuffer,
-            type: rpcType,
-        });
+        this.domain = Domain.Create(name, new StringDomainOption(rpcType));
         this.ctx = canvas.getContext("2d")!;
         this.canvas.width = 950;
         this.canvas.height = 70;

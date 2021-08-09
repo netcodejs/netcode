@@ -194,7 +194,7 @@ var netcode = (function (t) {
     var a,
         u,
         c,
-        p = (function () {
+        h = (function () {
             function t() {}
             return (
                 Object.defineProperty(t.prototype, "entity", {
@@ -224,7 +224,7 @@ var netcode = (function (t) {
                 t
             );
         })(),
-        h = -1;
+        p = -1;
     !(function (t) {
         (t[(t.SERVER = 0)] = "SERVER"), (t[(t.CLIENT = 1)] = "CLIENT");
     })(a || (a = {})),
@@ -258,7 +258,7 @@ var netcode = (function (t) {
     function f(t) {
         return (
             void 0 === t && (t = Object.create(null)),
-            (t.hash = h),
+            (t.hash = p),
             (t.name = ""),
             (t.paramCount = 0),
             (t.paramTypes = []),
@@ -273,7 +273,7 @@ var netcode = (function (t) {
         var e,
             r =
                 (void 0 === e && (e = Object.create(null)),
-                (e.hash = h),
+                (e.hash = p),
                 (e.name = ""),
                 (e.count = 0),
                 (e.props = Object.create(null)),
@@ -645,11 +645,11 @@ var netcode = (function (t) {
                     "undefined" == typeof DO_NOT_EXPORT_CRC ? r(e) : r({});
             })((m = { exports: {} }), m.exports),
             m.exports),
-        w = typeof eval && typeof Function,
+        w = "undefined" != typeof eval && "undefined" != typeof Function,
         O = Object.create(null),
         C = Object.create(null),
-        T = {};
-    function M(t, e, r) {
+        R = {};
+    function T(t, e, r) {
         switch (t) {
             case c.INT:
             case c.I32:
@@ -670,7 +670,7 @@ var netcode = (function (t) {
                 e.ser(r);
         }
     }
-    function R(t, e, r) {
+    function M(t, e, r) {
         switch (t) {
             case c.INT:
             case c.I32:
@@ -688,7 +688,7 @@ var netcode = (function (t) {
         }
     }
     function I(t, e, r, n, i) {
-        for (var o = "", s = e; s < r; s++) o += R(t[s], n + "[" + s + "]", i);
+        for (var o = "", s = e; s < r; s++) o += M(t[s], n + "[" + s + "]", i);
         return o;
     }
     function B(t, e, r, n) {
@@ -737,11 +737,11 @@ var netcode = (function (t) {
                     var i = e.props[r],
                         o = i.type,
                         s = this[i.propertyKey];
-                    if (0 === o.container) M(o.dataType, s, t);
+                    if (0 === o.container) T(o.dataType, s, t);
                     else {
                         t.writeInt(s.length);
                         for (var a = 0, u = s.length; a < u; a++)
-                            M(o.dataType, s[a], t);
+                            T(o.dataType, s[a], t);
                     }
                 }
             }),
@@ -771,7 +771,7 @@ var netcode = (function (t) {
                             (t["ser" + s.hash] = function (t, e) {
                                 for (var r = 0, n = s.paramCount; r < n; r++) {
                                     var i = e[r];
-                                    M(s.paramTypes[r], i, t);
+                                    T(s.paramTypes[r], i, t);
                                 }
                             }),
                                 (t["deser" + s.hash] = function (t) {
@@ -824,8 +824,8 @@ var netcode = (function (t) {
         var e = t.__schema__;
         !(function (t, e) {
             for (var r = "", n = 0, i = e.count; n < i; n++) {
-                var o = (p = e.props[n]).type,
-                    s = p.propertyKey;
+                var o = (h = e.props[n]).type,
+                    s = h.propertyKey;
                 if (0 === o.container)
                     switch (o.dataType) {
                         case c.INT:
@@ -879,8 +879,8 @@ var netcode = (function (t) {
             t.ser = Function("buffer", r);
             var u = "";
             for (n = 0, i = e.count; n < i; n++) {
-                var p;
-                (o = (p = e.props[n]).type), (s = p.propertyKey);
+                var h;
+                (o = (h = e.props[n]).type), (s = h.propertyKey);
                 if (0 === o.container)
                     switch (o.dataType) {
                         case c.INT:
@@ -960,7 +960,7 @@ var netcode = (function (t) {
                     t["deser" + s.hash] = Function("buffer", u);
                     var c = "__" + o + "__";
                     t[c] = t[o];
-                    var p =
+                    var h =
                         "\nif (this.entity.role.local == " +
                         s.type +
                         ') {\n    return this["' +
@@ -968,20 +968,20 @@ var netcode = (function (t) {
                         '"](...args);\n} else {\n    const domain = this.domain;\n    if (domain == null) {\n        return Promise.reject("Domain is not valid!")\n    }\n    return domain.readonlyInternalMsgMng.sendRpc(\n        "' +
                         o +
                         '",\n        this,\n        args,\n        domain.logicTime.duration\n    );\n}\n        ';
-                    t[o] = Function("...args", p);
+                    t[o] = Function("...args", h);
                 }
             })(t, e);
     }
-    var k = (function (t) {
+    var S = (function (t) {
         function e() {
             return (null !== t && t.apply(this, arguments)) || this;
         }
         return r(e, t), e;
     })(Error);
-    function S(t, e) {
+    function k(t, e) {
         var r = t.propertyKey,
             n = e.propertyKey;
-        if (r == n) throw new k();
+        if (r == n) throw new S();
         return r > n ? 1 : -1;
     }
     function D(t, e) {
@@ -997,7 +997,7 @@ var netcode = (function (t) {
                     (n.count = n.raw.length),
                     n.count > 0)
                 ) {
-                    n.raw.sort(S);
+                    n.raw.sort(k);
                     for (var i = 0; i < n.count; i++) {
                         var o = n.raw[i];
                         (o.paramIndex = i),
@@ -1009,7 +1009,7 @@ var netcode = (function (t) {
             }
         );
     }
-    function x(t) {
+    function P(t) {
         return function (e, r) {
             y(e).raw.push({
                 paramIndex: -1,
@@ -1022,7 +1022,7 @@ var netcode = (function (t) {
             });
         };
     }
-    var P = (function (t) {
+    var x = (function (t) {
         function e() {
             return (null !== t && t.apply(this, arguments)) || this;
         }
@@ -1037,10 +1037,10 @@ var netcode = (function (t) {
                 ((o.hash = b.str(n)),
                 (o.name = n),
                 (o.type = t),
-                T[o.hash] && T[o.hash] != o.name)
+                R[o.hash] && R[o.hash] != o.name)
             )
-                throw new P();
-            (T[o.hash] = o.name),
+                throw new x();
+            (R[o.hash] = o.name),
                 void 0 === e
                     ? (o.returnType = 98)
                     : ((o.returnType = "number" == typeof e ? e : l),
@@ -1100,8 +1100,8 @@ var netcode = (function (t) {
                 (this.dirty = t.readBoolean()),
                     this.dirty && (this._value = t.readInt());
             }),
-            n([x(c.BOOL)], e.prototype, "dirty", void 0),
-            n([x(c.INT)], e.prototype, "value", null),
+            n([P(c.BOOL)], e.prototype, "dirty", void 0),
+            n([P(c.INT)], e.prototype, "value", null),
             (e = n([D("Int", !1)], e));
     })(N);
     var V = (function (t) {
@@ -1130,8 +1130,8 @@ var netcode = (function (t) {
                 (this.dirty = t.readBoolean()),
                     this.dirty && (this._value = t.readFloat());
             }),
-            n([x(c.BOOL)], e.prototype, "dirty", void 0),
-            n([x(c.FLOAT)], e.prototype, "value", null),
+            n([P(c.BOOL)], e.prototype, "dirty", void 0),
+            n([P(c.FLOAT)], e.prototype, "value", null),
             (e = n([D("Float", !1)], e))
         );
     })(N);
@@ -1160,8 +1160,8 @@ var netcode = (function (t) {
                 (this.dirty = t.readBoolean()),
                     this.dirty && (this._value = t.readLong());
             }),
-            n([x(c.BOOL)], e.prototype, "dirty", void 0),
-            n([x(c.LONG)], e.prototype, "value", null),
+            n([P(c.BOOL)], e.prototype, "dirty", void 0),
+            n([P(c.LONG)], e.prototype, "value", null),
             (e = n([D("Long", !1)], e));
     })(N),
         (function (t) {
@@ -1190,8 +1190,8 @@ var netcode = (function (t) {
                     (this.dirty = t.readBoolean()),
                         this.dirty && (this._value = t.readUint());
                 }),
-                n([x(c.BOOL)], e.prototype, "dirty", void 0),
-                n([x(c.uint)], e.prototype, "value", null),
+                n([P(c.BOOL)], e.prototype, "dirty", void 0),
+                n([P(c.uint)], e.prototype, "value", null),
                 (e = n([D("Uint", !1)], e));
         })(N),
         (function (t) {
@@ -1220,8 +1220,8 @@ var netcode = (function (t) {
                     (this.dirty = t.readBoolean()),
                         this.dirty && (this._value = t.readDouble());
                 }),
-                n([x(c.BOOL)], e.prototype, "dirty", void 0),
-                n([x(c.DOUBLE)], e.prototype, "value", null),
+                n([P(c.BOOL)], e.prototype, "dirty", void 0),
+                n([P(c.DOUBLE)], e.prototype, "value", null),
                 (e = n([D("Double", !1)], e));
         })(N),
         (function (t) {
@@ -1250,8 +1250,8 @@ var netcode = (function (t) {
                     (this.dirty = t.readBoolean()),
                         this.dirty && (this._value = t.readUlong());
                 }),
-                n([x(c.BOOL)], e.prototype, "dirty", void 0),
-                n([x(c.ulong)], e.prototype, "value", null),
+                n([P(c.BOOL)], e.prototype, "dirty", void 0),
+                n([P(c.ulong)], e.prototype, "value", null),
                 (e = n([D("Ulong", !1)], e));
         })(N);
     var Y = (function (t) {
@@ -1280,8 +1280,8 @@ var netcode = (function (t) {
                 (this.dirty = t.readBoolean()),
                     this.dirty && (this._value = t.readShort());
             }),
-            n([x(c.BOOL)], e.prototype, "dirty", void 0),
-            n([x(c.SHORT)], e.prototype, "value", null),
+            n([P(c.BOOL)], e.prototype, "dirty", void 0),
+            n([P(c.SHORT)], e.prototype, "value", null),
             (e = n([D("Short", !1)], e))
         );
     })(N);
@@ -1310,12 +1310,12 @@ var netcode = (function (t) {
                 (this.dirty = t.readBoolean()),
                     this.dirty && (this._value = t.readUshort());
             }),
-            n([x(c.BOOL)], e.prototype, "dirty", void 0),
-            n([x(c.ushort)], e.prototype, "value", null),
+            n([P(c.BOOL)], e.prototype, "dirty", void 0),
+            n([P(c.ushort)], e.prototype, "value", null),
             (e = n([D("Ulong", !1)], e));
     })(N);
     var H,
-        $ = (function (t) {
+        W = (function (t) {
             function e() {
                 var e = (null !== t && t.apply(this, arguments)) || this;
                 return (e.$delta = new V(0)), (e.duration = 0), e;
@@ -1332,19 +1332,19 @@ var netcode = (function (t) {
                     enumerable: !1,
                     configurable: !0,
                 }),
-                n([x(V)], e.prototype, "$delta", void 0),
-                n([x(c.DOUBLE)], e.prototype, "duration", void 0),
+                n([P(V)], e.prototype, "$delta", void 0),
+                n([P(c.DOUBLE)], e.prototype, "duration", void 0),
                 (e = n([D("logic_time")], e))
             );
-        })(p),
+        })(h),
         K = (function (t) {
             function e() {
                 var e = (null !== t && t.apply(this, arguments)) || this;
                 return (e.delta = 0), (e.duration = 0), e;
             }
             return r(e, t), (e = n([D("render_time")], e));
-        })(p),
-        X = (function (t) {
+        })(h),
+        $ = (function (t) {
             function e() {
                 var e = (null !== t && t.apply(this, arguments)) || this;
                 return (
@@ -1408,31 +1408,31 @@ var netcode = (function (t) {
                         (this.$remote.value =
                             t === a.SERVER ? u.SIMULATED_PROXY : u.AUTHORITY);
                 }),
-                n([x(Y)], e.prototype, "$local", void 0),
-                n([x(Y)], e.prototype, "$remote", void 0),
+                n([P(Y)], e.prototype, "$local", void 0),
+                n([P(Y)], e.prototype, "$remote", void 0),
                 n([j(u.AUTHORITY, c.BOOL)], e.prototype, "upgrade", null),
                 n([j(u.AUTHORITY, c.BOOL)], e.prototype, "downgrade", null),
                 (e = n([D("role", !1)], e))
             );
-        })(p),
-        G = (function (t) {
+        })(h),
+        X = (function (t) {
             function e() {
                 return (null !== t && t.apply(this, arguments)) || this;
             }
             return r(e, t), e;
         })(Error),
-        z = (function () {
+        G = (function () {
             function t() {
                 for (var t = [], e = 0; e < arguments.length; e++)
                     t[e] = arguments[e];
-                (this._id = h),
-                    (this._version = h),
+                (this._id = p),
+                    (this._version = p),
                     (this.$comps = new Proxy(this, {
                         get: function (t, e, r) {
                             return t.get(C[String(e)]);
                         },
                     })),
-                    (this.role = new X()),
+                    (this.role = new $()),
                     (this._compMap = new Map()),
                     this._initComp(this.role),
                     (this._comps = t);
@@ -1472,9 +1472,9 @@ var netcode = (function (t) {
                     var e = this._compMap;
                     if (
                         ((t._entity = this),
-                        !t.__schema__ || t.__schema__.hash == h)
+                        !t.__schema__ || t.__schema__.hash == p)
                     )
-                        throw new G("Component must use @NetComp");
+                        throw new X("Component must use @NetComp");
                     var r = t.__schema__.hash;
                     e.has(r) ? e.set(r, [e.get(r), t]) : e.set(r, t);
                 }),
@@ -1548,21 +1548,36 @@ var netcode = (function (t) {
         (t[(t.UPDATE_COMPONENT = 0)] = "UPDATE_COMPONENT"),
             (t[(t.RPC = 1)] = "RPC");
     })(H || (H = {}));
-    var J = (function (t) {
+    var z,
+        J = (function (t) {
             function e() {
                 return (null !== t && t.apply(this, arguments)) || this;
             }
             return r(e, t), e;
-        })(Error),
-        W = (function () {
+        })(Error);
+    !(function (t) {
+        (t[(t.IN_OR_OUT = 0)] = "IN_OR_OUT"),
+            (t[(t.STATE = 1)] = "STATE"),
+            (t[(t.RPC = 2)] = "RPC"),
+            (t[(t.RPC_CALLBACK = 3)] = "RPC_CALLBACK");
+    })(z || (z = {}));
+    var q = (function () {
             function t(t) {
                 (this._rpcCalls = []),
                     (this._rpcDeferred = new Map()),
                     (this._uuid = 0),
-                    (this.inoutbuffer = new t()),
-                    (this.statebuffer = new t()),
-                    (this.rpcbuffer = new t()),
-                    (this.rpcCallbackBuffer = new t());
+                    (this.inbufferReader = t.newBufferReader(z.IN_OR_OUT)),
+                    (this.statebufferReader = t.newBufferReader(z.STATE)),
+                    (this.rpcbufferReader = t.newBufferReader(z.RPC)),
+                    (this.rpcCallbackBufferReader = t.newBufferReader(
+                        z.RPC_CALLBACK
+                    )),
+                    (this.outbufferWriter = t.newBufferWriter(z.IN_OR_OUT)),
+                    (this.statebufferWriter = t.newBufferWriter(z.STATE)),
+                    (this.rpcbufferWriter = t.newBufferWriter(z.RPC)),
+                    (this.rpcCallbackBufferWriter = t.newBufferWriter(
+                        z.RPC_CALLBACK
+                    ));
             }
             return (
                 (t.prototype._getUuid = function () {
@@ -1574,17 +1589,17 @@ var netcode = (function (t) {
                         : ++this._uuid;
                 }),
                 (t.prototype.startSendEntityAndComps = function () {
-                    this.statebuffer.reset();
+                    this.statebufferWriter.reset();
                 }),
                 (t.prototype.sendEntity = function (t, e, r, n) {
                     var i,
-                        o = this.statebuffer;
+                        o = this.statebufferWriter;
                     o.writeInt(t),
                         o.writeInt(((i = e), (i %= 1073741823), n ? -i : i)),
                         o.writeInt(r);
                 }),
                 (t.prototype.sendComp = function (t, e) {
-                    var r = this.statebuffer;
+                    var r = this.statebufferWriter;
                     return (
                         r.writeInt(t),
                         r.writeLong(e.__schema__.hash),
@@ -1593,11 +1608,11 @@ var netcode = (function (t) {
                     );
                 }),
                 (t.prototype.endSendEntityAndComps = function () {
-                    this.statebuffer.reset();
+                    this.statebufferWriter.reset();
                 }),
                 (t.prototype.startRecvEntityAndComps = function () {}),
                 (t.prototype.recvEntity = function () {
-                    var t = this.statebuffer;
+                    var t = this.statebufferReader;
                     if (!t.hasNext()) return null;
                     var e,
                         r = t.readInt(),
@@ -1610,11 +1625,11 @@ var netcode = (function (t) {
                     };
                 }),
                 (t.prototype.recvCompHeader = function () {
-                    var t = this.statebuffer;
+                    var t = this.statebufferReader;
                     return { compIdx: t.readInt(), hash: t.readLong() };
                 }),
                 (t.prototype.recvCompBody = function (t) {
-                    var e = this.statebuffer;
+                    var e = this.statebufferReader;
                     t.deser(e);
                 }),
                 (t.prototype.endRecvEntityAndComps = function () {}),
@@ -1625,7 +1640,7 @@ var netcode = (function (t) {
                     var o = e,
                         s = o.entity,
                         a = s.indexOf(e),
-                        u = this.rpcbuffer,
+                        u = this.rpcbufferWriter,
                         c = o.__schema__.methods[t];
                     if (
                         (u.writeInt(s.id),
@@ -1636,23 +1651,23 @@ var netcode = (function (t) {
                         e["ser" + c.hash](u, r),
                         98 != c.returnType)
                     ) {
-                        var p = new g();
+                        var h = new g();
                         return (
                             this._rpcDeferred.set(
                                 s.id + "|" + a + "|" + c.hash + "|" + i,
-                                { deferred: p, timestamp: n }
+                                { deferred: h, timestamp: n }
                             ),
-                            p.promise
+                            h.promise
                         );
                     }
                 }),
                 (t.prototype.endSendRpc = function () {
-                    this.rpcbuffer.reset(), (this._uuid = 0);
+                    this.rpcbufferWriter.reset(), (this._uuid = 0);
                 }),
                 (t.prototype.startRecvRpc = function () {}),
                 (t.prototype.recvRpc = function () {
-                    if (!this.rpcbuffer.hasNext()) return null;
-                    var t = this.rpcbuffer;
+                    if (!this.rpcbufferReader.hasNext()) return null;
+                    var t = this.rpcbufferReader;
                     return {
                         entityId: t.readInt(),
                         compIdx: t.readUshort(),
@@ -1664,19 +1679,19 @@ var netcode = (function (t) {
                 (t.prototype.endRecvRpc = function () {}),
                 (t.prototype.startSendRpcCallback = function () {}),
                 (t.prototype.sendRpcCallback = function (t) {
-                    var e = this.rpcCallbackBuffer;
+                    var e = this.rpcCallbackBufferWriter;
                     e.writeInt(t.entityId),
                         e.writeUshort(t.compIdx),
                         e.writeLong(t.methodHash),
                         e.writeUint(t.uuid);
                 }),
                 (t.prototype.endSendRpcCallback = function () {
-                    this.rpcCallbackBuffer.reset();
+                    this.rpcCallbackBufferWriter.reset();
                 }),
                 (t.prototype.startRecvRpcCallback = function () {}),
                 (t.prototype.recvRpcCallback = function () {
-                    if (!this.rpcCallbackBuffer.hasNext()) return null;
-                    var t = this.rpcCallbackBuffer;
+                    if (!this.rpcCallbackBufferReader.hasNext()) return null;
+                    var t = this.rpcCallbackBufferReader;
                     return {
                         entityId: t.readInt(),
                         compIdx: t.readUshort(),
@@ -1699,196 +1714,18 @@ var netcode = (function (t) {
                 t
             );
         })(),
-        q = {
-            int: new Int32Array(1),
-            uint: new Uint32Array(1),
-            short: new Int16Array(1),
-            ushort: new Uint16Array(1),
-            long: new Int32Array(1),
-            ulong: new Uint32Array(1),
-            float: new Float32Array(1),
-            double: new Float64Array(1),
-        },
         Q = (function (t) {
             function e() {
                 return (null !== t && t.apply(this, arguments)) || this;
             }
             return r(e, t), e;
         })(Error),
-        Z = (function () {
-            function t() {
-                (this.writeBuffer = []),
-                    (this.writerCursor = 0),
-                    (this.readBuffer = []),
-                    (this.readerCursor = 0),
-                    (this.readerStart = 0),
-                    (this.readerEnd = 0);
+        Z = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
             }
-            return (
-                (t.prototype.check = function (t) {
-                    if (
-                        (void 0 === t && (t = 0),
-                        this.writerCursor + t >= this.readBuffer.length &&
-                            this.writerCursor + t >= this.readerEnd)
-                    )
-                        throw new Q(
-                            "Cursor: (" +
-                                this.writerCursor +
-                                "), buffer's length: (" +
-                                this.writeBuffer.length +
-                                ")"
-                        );
-                }),
-                (t.prototype.reset = function () {
-                    (this.writerCursor = 0),
-                        (this.readerCursor = 0),
-                        (this.readBuffer.length = 0),
-                        (this.writeBuffer.length = 0);
-                }),
-                (t.prototype.readInt = function () {
-                    this.check();
-                    var t = q.int;
-                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
-                }),
-                (t.prototype.readUint = function () {
-                    this.check();
-                    var t = q.uint;
-                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
-                }),
-                (t.prototype.readShort = function () {
-                    this.check();
-                    var t = q.short;
-                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
-                }),
-                (t.prototype.readUshort = function () {
-                    this.check();
-                    var t = q.ushort;
-                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
-                }),
-                (t.prototype.readLong = function () {
-                    this.check();
-                    var t = q.long;
-                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
-                }),
-                (t.prototype.readUlong = function () {
-                    this.check();
-                    var t = q.ulong;
-                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
-                }),
-                (t.prototype.readFloat = function () {
-                    this.check();
-                    var t = q.float;
-                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
-                }),
-                (t.prototype.readDouble = function () {
-                    this.check();
-                    var t = q.double;
-                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
-                }),
-                (t.prototype.readBoolean = function () {
-                    return (
-                        this.check(),
-                        Boolean(this.readBuffer[this.readerCursor++])
-                    );
-                }),
-                (t.prototype.set = function (t, e, r) {
-                    void 0 === e && (e = 0),
-                        void 0 === r && (r = -1),
-                        (this.writerCursor = 0);
-                    var n = JSON.parse(t),
-                        i = Array.isArray(n) ? n : [];
-                    r < 0 && (r += i.length),
-                        (this.readerStart = this.readerCursor = e),
-                        (this.readerEnd = r),
-                        (this.readBuffer = i);
-                }),
-                (t.prototype.writeInt = function (t) {
-                    return (
-                        (q.int[0] = t),
-                        (this.writeBuffer[this.writerCursor++] = t),
-                        this
-                    );
-                }),
-                (t.prototype.writeUint = function (t) {
-                    return (
-                        (q.uint[0] = t),
-                        (this.writeBuffer[this.writerCursor++] = t),
-                        this
-                    );
-                }),
-                (t.prototype.writeShort = function (t) {
-                    return (
-                        (q.short[0] = t),
-                        (this.writeBuffer[this.writerCursor++] = t),
-                        this
-                    );
-                }),
-                (t.prototype.writeUshort = function (t) {
-                    return (
-                        (q.ushort[0] = t),
-                        (this.writeBuffer[this.writerCursor++] = t),
-                        this
-                    );
-                }),
-                (t.prototype.writeLong = function (t) {
-                    return (
-                        (q.long[0] = t),
-                        (this.writeBuffer[this.writerCursor++] = t),
-                        this
-                    );
-                }),
-                (t.prototype.writeUlong = function (t) {
-                    return (
-                        (q.ulong[0] = t),
-                        (this.writeBuffer[this.writerCursor++] = t),
-                        this
-                    );
-                }),
-                (t.prototype.writeFloat = function (t) {
-                    return (
-                        (q.float[0] = t),
-                        (this.writeBuffer[this.writerCursor++] = t),
-                        this
-                    );
-                }),
-                (t.prototype.writeDouble = function (t) {
-                    return (
-                        (q.double[0] = t),
-                        (this.writeBuffer[this.writerCursor++] = t),
-                        this
-                    );
-                }),
-                (t.prototype.writeBoolean = function (t) {
-                    return (
-                        (this.writeBuffer[this.writerCursor++] = t ? 1 : 0),
-                        this
-                    );
-                }),
-                (t.prototype.get = function () {
-                    return (
-                        (this.writeBuffer.length = this.writerCursor),
-                        JSON.stringify(this.writeBuffer)
-                    );
-                }),
-                (t.prototype.hasNext = function () {
-                    return (
-                        this.readerCursor < this.readBuffer.length &&
-                        this.readerCursor < this.readerEnd
-                    );
-                }),
-                (t.prototype.append = function (t) {
-                    return (
-                        this.writeBuffer.push.apply(
-                            this.writeBuffer,
-                            t.writeBuffer
-                        ),
-                        (this.writerCursor += t.writerCursor),
-                        this
-                    );
-                }),
-                t
-            );
-        })(),
+            return r(e, t), e;
+        })(Error),
         tt = (function (t) {
             function e() {
                 return (null !== t && t.apply(this, arguments)) || this;
@@ -1900,18 +1737,6 @@ var netcode = (function (t) {
                 return (null !== t && t.apply(this, arguments)) || this;
             }
             return r(e, t), e;
-        })(Error),
-        rt = (function (t) {
-            function e() {
-                return (null !== t && t.apply(this, arguments)) || this;
-            }
-            return r(e, t), e;
-        })(Error),
-        nt = (function (t) {
-            function e() {
-                return (null !== t && t.apply(this, arguments)) || this;
-            }
-            return r(e, t), e;
         })(Error);
     !(function (t) {
         function e() {
@@ -1919,39 +1744,37 @@ var netcode = (function (t) {
         }
         r(e, t);
     })(Error);
-    var it = (function (t) {
-        function e() {
-            return (null !== t && t.apply(this, arguments)) || this;
-        }
-        return r(e, t), e;
-    })(Error);
-    var ot = (function () {
+    var rt = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
+            }
+            return r(e, t), e;
+        })(Error),
+        nt = function (t, e) {
+            (this.initializer = t),
+                (this.type = e),
+                (this.capacity = 50),
+                (this.autoResize = !0),
+                (this.fixedTimeSec = 0.2);
+        },
+        it = (function () {
             function t(t, e, r) {
                 (this.name = t),
                     (this.uuid = r),
                     (this._index = -1),
                     (this._entitiesLength = 0),
                     (this._entityIdCursor = 0),
-                    (this._fixedSecAccumulator = 0);
-                var n = (function (t) {
-                    return (
-                        void 0 === t.dataBufCtr && (t.dataBufCtr = Z),
-                        void 0 === t.capacity && (t.capacity = 50),
-                        void 0 === t.autoResize && (t.autoResize = !0),
-                        void 0 === t.fixedTimeSec && (t.fixedTimeSec = 0.2),
-                        t
-                    );
-                })(e);
-                (this._option = n),
-                    (this._entities = new Array(n.capacity)),
-                    (this._entityVersion = new Array(n.capacity)),
+                    (this._fixedSecAccumulator = 0),
+                    (this._option = e),
+                    (this._entities = new Array(e.capacity)),
+                    (this._entityVersion = new Array(e.capacity)),
                     this._entityVersion.fill(0),
                     (this._destroyEntityId = new Array()),
-                    (this._internalMsgMng = new W(n.dataBufCtr)),
+                    (this._internalMsgMng = new q(e.initializer)),
                     (this.readonlyInternalMsgMng = this._internalMsgMng),
-                    (this.logicTime = new $()),
+                    (this.logicTime = new W()),
                     (this.renderTime = new K()),
-                    (this.time = new z(this.logicTime, this.renderTime)),
+                    (this.time = new G(this.logicTime, this.renderTime)),
                     (this.logicTime.delta = this.option.fixedTimeSec),
                     this.reg(this.time);
             }
@@ -1961,7 +1784,7 @@ var netcode = (function (t) {
                         (void 0 === n && (n = b.str(e)),
                         this._name2domainMap.has(e))
                     )
-                        throw new nt(e);
+                        throw new et(e);
                     var i = new t(e, r, n),
                         o = this._name2domainMap.set(e, i);
                     return (i._index = o), i;
@@ -2009,10 +1832,10 @@ var netcode = (function (t) {
                     configurable: !0,
                 }),
                 (t.prototype.reg = function (t) {
-                    if (this.isValid(t)) throw new et(t.toString());
+                    if (this.isValid(t)) throw new Z(t.toString());
                     if (this._entityIdCursor == this._option.capacity) {
                         if (!this._option.autoResize)
-                            throw new rt(
+                            throw new tt(
                                 "Domain: capacity: " +
                                     this._option.capacity +
                                     "; " +
@@ -2036,7 +1859,7 @@ var netcode = (function (t) {
                         t._destroy();
                 }),
                 (t.prototype.unreg = function (t) {
-                    if (!this.isValid(t)) throw new tt(t.toString());
+                    if (!this.isValid(t)) throw new Q(t.toString());
                     this.unregWithoutValidation(t);
                 }),
                 (t.prototype.get = function (t) {
@@ -2051,17 +1874,17 @@ var netcode = (function (t) {
                 }),
                 (t.prototype.isValid = function (t) {
                     return (
-                        t.id != h &&
-                        t.version != h &&
+                        t.id != p &&
+                        t.version != p &&
                         t.version == this._entityVersion[t.id]
                     );
                 }),
                 (t.prototype.asData = function () {
                     var t = this._option.type == a.SERVER,
-                        e = this._internalMsgMng.inoutbuffer,
-                        r = this._internalMsgMng.statebuffer,
-                        n = this._internalMsgMng.rpcbuffer,
-                        i = this._internalMsgMng.rpcCallbackBuffer;
+                        e = this._internalMsgMng.outbufferWriter,
+                        r = this._internalMsgMng.statebufferWriter,
+                        n = this._internalMsgMng.rpcbufferWriter,
+                        i = this._internalMsgMng.rpcCallbackBufferWriter;
                     if ((e.reset(), e.writeInt(this.uuid).writeBoolean(t), t)) {
                         this._internalMsgMng.startSendEntityAndComps(),
                             this._internalMsgMng.startSendRpc(),
@@ -2088,23 +1911,23 @@ var netcode = (function (t) {
                             this._internalMsgMng.endSendRpc(),
                             this._internalMsgMng.endSendRpcCallback();
                     }
-                    return e.get();
+                    return e.flush();
                 }),
                 (t.prototype.setData = function (t) {
-                    var e = this._internalMsgMng.inoutbuffer,
-                        r = this._internalMsgMng.statebuffer,
-                        n = this._internalMsgMng.rpcbuffer,
-                        i = this._internalMsgMng.rpcCallbackBuffer;
+                    var e = this._internalMsgMng.inbufferReader,
+                        r = this._internalMsgMng.statebufferReader,
+                        n = this._internalMsgMng.rpcbufferReader,
+                        i = this._internalMsgMng.rpcCallbackBufferReader;
                     if ((e.set(t), e.readInt(), e.readBoolean())) {
                         var o = e.readUlong(),
                             s = e.readUlong(),
                             a = e.readUlong(),
                             u = e.readerCursor,
                             c = u + o,
-                            p = (f = l = (h = c) + s) + a;
+                            h = (f = l = (p = c) + s) + a;
                         r.set(t, u, c),
-                            n.set(t, h, l),
-                            i.set(t, f, p),
+                            n.set(t, p, l),
+                            i.set(t, f, h),
                             this._internalMsgMng.startRecvEntityAndComps(),
                             this._derEntityAndComps(),
                             this._internalMsgMng.endRecvEntityAndComps(),
@@ -2115,12 +1938,12 @@ var netcode = (function (t) {
                             this._deserRpcCallbacks(),
                             this._internalMsgMng.endRecvRpcCallback();
                     } else {
-                        var h, l, f;
+                        var p, l, f;
                         (s = e.readUlong()),
                             (a = e.readUlong()),
-                            (p = (f = l = (h = e.readerCursor) + s) + a);
-                        n.set(t, h, l),
-                            i.set(t, f, p),
+                            (h = (f = l = (p = e.readerCursor) + s) + a);
+                        n.set(t, p, l),
+                            i.set(t, f, h),
                             this._internalMsgMng.startRecvRpc(),
                             this._deserRpcs(),
                             this._internalMsgMng.endRecvRpc(),
@@ -2160,7 +1983,7 @@ var netcode = (function (t) {
                             (this._entitiesLength = n + 1);
                 }),
                 (t.prototype._unreg = function (t) {
-                    (t._id = h), (t._version = h), (t._domain = void 0);
+                    (t._id = p), (t._version = p), (t._domain = void 0);
                 }),
                 (t.prototype._serEntityAndComps = function () {
                     for (var t = 0, e = this._entitiesLength; t < e; t++) {
@@ -2188,7 +2011,7 @@ var netcode = (function (t) {
                                               ")]comp is not Serable!"
                                       );
                             }
-                            r.role.ser(this._internalMsgMng.statebuffer);
+                            r.role.ser(this._internalMsgMng.statebufferWriter);
                         } else
                             this._internalMsgMng.sendEntity(
                                 t,
@@ -2214,14 +2037,16 @@ var netcode = (function (t) {
                     var r = e.comps;
                     !(function (t, e) {
                         if (!t) throw new e();
-                    })(t.compCount == r.length, it);
+                    })(t.compCount == r.length, rt);
                     for (var n = 0, i = t.compCount; n < i; n++) {
                         var o = _(
                             r[this._internalMsgMng.recvCompHeader().compIdx]
                         );
                         o && this._internalMsgMng.recvCompBody(o);
                     }
-                    return e.role.deser(this._internalMsgMng.statebuffer), e;
+                    return (
+                        e.role.deser(this._internalMsgMng.statebufferReader), e
+                    );
                 }),
                 (t.prototype._derEntityAndCompsUnderUnExsited = function (t) {
                     for (
@@ -2235,8 +2060,8 @@ var netcode = (function (t) {
                         this._internalMsgMng.recvCompBody(s),
                             (e[i.compIdx] = s);
                     }
-                    var a = new (z.bind.apply(
-                        z,
+                    var a = new (G.bind.apply(
+                        G,
                         (function (t, e) {
                             for (
                                 var r = 0, n = e.length, i = t.length;
@@ -2248,7 +2073,7 @@ var netcode = (function (t) {
                         })([void 0], e)
                     ))();
                     return (
-                        a.role.deser(this._internalMsgMng.statebuffer),
+                        a.role.deser(this._internalMsgMng.statebufferReader),
                         this.reg(a),
                         a
                     );
@@ -2263,9 +2088,9 @@ var netcode = (function (t) {
                                 var i = r.comps[t.compIdx];
                                 if (!i) return "continue";
                                 var o = i["deser" + t.methodHash](
-                                        n._internalMsgMng.rpcbuffer
+                                        n._internalMsgMng.rpcbufferReader
                                     ),
-                                    s = T[t.methodHash],
+                                    s = R[t.methodHash],
                                     a = i[s].apply(i, o),
                                     u = i.__schema__.methods[s];
                                 if (98 != u.returnType) {
@@ -2275,11 +2100,11 @@ var netcode = (function (t) {
                                             e._internalMsgMng.sendRpcCallback(
                                                 c
                                             ),
-                                                M(
+                                                T(
                                                     u.returnType,
                                                     t,
                                                     e._internalMsgMng
-                                                        .rpcCallbackBuffer
+                                                        .rpcCallbackBufferWriter
                                                 );
                                         });
                                 }
@@ -2301,13 +2126,14 @@ var netcode = (function (t) {
                             var r = e.comps[t.compIdx];
                             if (r) {
                                 var n = r.__schema__,
-                                    i = T[t.methodHash],
+                                    i = R[t.methodHash],
                                     o = n.methods[i],
                                     s = void 0;
                                 98 != o.returnType &&
                                     (s = B(
                                         o.returnType,
-                                        this._internalMsgMng.rpcCallbackBuffer,
+                                        this._internalMsgMng
+                                            .rpcCallbackBufferReader,
                                         void 0,
                                         o.returnRefCtr
                                     ));
@@ -2329,7 +2155,211 @@ var netcode = (function (t) {
                 t
             );
         })(),
-        st = (function () {
+        ot = {
+            int: new Int32Array(1),
+            uint: new Uint32Array(1),
+            short: new Int16Array(1),
+            ushort: new Uint16Array(1),
+            long: new Int32Array(1),
+            ulong: new Uint32Array(1),
+            float: new Float32Array(1),
+            double: new Float64Array(1),
+        },
+        st = (function (t) {
+            function e() {
+                return (null !== t && t.apply(this, arguments)) || this;
+            }
+            return r(e, t), e;
+        })(Error),
+        at = (function () {
+            function t() {
+                (this.writeBuffer = []),
+                    (this.writerCursor = 0),
+                    (this.readBuffer = []),
+                    (this.readerCursor = 0),
+                    (this.readerStart = 0),
+                    (this.readerEnd = 0);
+            }
+            return (
+                (t.prototype.check = function (t) {
+                    if (
+                        (void 0 === t && (t = 0),
+                        this.writerCursor + t >= this.readBuffer.length &&
+                            this.writerCursor + t >= this.readerEnd)
+                    )
+                        throw new st(
+                            "Cursor: (" +
+                                this.writerCursor +
+                                "), buffer's length: (" +
+                                this.writeBuffer.length +
+                                ")"
+                        );
+                }),
+                (t.prototype.reset = function () {
+                    (this.writerCursor = 0),
+                        (this.readerCursor = 0),
+                        (this.readBuffer.length = 0),
+                        (this.writeBuffer.length = 0);
+                }),
+                (t.prototype.readInt = function () {
+                    this.check();
+                    var t = ot.int;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readUint = function () {
+                    this.check();
+                    var t = ot.uint;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readShort = function () {
+                    this.check();
+                    var t = ot.short;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readUshort = function () {
+                    this.check();
+                    var t = ot.ushort;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readLong = function () {
+                    this.check();
+                    var t = ot.long;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readUlong = function () {
+                    this.check();
+                    var t = ot.ulong;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readFloat = function () {
+                    this.check();
+                    var t = ot.float;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readDouble = function () {
+                    this.check();
+                    var t = ot.double;
+                    return (t[0] = this.readBuffer[this.readerCursor++]), t[0];
+                }),
+                (t.prototype.readBoolean = function () {
+                    return (
+                        this.check(),
+                        Boolean(this.readBuffer[this.readerCursor++])
+                    );
+                }),
+                (t.prototype.set = function (t, e, r) {
+                    void 0 === e && (e = 0),
+                        void 0 === r && (r = -1),
+                        (this.writerCursor = 0);
+                    var n = JSON.parse(t),
+                        i = Array.isArray(n) ? n : [];
+                    r < 0 && (r += i.length),
+                        (this.readerStart = this.readerCursor = e),
+                        (this.readerEnd = r),
+                        (this.readBuffer = i);
+                }),
+                (t.prototype.writeInt = function (t) {
+                    return (
+                        (ot.int[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeUint = function (t) {
+                    return (
+                        (ot.uint[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeShort = function (t) {
+                    return (
+                        (ot.short[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeUshort = function (t) {
+                    return (
+                        (ot.ushort[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeLong = function (t) {
+                    return (
+                        (ot.long[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeUlong = function (t) {
+                    return (
+                        (ot.ulong[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeFloat = function (t) {
+                    return (
+                        (ot.float[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeDouble = function (t) {
+                    return (
+                        (ot.double[0] = t),
+                        (this.writeBuffer[this.writerCursor++] = t),
+                        this
+                    );
+                }),
+                (t.prototype.writeBoolean = function (t) {
+                    return (
+                        (this.writeBuffer[this.writerCursor++] = t ? 1 : 0),
+                        this
+                    );
+                }),
+                (t.prototype.flush = function () {
+                    this.writeBuffer.length = this.writerCursor;
+                    var t = JSON.stringify(this.writeBuffer);
+                    return this.reset(), t;
+                }),
+                (t.prototype.hasNext = function () {
+                    return (
+                        this.readerCursor < this.readBuffer.length &&
+                        this.readerCursor < this.readerEnd
+                    );
+                }),
+                (t.prototype.append = function (t) {
+                    return (
+                        this.writeBuffer.push.apply(
+                            this.writeBuffer,
+                            t.writeBuffer
+                        ),
+                        (this.writerCursor += t.writerCursor),
+                        t.reset(),
+                        this
+                    );
+                }),
+                t
+            );
+        })(),
+        ut = {
+            newBufferReader: function (t) {
+                return new at();
+            },
+            newBufferWriter: function (t) {
+                return new at();
+            },
+        },
+        ct = (function (t) {
+            function e(e) {
+                return t.call(this, ut, e) || this;
+            }
+            return r(e, t), e;
+        })(nt),
+        ht = (function () {
             function t() {
                 this._arr = [];
             }
@@ -2352,7 +2382,7 @@ var netcode = (function (t) {
                 t
             );
         })(),
-        at = (function () {
+        pt = (function () {
             function t() {}
             return (
                 Object.defineProperty(t, "server", {
@@ -2416,26 +2446,26 @@ var netcode = (function (t) {
                 }),
                 (t.delay = 0),
                 (t.jitter = 0),
-                (t._serverTcp = new st()),
-                (t._client1Tcp = new st()),
-                (t._client2Tcp = new st()),
+                (t._serverTcp = new ht()),
+                (t._client1Tcp = new ht()),
+                (t._client2Tcp = new ht()),
                 t
             );
         })(),
-        ut = (function () {
+        lt = (function () {
             function t() {
                 (this.x = 0), (this.y = 0);
             }
             return (
-                n([x(c.INT)], t.prototype, "x", void 0),
-                n([x(c.INT)], t.prototype, "y", void 0),
+                n([P(c.INT)], t.prototype, "x", void 0),
+                n([P(c.INT)], t.prototype, "y", void 0),
                 (t = n([D("vec")], t))
             );
         })(),
-        ct = (function (t) {
+        ft = (function (t) {
             function e() {
                 var e = (null !== t && t.apply(this, arguments)) || this;
-                return (e.pos = new ut()), e;
+                return (e.pos = new lt()), e;
             }
             return (
                 r(e, t),
@@ -2444,7 +2474,7 @@ var netcode = (function (t) {
                         (this.pos.x += t),
                         (this.pos.y += e);
                 }),
-                n([x(ut)], e.prototype, "pos", void 0),
+                n([P(lt)], e.prototype, "pos", void 0),
                 n(
                     [j(u.AUTHORITY), i(0, F(c.FLOAT)), i(1, F(c.FLOAT))],
                     e.prototype,
@@ -2453,8 +2483,8 @@ var netcode = (function (t) {
                 ),
                 (e = n([D("trans")], e))
             );
-        })(p),
-        pt = (function (t) {
+        })(h),
+        dt = (function (t) {
             function e() {
                 var e = (null !== t && t.apply(this, arguments)) || this;
                 return (e.color = 16777215), e;
@@ -2470,7 +2500,7 @@ var netcode = (function (t) {
                     this._ctx = t;
                 }),
                 (e.prototype.renderUpdate = function () {
-                    var t = this.get(ct),
+                    var t = this.get(ft),
                         e = this.get(o);
                     this._ctx &&
                         t &&
@@ -2487,7 +2517,7 @@ var netcode = (function (t) {
                         t.arc(e.x, e.y, 26, 0, 2 * Math.PI),
                         t.fill();
                 }),
-                n([x(c.INT)], e.prototype, "color", void 0),
+                n([P(c.INT)], e.prototype, "color", void 0),
                 n(
                     [j(u.AUTHORITY), i(0, F(c.INT))],
                     e.prototype,
@@ -2496,8 +2526,8 @@ var netcode = (function (t) {
                 ),
                 (e = o = n([D("view")], e))
             );
-        })(p),
-        ht = (function (t) {
+        })(h),
+        yt = (function (t) {
             function e() {
                 var e = t.call(this) || this;
                 return (
@@ -2550,16 +2580,16 @@ var netcode = (function (t) {
                 (e.prototype.renderUpdate = function () {
                     if (this._enable) {
                         var t = this._input,
-                            e = this.get(ct),
+                            e = this.get(ft),
                             r = (t.isLeft ? -1 : 0) + (t.isRight ? 1 : 0);
                         e.serverMove(r * this.domain.renderTime.delta * 100, 0);
                     }
                 }),
                 (e = n([D("controller")], e))
             );
-        })(p),
-        lt = { 1: { left: "a", right: "d" }, 2: { left: "", right: "" } },
-        ft = (function () {
+        })(h),
+        vt = { 1: { left: "a", right: "d" }, 2: { left: "", right: "" } },
+        _t = (function () {
             function t(t, e, r) {
                 (this.canvas = e),
                     (this.bg = "#947A6D"),
@@ -2568,7 +2598,7 @@ var netcode = (function (t) {
                     (this.isRollback = !1),
                     (this.lastTimeStamp = 0),
                     (this.actorArr = []),
-                    (this.domain = ot.Create(t, { dataBufCtr: Z, type: r })),
+                    (this.domain = it.Create(t, new ct(r))),
                     (this.ctx = e.getContext("2d")),
                     (this.canvas.width = 950),
                     (this.canvas.height = 70),
@@ -2592,16 +2622,16 @@ var netcode = (function (t) {
                         this.domain.update(e / 1e3);
                 }),
                 (t.prototype.initScene = function () {
-                    var t = new pt();
+                    var t = new dt();
                     t.bindCanvas(this.ctx);
-                    var e = new ct();
+                    var e = new ft();
                     (e.pos.x = 30), (e.pos.y = 35);
-                    var r = new z(t, e, new ht()),
-                        n = new pt();
+                    var r = new G(t, e, new yt()),
+                        n = new dt();
                     n.bindCanvas(this.ctx);
-                    var i = new ct();
+                    var i = new ft();
                     (i.pos.x = 50), (i.pos.y = 35);
-                    var o = new z(n, i, new ht());
+                    var o = new G(n, i, new yt());
                     this.domain.reg(r),
                         this.domain.reg(o),
                         t.changeColor(16243020),
@@ -2620,7 +2650,7 @@ var netcode = (function (t) {
                 t
             );
         })(),
-        dt = (function (t) {
+        gt = (function (t) {
             function e(e) {
                 var r = t.call(this, "server", e, a.SERVER) || this;
                 return (r.canvas = e), (r.sendAccumulator = 0), r;
@@ -2634,24 +2664,24 @@ var netcode = (function (t) {
                         this.sendAccumulator >= 0.05)
                     ) {
                         var r = this.domain.asData();
-                        at.send(r).c1(),
-                            at.send(r).c2(),
+                        pt.send(r).c1(),
+                            pt.send(r).c2(),
                             (this.sendAccumulator = 0);
                     }
                 }),
                 e
             );
-        })(ft),
-        yt = (function (t) {
+        })(_t),
+        mt = (function (t) {
             function e(e, r) {
                 var n,
                     i = t.call(this, "client" + e, r, a.CLIENT) || this;
                 return (
                     (i.index = e),
                     (i.canvas = r),
-                    null === (n = i.actorArr[e - 1].get(ht)) ||
+                    null === (n = i.actorArr[e - 1].get(yt)) ||
                         void 0 === n ||
-                        n.setEnable(!0, lt[e]),
+                        n.setEnable(!0, vt[e]),
                     i
                 );
             }
@@ -2660,21 +2690,21 @@ var netcode = (function (t) {
                 (e.prototype.loop = function (e) {
                     t.prototype.loop.call(this, e);
                     var r = this.domain.asData();
-                    at.send(r).server();
+                    pt.send(r).server();
                 }),
                 e
             );
-        })(ft);
+        })(_t);
     return (
-        (t.Base = ft),
-        (t.Client = yt),
-        (t.Controller = ht),
-        (t.MockTcp = st),
-        (t.Net = at),
-        (t.Server = dt),
-        (t.Transform = ct),
-        (t.Vector = ut),
-        (t.View = pt),
+        (t.Base = _t),
+        (t.Client = mt),
+        (t.Controller = yt),
+        (t.MockTcp = ht),
+        (t.Net = pt),
+        (t.Server = gt),
+        (t.Transform = ft),
+        (t.Vector = lt),
+        (t.View = dt),
         Object.defineProperty(t, "__esModule", { value: !0 }),
         t
     );
