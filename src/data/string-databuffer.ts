@@ -1,4 +1,4 @@
-import { IDataBuffer, IDatabufferWriter } from "./serializable";
+import { IDataBufferReader, IDataBufferWriter } from "./serializable";
 
 const tempTypedBuffer = {
     int: new Int32Array(1),
@@ -13,9 +13,12 @@ const tempTypedBuffer = {
 
 export class StringDataBufferOutOfRange extends Error {}
 
-export class StringDataBuffer implements IDataBuffer<string> {
+export class StringDataBuffer
+    implements IDataBufferWriter<string>, IDataBufferReader<string>
+{
     public writeBuffer: any[] = [];
     public writerCursor = 0;
+
     public readBuffer: any[] = [];
     public readerCursor = 0;
     public readerStart = 0;
@@ -102,62 +105,64 @@ export class StringDataBuffer implements IDataBuffer<string> {
         this.readBuffer = dstChecked;
     }
 
-    writeInt(source: number): IDatabufferWriter<string> {
+    writeInt(source: number): this {
         const temp = tempTypedBuffer.int;
         temp[0] = source;
         this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
-    writeUint(source: number): IDatabufferWriter<string> {
+    writeUint(source: number): this {
         const temp = tempTypedBuffer.uint;
         temp[0] = source;
         this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
-    writeShort(source: number): IDatabufferWriter<string> {
+    writeShort(source: number): this {
         const temp = tempTypedBuffer.short;
         temp[0] = source;
         this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
-    writeUshort(source: number): IDatabufferWriter<string> {
+    writeUshort(source: number): this {
         const temp = tempTypedBuffer.ushort;
         temp[0] = source;
         this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
-    writeLong(source: number): IDatabufferWriter<string> {
+    writeLong(source: number): this {
         const temp = tempTypedBuffer.long;
         temp[0] = source;
         this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
-    writeUlong(source: number): IDatabufferWriter<string> {
+    writeUlong(source: number): this {
         const temp = tempTypedBuffer.ulong;
         temp[0] = source;
         this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
-    writeFloat(source: number): IDatabufferWriter<string> {
+    writeFloat(source: number): this {
         const temp = tempTypedBuffer.float;
         temp[0] = source;
         this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
-    writeDouble(source: number): IDatabufferWriter<string> {
+    writeDouble(source: number): this {
         const temp = tempTypedBuffer.double;
         temp[0] = source;
         this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
-    writeBoolean(source: boolean): IDatabufferWriter<string> {
+    writeBoolean(source: boolean): this {
         this.writeBuffer[this.writerCursor++] = source ? 1 : 0;
         return this;
     }
 
-    get(): string {
+    flush(): string {
         this.writeBuffer.length = this.writerCursor;
-        return JSON.stringify(this.writeBuffer);
+        const outValue = JSON.stringify(this.writeBuffer);
+        this.reset();
+        return outValue;
     }
 
     hasNext(): boolean {
@@ -167,9 +172,10 @@ export class StringDataBuffer implements IDataBuffer<string> {
         );
     }
 
-    append(other: IDatabufferWriter<string>): IDatabufferWriter<string> {
+    append(other: this): this {
         this.writeBuffer.push.apply(this.writeBuffer, other.writeBuffer);
         this.writerCursor += other.writerCursor;
+        other.reset();
         return this;
     }
 }

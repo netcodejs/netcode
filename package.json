@@ -38,6 +38,7 @@
   },
   "scripts": {
     "build": "rimraf dist/ & yarn run rollup -c",
+    "build:nojit": "rimraf dist/ & yarn run rollup -c rollup.config.nojit.js",
     "test": "jest",
     "example": "yarn run rollup -c rollup.config.example.js --watch",
     "prepare": "husky install"
