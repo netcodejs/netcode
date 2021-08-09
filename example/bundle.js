@@ -194,7 +194,7 @@ var netcode = (function (t) {
     var a,
         u,
         c,
-        p = (function () {
+        h = (function () {
             function t() {}
             return (
                 Object.defineProperty(t.prototype, "entity", {
@@ -224,7 +224,7 @@ var netcode = (function (t) {
                 t
             );
         })(),
-        h = -1;
+        p = -1;
     !(function (t) {
         (t[(t.SERVER = 0)] = "SERVER"), (t[(t.CLIENT = 1)] = "CLIENT");
     })(a || (a = {})),
@@ -258,7 +258,7 @@ var netcode = (function (t) {
     function f(t) {
         return (
             void 0 === t && (t = Object.create(null)),
-            (t.hash = h),
+            (t.hash = p),
             (t.name = ""),
             (t.paramCount = 0),
             (t.paramTypes = []),
@@ -273,7 +273,7 @@ var netcode = (function (t) {
         var e,
             r =
                 (void 0 === e && (e = Object.create(null)),
-                (e.hash = h),
+                (e.hash = p),
                 (e.name = ""),
                 (e.count = 0),
                 (e.props = Object.create(null)),
@@ -824,8 +824,8 @@ var netcode = (function (t) {
         var e = t.__schema__;
         !(function (t, e) {
             for (var r = "", n = 0, i = e.count; n < i; n++) {
-                var o = (p = e.props[n]).type,
-                    s = p.propertyKey;
+                var o = (h = e.props[n]).type,
+                    s = h.propertyKey;
                 if (0 === o.container)
                     switch (o.dataType) {
                         case c.INT:
@@ -879,8 +879,8 @@ var netcode = (function (t) {
             t.ser = Function("buffer", r);
             var u = "";
             for (n = 0, i = e.count; n < i; n++) {
-                var p;
-                (o = (p = e.props[n]).type), (s = p.propertyKey);
+                var h;
+                (o = (h = e.props[n]).type), (s = h.propertyKey);
                 if (0 === o.container)
                     switch (o.dataType) {
                         case c.INT:
@@ -960,7 +960,7 @@ var netcode = (function (t) {
                     t["deser" + s.hash] = Function("buffer", u);
                     var c = "__" + o + "__";
                     t[c] = t[o];
-                    var p =
+                    var h =
                         "\nif (this.entity.role.local == " +
                         s.type +
                         ') {\n    return this["' +
@@ -968,7 +968,7 @@ var netcode = (function (t) {
                         '"](...args);\n} else {\n    const domain = this.domain;\n    if (domain == null) {\n        return Promise.reject("Domain is not valid!")\n    }\n    return domain.readonlyInternalMsgMng.sendRpc(\n        "' +
                         o +
                         '",\n        this,\n        args,\n        domain.logicTime.duration\n    );\n}\n        ';
-                    t[o] = Function("...args", p);
+                    t[o] = Function("...args", h);
                 }
             })(t, e);
     }
@@ -1336,14 +1336,14 @@ var netcode = (function (t) {
                 n([x(c.DOUBLE)], e.prototype, "duration", void 0),
                 (e = n([D("logic_time")], e))
             );
-        })(p),
+        })(h),
         K = (function (t) {
             function e() {
                 var e = (null !== t && t.apply(this, arguments)) || this;
                 return (e.delta = 0), (e.duration = 0), e;
             }
             return r(e, t), (e = n([D("render_time")], e));
-        })(p),
+        })(h),
         X = (function (t) {
             function e() {
                 var e = (null !== t && t.apply(this, arguments)) || this;
@@ -1414,7 +1414,7 @@ var netcode = (function (t) {
                 n([j(u.AUTHORITY, c.BOOL)], e.prototype, "downgrade", null),
                 (e = n([D("role", !1)], e))
             );
-        })(p),
+        })(h),
         G = (function (t) {
             function e() {
                 return (null !== t && t.apply(this, arguments)) || this;
@@ -1425,8 +1425,8 @@ var netcode = (function (t) {
             function t() {
                 for (var t = [], e = 0; e < arguments.length; e++)
                     t[e] = arguments[e];
-                (this._id = h),
-                    (this._version = h),
+                (this._id = p),
+                    (this._version = p),
                     (this.$comps = new Proxy(this, {
                         get: function (t, e, r) {
                             return t.get(C[String(e)]);
@@ -1472,7 +1472,7 @@ var netcode = (function (t) {
                     var e = this._compMap;
                     if (
                         ((t._entity = this),
-                        !t.__schema__ || t.__schema__.hash == h)
+                        !t.__schema__ || t.__schema__.hash == p)
                     )
                         throw new G("Component must use @NetComp");
                     var r = t.__schema__.hash;
@@ -1636,13 +1636,13 @@ var netcode = (function (t) {
                         e["ser" + c.hash](u, r),
                         98 != c.returnType)
                     ) {
-                        var p = new g();
+                        var h = new g();
                         return (
                             this._rpcDeferred.set(
                                 s.id + "|" + a + "|" + c.hash + "|" + i,
-                                { deferred: p, timestamp: n }
+                                { deferred: h, timestamp: n }
                             ),
-                            p.promise
+                            h.promise
                         );
                     }
                 }),
@@ -2051,8 +2051,8 @@ var netcode = (function (t) {
                 }),
                 (t.prototype.isValid = function (t) {
                     return (
-                        t.id != h &&
-                        t.version != h &&
+                        t.id != p &&
+                        t.version != p &&
                         t.version == this._entityVersion[t.id]
                     );
                 }),
@@ -2101,10 +2101,10 @@ var netcode = (function (t) {
                             a = e.readUlong(),
                             u = e.readerCursor,
                             c = u + o,
-                            p = (f = l = (h = c) + s) + a;
+                            h = (f = l = (p = c) + s) + a;
                         r.set(t, u, c),
-                            n.set(t, h, l),
-                            i.set(t, f, p),
+                            n.set(t, p, l),
+                            i.set(t, f, h),
                             this._internalMsgMng.startRecvEntityAndComps(),
                             this._derEntityAndComps(),
                             this._internalMsgMng.endRecvEntityAndComps(),
@@ -2115,12 +2115,12 @@ var netcode = (function (t) {
                             this._deserRpcCallbacks(),
                             this._internalMsgMng.endRecvRpcCallback();
                     } else {
-                        var h, l, f;
+                        var p, l, f;
                         (s = e.readUlong()),
                             (a = e.readUlong()),
-                            (p = (f = l = (h = e.readerCursor) + s) + a);
-                        n.set(t, h, l),
-                            i.set(t, f, p),
+                            (h = (f = l = (p = e.readerCursor) + s) + a);
+                        n.set(t, p, l),
+                            i.set(t, f, h),
                             this._internalMsgMng.startRecvRpc(),
                             this._deserRpcs(),
                             this._internalMsgMng.endRecvRpc(),
@@ -2160,7 +2160,7 @@ var netcode = (function (t) {
                             (this._entitiesLength = n + 1);
                 }),
                 (t.prototype._unreg = function (t) {
-                    (t._id = h), (t._version = h), (t._domain = void 0);
+                    (t._id = p), (t._version = p), (t._domain = void 0);
                 }),
                 (t.prototype._serEntityAndComps = function () {
                     for (var t = 0, e = this._entitiesLength; t < e; t++) {
@@ -2453,8 +2453,8 @@ var netcode = (function (t) {
                 ),
                 (e = n([D("trans")], e))
             );
-        })(p),
-        pt = (function (t) {
+        })(h),
+        ht = (function (t) {
             function e() {
                 var e = (null !== t && t.apply(this, arguments)) || this;
                 return (e.color = 16777215), e;
@@ -2496,8 +2496,8 @@ var netcode = (function (t) {
                 ),
                 (e = o = n([D("view")], e))
             );
-        })(p),
-        ht = (function (t) {
+        })(h),
+        pt = (function (t) {
             function e() {
                 var e = t.call(this) || this;
                 return (
@@ -2557,8 +2557,11 @@ var netcode = (function (t) {
                 }),
                 (e = n([D("controller")], e))
             );
-        })(p),
-        lt = { 1: { left: "a", right: "d" }, 2: { left: "", right: "" } },
+        })(h),
+        lt = {
+            1: { left: "a", right: "d" },
+            2: { left: "ArrowLeft", right: "ArrowRight" },
+        },
         ft = (function () {
             function t(t, e, r) {
                 (this.canvas = e),
@@ -2592,16 +2595,16 @@ var netcode = (function (t) {
                         this.domain.update(e / 1e3);
                 }),
                 (t.prototype.initScene = function () {
-                    var t = new pt();
+                    var t = new ht();
                     t.bindCanvas(this.ctx);
                     var e = new ct();
                     (e.pos.x = 30), (e.pos.y = 35);
-                    var r = new z(t, e, new ht()),
-                        n = new pt();
+                    var r = new z(t, e, new pt()),
+                        n = new ht();
                     n.bindCanvas(this.ctx);
                     var i = new ct();
                     (i.pos.x = 50), (i.pos.y = 35);
-                    var o = new z(n, i, new ht());
+                    var o = new z(n, i, new pt());
                     this.domain.reg(r),
                         this.domain.reg(o),
                         t.changeColor(16243020),
@@ -2649,7 +2652,7 @@ var netcode = (function (t) {
                 return (
                     (i.index = e),
                     (i.canvas = r),
-                    null === (n = i.actorArr[e - 1].get(ht)) ||
+                    null === (n = i.actorArr[e - 1].get(pt)) ||
                         void 0 === n ||
                         n.setEnable(!0, lt[e]),
                     i
@@ -2668,13 +2671,13 @@ var netcode = (function (t) {
     return (
         (t.Base = ft),
         (t.Client = yt),
-        (t.Controller = ht),
+        (t.Controller = pt),
         (t.MockTcp = st),
         (t.Net = at),
         (t.Server = dt),
         (t.Transform = ct),
         (t.Vector = ut),
-        (t.View = pt),
+        (t.View = ht),
         Object.defineProperty(t, "__esModule", { value: !0 }),
         t
     );

@@ -8,7 +8,7 @@ const COLOR_YELLOW = 0xf7d94c;
 const COLOR_WHITE = 0xf8c3cd;
 const CONTROLLER_MAP = {
     1: { left: "a", right: "d" },
-    2: { left: "", right: "" },
+    2: { left: "ArrowLeft", right: "ArrowRight" },
 } as any;
 export abstract class Base {
     readonly domain: Domain;
