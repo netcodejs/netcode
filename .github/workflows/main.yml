@@ -37,13 +37,13 @@ jobs:
       #   run: yarn lint
 
       - name: Test
-        run: yarn test --ci --coverage --maxWorkers=2
+        run: yarn test:coverage:ci --ci --maxWorkers=2
       
-      - name: Test - Jit
-        run: yarn test --ci --coverage --maxWorkers=2
-        env:
-          ENABLE_JIT: true
-
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Build
         run: yarn build
 
