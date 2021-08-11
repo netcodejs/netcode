@@ -151,6 +151,16 @@ describe("entity-componrnt", () => {
         const logic = new LogicComponent();
         const newLogic = new LogicComponent();
         const ent = new Entity(view, logic, newLogic);
+        expect(view.get(ViewComponent)).toBe(view);
+        expect(ent.mget(ViewComponent)).toStrictEqual([view]);
+        expect(ent.get(LogicComponent)).toBe(newLogic);
+        expect(ent.mget(LogicComponent)).toStrictEqual([logic, newLogic]);
+        expect(view.get(ViewComponentNoDecoration)).toBeNull();
+        expect(ent.mget(ViewComponentNoDecoration)).toStrictEqual([]);
+        expect(view.get(ArrComp)).toBeNull();
+        expect(ent.has(ViewComponentNoDecoration)).toBeFalsy();
+        expect(view.$comps.view === view);
+
         const hasView = ent.has(ViewComponent);
         const getView = ent.get(ViewComponent);
 
@@ -263,6 +273,8 @@ describe("Serable", () => {
         view.height = 456;
         domain.reg(ent);
 
+        expect(ent.toString()).toBe("Entity: id=1,version=0");
+
         // const template = JSON.stringify([
         //     1, 7, 0, 0, 0, 1, 0, -16929906, 456, 123,
         // ]);
@@ -343,6 +355,50 @@ describe("Serable", () => {
                 y: { value: 456 },
             },
         });
+    });
+
+    let hasLogicUpdate = false;
+    let logicTime = 0;
+    let hasRenderUpdate = false;
+    let renderTime = 0;
+    let hasInit = false;
+    let hasDestroy = false;
+    @NetSerable("test-lifecycle")
+    class LifecycleTestComp extends IComp {
+        logicUpdate() {
+            hasLogicUpdate = true;
+            logicTime = this.domain.logicTime.duration;
+        }
+
+        renderUpdate() {
+            hasRenderUpdate = true;
+            renderTime = this.domain.renderTime.duration;
+        }
+
+        init() {
+            hasInit = true;
+        }
+
+        destroy() {
+            hasDestroy = true;
+        }
+    }
+
+    test("lifecycle", () => {
+        const d = Domain.Create(
+            "default",
+            new StringDomainOption(RpcType.SERVER)
+        );
+        const e = new Entity(new LifecycleTestComp());
+        d.reg(e);
+        d.update(1);
+        d.unreg(e);
+        expect(hasLogicUpdate).toBe(true);
+        expect(hasRenderUpdate).toBe(true);
+        expect(renderTime).toBe(1);
+        expect(logicTime).toBe(1);
+        expect(hasInit).toBe(true);
+        expect(hasDestroy).toBe(true);
     });
 });
 

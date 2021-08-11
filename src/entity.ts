@@ -27,11 +27,11 @@ class ComponentHasNotDecorated extends Error {}
  ```
  */
 export class Entity<ProxyObj extends Object = any> {
-    private _id = NULL_NUM;
+    private _id;
     get id() {
         return this._id;
     }
-    private _version = NULL_NUM;
+    private _version;
     get version() {
         return this._version;
     }
@@ -59,14 +59,35 @@ export class Entity<ProxyObj extends Object = any> {
     readonly role: RoleComp;
 
     constructor(..._comps: IComp[]) {
-        this.role = new RoleComp();
+        this._id = NULL_NUM;
+        this._version = NULL_NUM;
         this._compMap = new Map();
-        this._initComp(this.role as any);
+        this.role = new RoleComp();
 
-        this._comps = _comps;
+        this._comps = [this.role, ..._comps];
         for (let i = 0, len = this._comps.length; i < len; i++) {
             this._initComp(this._comps[i] as IComp & ISchema);
         }
+    }
+
+    static NewWithoutRole(..._comps: IComp[]) {
+        const ent = Object.create(Entity.prototype);
+
+        ent._id = NULL_NUM;
+        ent._version = NULL_NUM;
+        ent.$comps = new Proxy<any>(ent, {
+            get(target: any, p, receiver) {
+                return target.get(compName2ctr[String(p)]);
+            },
+        });
+        ent._compMap = new Map();
+        ent.role = _comps[0];
+
+        ent._comps = _comps;
+        for (let i = 0, len = ent._comps.length; i < len; i++) {
+            ent._initComp(ent._comps[i] as IComp & ISchema);
+        }
+        return ent;
     }
 
     protected _initComp(c: ISchema & IComp) {
@@ -107,7 +128,10 @@ export class Entity<ProxyObj extends Object = any> {
             return [];
         }
 
-        return (this._compMap.get(schema.hash) as T[]) ?? [];
+        if (!this._compMap.has(schema.hash)) return [];
+        const insOrArr = this._compMap.get(schema.hash)!;
+        if (!Array.isArray(insOrArr)) return [insOrArr as T];
+        return insOrArr as T[];
     }
 
     has(ctr: { new (): any }): boolean {

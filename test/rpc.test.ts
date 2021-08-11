@@ -13,18 +13,11 @@ import {
     StringDataBuffer,
 } from "../src";
 import { StringDomainOption } from "../src/data/string-domain-option";
+import { wait } from "./util";
 
 beforeEach(() => {
     Domain.Clear();
 });
-
-function wait(sec = 0) {
-    return new Promise<void>((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, sec);
-    });
-}
 
 describe("rpc", () => {
     @NetSerable("logic")

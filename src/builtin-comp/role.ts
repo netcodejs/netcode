@@ -16,9 +16,9 @@ export class RoleComp extends IComp implements ISerable {
     get local(): Role {
         return this.$local.value;
     }
-    set local(value: Role) {
-        this.$local.value = value;
-    }
+    // set local(value: Role) {
+    //     this.$local.value = value;
+    // }
 
     @NetVar(Short)
     $remote = new Short(Role.SIMULATED_PROXY);
@@ -45,7 +45,7 @@ export class RoleComp extends IComp implements ISerable {
     @Rpc(Role.AUTHORITY, DataType.BOOL)
     async upgrade() {
         if (
-            this.local != Role.AUTHORITY &&
+            this.local == Role.AUTHORITY &&
             this.remote != Role.AUTONMOUS_PROXY
         ) {
             this.remote = Role.AUTONMOUS_PROXY;
@@ -57,7 +57,7 @@ export class RoleComp extends IComp implements ISerable {
     @Rpc(Role.AUTHORITY, DataType.BOOL)
     async downgrade() {
         if (
-            this.local != Role.AUTHORITY &&
+            this.local == Role.AUTHORITY &&
             this.remote != Role.SIMULATED_PROXY
         ) {
             this.remote = Role.SIMULATED_PROXY;

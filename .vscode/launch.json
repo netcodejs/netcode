@@ -9,14 +9,17 @@
             "name": "vscode-jest-tests",
             "request": "launch",
             "args": [
-                "--runInBand"
+                "--runInBand",
+                "--watchAll=false"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "disableOptimisticBPs": true,
-            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-            "runtimeExecutable": "/home/coder/.nvm/versions/node/v14.17.4/bin/node"
+            "program": "${workspaceFolder}/node_modules/.bin/jest",
+            "windows": {
+                "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+            }
         }
     ]
 }

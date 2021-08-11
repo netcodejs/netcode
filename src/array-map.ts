@@ -1,6 +1,6 @@
 export class ArrayMap<k extends string | number, v> {
     private _name2indexRecord: Record<k, number>;
-    private _values: v[];
+    private _values: (v | null)[];
 
     constructor(source?: [k, v][]) {
         this._name2indexRecord = Object.create(null) as Record<k, number>;
@@ -50,7 +50,11 @@ export class ArrayMap<k extends string | number, v> {
         if (index < 0) {
             return [null, -1];
         }
-        return [this._values[index], index];
+        const deleted = [this._values[index], index] as [v | null, number];
+        this._values[index] = null;
+        delete this._name2indexRecord[key];
+
+        return deleted;
     }
 
     clear() {
@@ -59,10 +63,10 @@ export class ArrayMap<k extends string | number, v> {
     }
 
     get values(): v[] {
-        return Array.from(this._values);
+        return Array.from(this._values) as v[];
     }
 
     get readonlyValues(): readonly v[] {
-        return this._values;
+        return this._values as readonly v[];
     }
 }

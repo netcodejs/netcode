@@ -12,7 +12,12 @@ import {
 } from "./comp-schema";
 import { hash2compName, compName2ctr, hash2RpcName } from "./global-record";
 import { ARR_CONTAINER, NONE_CONTAINER } from "./macro";
-import { fixupSerable, fixupSerableJIT } from "./comp-fixup";
+import {
+    fixupSerable,
+    fixupSerableJIT,
+    fixupSerableJITWithoutState,
+    fixupSerableWithoutState,
+} from "./comp-fixup";
 import { IComp } from "./comp-interface";
 
 class WhyPropertyKeyHasTheSameError extends Error {}
@@ -47,6 +52,12 @@ export function NetSerable(name: string, genSerable = true) {
                 fixupSerableJIT(target.prototype);
             } else {
                 fixupSerable(target.prototype);
+            }
+        } else {
+            if (Config.JIT) {
+                fixupSerableJITWithoutState(target.prototype);
+            } else {
+                fixupSerableWithoutState(target.prototype);
             }
         }
     };

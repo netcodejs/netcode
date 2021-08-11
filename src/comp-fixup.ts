@@ -141,6 +141,11 @@ export function fixupSerable(prototype: any) {
     fixedupSerableRpc(prototype, schema);
 }
 
+export function fixupSerableWithoutState(prototype: any) {
+    const schema = prototype[SCHEME_KEY] as Schema;
+    fixedupSerableRpc(prototype, schema);
+}
+
 export function fixedupSerableState(prototype: any, schema: Schema) {
     prototype.ser = function (
         this: ISchema & Record<string, any>,
@@ -249,6 +254,11 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
 export function fixupSerableJIT(prototype: any) {
     const schema = prototype[SCHEME_KEY] as Schema;
     fixedupSerableStateJit(prototype, schema);
+    fixedupSerableRpcJit(prototype, schema);
+}
+
+export function fixupSerableJITWithoutState(prototype: any) {
+    const schema = prototype[SCHEME_KEY] as Schema;
     fixedupSerableRpcJit(prototype, schema);
 }
 

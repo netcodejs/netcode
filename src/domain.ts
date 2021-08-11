@@ -383,7 +383,6 @@ export class Domain<T extends SupportNetDataType = any> {
                 }
                 this._internalMsgMng.sendComp(compIdx, serableComp);
             }
-            ent.role.ser(this._internalMsgMng.statebufferWriter);
         }
     }
 
@@ -418,7 +417,6 @@ export class Domain<T extends SupportNetDataType = any> {
             if (!comp) continue;
             this._internalMsgMng.recvCompBody(comp);
         }
-        entity.role.deser(this._internalMsgMng.statebufferReader);
         return entity;
     }
 
@@ -432,8 +430,7 @@ export class Domain<T extends SupportNetDataType = any> {
             this._internalMsgMng.recvCompBody(comp);
             compArr[compHeaderInfo.compIdx] = comp;
         }
-        const e = new Entity(...compArr);
-        e.role.deser(this._internalMsgMng.statebufferReader);
+        const e = Entity.NewWithoutRole(...compArr);
         this.reg(e);
         return e;
     }
