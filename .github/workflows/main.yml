@@ -1,59 +1,66 @@
 name: CI
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - main
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+    pull_request:
+        branches:
+            - main
 jobs:
-  build:
-    name: ${{ matrix.os }} - Node.js v${{ matrix.node }}
+    build:
+        name: ${{ matrix.os }} - Node.js v${{ matrix.node }}
 
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        # node: ["10.x", "12.x", "14.x"]
-        node: ["10.x"]
-        # os: [ubuntu-latest, windows-latest, macOS-latest]
-        os: [ubuntu-latest]
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                # node: ["10.x", "12.x", "14.x"]
+                node: ["10.x"]
+                # os: [ubuntu-latest, windows-latest, macOS-latest]
+                os: [ubuntu-latest]
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v2
 
-      - name: Use Node ${{ matrix.node }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node }}
+            - name: Use Node ${{ matrix.node }}
+              uses: actions/setup-node@v2
+              with:
+                  node-version: ${{ matrix.node }}
 
-      - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
+            - name: Install deps and build (with cache)
+              uses: bahmutov/npm-install@v1
+              with:
+                  useLockFile: false
 
-      # - name: Lint
-      #   run: yarn lint
+            # - name: Lint
+            #   run: yarn lint
 
-      - name: Test
-        run: yarn test --ci --coverage --maxWorkers=2
-      
-      - name: Test - Jit
-        run: yarn test --ci --coverage --maxWorkers=2
-        env:
-          ENABLE_JIT: true
+            - name: Test
+              run: yarn test --ci --coverage --maxWorkers=2
 
-      - name: Build
-        run: yarn build
+            - name: Test - Jit
+              run: yarn test --ci --coverage --maxWorkers=2
+              env:
+                  ENABLE_JIT: true
 
-      - name: Check version and publish
-        id: publish
-        if: ${{ github.event_name == 'push' }}
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          
-      - if: steps.publish != NaN && steps.publish.outputs != NaN && steps.publish.outputs.type != 'none'
-        run: |
-          echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+            - name: Build
+              run: yarn build
+
+            - name: Check version and publish
+              id: publish
+              if: ${{ github.event_name == 'push' }}
+              uses: JS-DevTools/npm-publish@v1
+              with:
+                  token: ${{ secrets.NPM_TOKEN }}
+
+            - if: steps.publish != NaN && steps.publish.outputs != NaN && steps.publish.outputs.type != 'none'
+              run: |
+                  echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+
+            - name: Deploy 🚀
+              uses: JamesIves/github-pages-deploy-action@4.1.4
+              if: ${{ github.event_name == 'push' }}
+              with:
+                  branch: gh-pages # The branch the action should deploy to.
+                  folder: example # The folder the action should deploy.

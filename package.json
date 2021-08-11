@@ -39,7 +39,8 @@
   "scripts": {
     "build": "rimraf dist/ & yarn run rollup -c",
     "test": "jest",
-    "example": "yarn run rollup -c rollup.config.example.js --watch",
+    "example:watch": "yarn run rollup -c rollup.config.example.js --watch",
+    "example:build": "yarn run rollup -c rollup.config.example.js",
     "prepare": "husky install"
   },
   "lint-staged": {
