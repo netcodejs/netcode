@@ -12,18 +12,12 @@ import {
     RpcVar,
     StringDataBuffer,
 } from "../src";
+import { StringDomainOption } from "../src/data/string-domain-option";
+import { wait } from "./util";
 
 beforeEach(() => {
     Domain.Clear();
 });
-
-function wait(sec = 0) {
-    return new Promise<void>((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, sec);
-    });
-}
 
 describe("rpc", () => {
     @NetSerable("logic")
@@ -45,20 +39,20 @@ describe("rpc", () => {
     }
 
     test("valid", () => {
-        const server = Domain.Create("ser-domain", {
-            type: RpcType.SERVER,
-            dataBufCtr: StringDataBuffer,
-        });
+        const server = Domain.Create(
+            "ser-domain",
+            new StringDomainOption(RpcType.SERVER)
+        );
         const serverLogic0 = new LogicComponent();
         const serverEnt0 = new Entity(serverLogic0);
         server.reg(serverEnt0);
 
         serverLogic0.activate();
 
-        const client = Domain.Create("deser-domain", {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-        });
+        const client = Domain.Create(
+            "deser-domain",
+            new StringDomainOption(RpcType.CLIENT)
+        );
         client.setData(server.asData());
         const clientEnt0 = client.get(serverEnt0.id)!;
         const clientLogic0 = clientEnt0.get(LogicComponent)!;
@@ -100,14 +94,14 @@ describe("rpc-return-type", () => {
     }
 
     test("pure", async () => {
-        const server = Domain.Create("server-domain", {
-            type: RpcType.SERVER,
-            dataBufCtr: StringDataBuffer,
-        });
-        const client = Domain.Create("client-domain", {
-            type: RpcType.CLIENT,
-            dataBufCtr: StringDataBuffer,
-        });
+        const server = Domain.Create(
+            "server-domain",
+            new StringDomainOption(RpcType.SERVER)
+        );
+        const client = Domain.Create(
+            "client-domain",
+            new StringDomainOption(RpcType.CLIENT)
+        );
         const serverLogic = new Console();
         const serverEnt = new Entity(serverLogic);
         server.reg(serverEnt);

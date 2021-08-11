@@ -6,13 +6,13 @@ import {
     Schema,
     SCHEME_KEY,
 } from "./comp-schema";
-import { IDatabufferWriter, IDataBufferReader } from "./data/serializable";
+import { IDataBufferWriter, IDataBufferReader } from "./data/serializable";
 import { NONE_CONTAINER } from "./macro";
 
 export function serValue(
     type: DataType,
     value: any,
-    buffer: IDatabufferWriter
+    buffer: IDataBufferWriter
 ) {
     switch (type) {
         case DataType.INT:
@@ -141,10 +141,15 @@ export function fixupSerable(prototype: any) {
     fixedupSerableRpc(prototype, schema);
 }
 
+export function fixupSerableWithoutState(prototype: any) {
+    const schema = prototype[SCHEME_KEY] as Schema;
+    fixedupSerableRpc(prototype, schema);
+}
+
 export function fixedupSerableState(prototype: any, schema: Schema) {
     prototype.ser = function (
         this: ISchema & Record<string, any>,
-        buffer: IDatabufferWriter
+        buffer: IDataBufferWriter
     ) {
         for (let i = 0, count = schema.count; i < count; i++) {
             const prop = schema.props[i];
@@ -201,7 +206,7 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
         const name = rpcNames[i];
         const ms = schema.methods[name];
         prototype["ser" + ms.hash] = function (
-            buffer: IDatabufferWriter,
+            buffer: IDataBufferWriter,
             args: any[]
         ) {
             for (let j = 0, len = ms.paramCount; j < len; j++) {
@@ -249,6 +254,11 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
 export function fixupSerableJIT(prototype: any) {
     const schema = prototype[SCHEME_KEY] as Schema;
     fixedupSerableStateJit(prototype, schema);
+    fixedupSerableRpcJit(prototype, schema);
+}
+
+export function fixupSerableJITWithoutState(prototype: any) {
+    const schema = prototype[SCHEME_KEY] as Schema;
     fixedupSerableRpcJit(prototype, schema);
 }
 

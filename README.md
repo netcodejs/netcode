@@ -4,6 +4,7 @@
   <a href="https://npmcharts.com/compare/netcodejs?minimal=true"><img src="https://img.shields.io/npm/dm/netcodejs.svg?sanitize=true" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/netcodejs"><img src="https://img.shields.io/npm/v/netcodejs.svg?sanitize=true" alt="Version"></a>
   <a href="https://www.npmjs.com/package/netcodejs"><img src="https://img.shields.io/npm/l/netcodejs.svg?sanitize=true" alt="License"></a>
+  <a href='https://coveralls.io/github/netcodejs/netcode'><img src='https://coveralls.io/repos/github/netcodejs/netcode/badge.svg' alt='Coverage Status' /></a>
 </p>
 
 # Overview

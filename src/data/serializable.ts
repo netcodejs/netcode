@@ -1,6 +1,6 @@
 export type SupportNetDataType = string | ArrayBuffer;
 export interface ISerable<T extends SupportNetDataType = any> {
-    ser(buffer: IDatabufferWriter<T>): void;
+    ser(buffer: IDataBufferWriter<T>): void;
     deser(buffer: IDataBufferReader<T>): void;
 }
 
@@ -25,25 +25,21 @@ export interface IDataBufferReader<T extends SupportNetDataType = any> {
     readonly readerEnd: number;
 }
 
-export interface IDatabufferWriter<T extends SupportNetDataType = any> {
-    writeInt(source: number): IDatabufferWriter<T>;
-    writeUint(source: number): IDatabufferWriter<T>;
-    writeLong(source: number): IDatabufferWriter<T>;
-    writeUlong(source: number): IDatabufferWriter<T>;
-    writeShort(source: number): IDatabufferWriter<T>;
-    writeUshort(source: number): IDatabufferWriter<T>;
-    writeFloat(source: number): IDatabufferWriter<T>;
-    writeDouble(source: number): IDatabufferWriter<T>;
-    writeBoolean(source: boolean): IDatabufferWriter<T>;
-    get(): T;
+export interface IDataBufferWriter<T extends SupportNetDataType = any> {
+    writeInt(source: number): this;
+    writeUint(source: number): this;
+    writeLong(source: number): this;
+    writeUlong(source: number): this;
+    writeShort(source: number): this;
+    writeUshort(source: number): this;
+    writeFloat(source: number): this;
+    writeDouble(source: number): this;
+    writeBoolean(source: boolean): this;
+    flush(): T;
     reset(): void;
 
-    append(other: IDatabufferWriter<T>): IDatabufferWriter<T>;
+    append(other: this): this;
 
     readonly writerCursor: number;
     readonly writeBuffer: any;
 }
-
-export interface IDataBuffer<T extends SupportNetDataType>
-    extends IDataBufferReader<T>,
-        IDatabufferWriter<T> {}

@@ -3,7 +3,7 @@ import { Short } from "../base-dirty-data";
 import { NetSerable, NetVar, Rpc } from "../comp-decorator";
 import {
     IDataBufferReader,
-    IDatabufferWriter,
+    IDataBufferWriter,
     ISerable,
 } from "../data/serializable";
 import { DataType, Role, RpcType } from "../comp-schema";
@@ -16,9 +16,9 @@ export class RoleComp extends IComp implements ISerable {
     get local(): Role {
         return this.$local.value;
     }
-    set local(value: Role) {
-        this.$local.value = value;
-    }
+    // set local(value: Role) {
+    //     this.$local.value = value;
+    // }
 
     @NetVar(Short)
     $remote = new Short(Role.SIMULATED_PROXY);
@@ -31,7 +31,7 @@ export class RoleComp extends IComp implements ISerable {
     //#endregion
 
     //#region interface ISerable implement
-    ser(buffer: IDatabufferWriter<any>): void {
+    ser(buffer: IDataBufferWriter<any>): void {
         this.$local.ser(buffer);
         this.$remote.ser(buffer);
     }
@@ -45,7 +45,7 @@ export class RoleComp extends IComp implements ISerable {
     @Rpc(Role.AUTHORITY, DataType.BOOL)
     async upgrade() {
         if (
-            this.local != Role.AUTHORITY &&
+            this.local == Role.AUTHORITY &&
             this.remote != Role.AUTONMOUS_PROXY
         ) {
             this.remote = Role.AUTONMOUS_PROXY;
@@ -57,7 +57,7 @@ export class RoleComp extends IComp implements ISerable {
     @Rpc(Role.AUTHORITY, DataType.BOOL)
     async downgrade() {
         if (
-            this.local != Role.AUTHORITY &&
+            this.local == Role.AUTHORITY &&
             this.remote != Role.SIMULATED_PROXY
         ) {
             this.remote = Role.SIMULATED_PROXY;
