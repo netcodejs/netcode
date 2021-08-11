@@ -4,3 +4,5 @@ yarn-error.log
 test/coverage
 .vscode/
 .vscode
+example/bundle*
+coverage
