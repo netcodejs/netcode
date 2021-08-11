@@ -13,7 +13,7 @@ This is a game's state-synchronization framework for javascript/typescript.The f
 
 # Example
 
-For [example](https://netcodejs.github.io/netcode/example/) site, you can view code in [link](./exmaple)
+For [example](https://netcodejs.github.io/netcode/) site, you can view code in [link](./example)
 
 # Basic Knowledge
 
