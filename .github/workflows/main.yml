@@ -59,6 +59,10 @@ jobs:
               run: |
                   echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
 
+            - name: Build example
+              if: ${{ github.event_name == 'push' }}
+              run: yarn example:build
+              
             - name: Deploy 🚀
               uses: JamesIves/github-pages-deploy-action@4.1.4
               if: ${{ github.event_name == 'push' }}
