@@ -15,7 +15,7 @@ jobs:
         strategy:
             matrix:
                 # node: ["10.x", "12.x", "14.x"]
-                node: ["10.x"]
+                node: ["12.x"]
                 # os: [ubuntu-latest, windows-latest, macOS-latest]
                 os: [ubuntu-latest]
 
@@ -27,11 +27,10 @@ jobs:
               uses: actions/setup-node@v2
               with:
                   node-version: ${{ matrix.node }}
+                  registry-url: 'https://registry.npmjs.org'
 
             - name: Install deps and build (with cache)
               uses: bahmutov/npm-install@v1
-              with:
-                  useLockFile: false
 
             # - name: Lint
             #   run: yarn lint
@@ -48,6 +47,9 @@ jobs:
             - name: Build
               run: yarn build
 
+            - name: Build example
+              run: yarn example:build
+
             - name: Check version and publish
               id: publish
               if: ${{ github.event_name == 'push' }}
@@ -58,7 +60,7 @@ jobs:
             - if: steps.publish != NaN && steps.publish.outputs != NaN && steps.publish.outputs.type != 'none'
               run: |
                   echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
-
+              
             - name: Deploy 🚀
               uses: JamesIves/github-pages-deploy-action@4.1.4
               if: ${{ github.event_name == 'push' }}
