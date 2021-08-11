@@ -13,13 +13,13 @@
     <div id="app" style="width: 1000px; margin: auto">
         <div style="border-style: solid; padding: 20px 20px; margin: 10px 0px;">
             Client1 ->
-            <input type="checkbox" id="client1Predict" @click="checkboxClick">
+            <input type="checkbox" v-model="client1Predict">
             Prediction
             </input>
-            <input type="checkbox" id="client1Interpolation" @click="checkboxClick">
+            <input type="checkbox" v-model="client1Interpolation">
             Interpolation
             </input>
-            <input type="checkbox" id="client1Rollback" @click="checkboxClick">
+            <input type="checkbox" v-model="client1Rollback">
             Rollback
             </input>
             <canvas id="client1" style="width: 950px; height: 70px; display: block; padding-top: 10px;"></canvas>
@@ -41,13 +41,13 @@
 
         <div style="border-style: solid; padding: 20px 20px; margin: 10px 0px;">
             Client2 ->
-            <input type="checkbox" id="client2Predict" @click="checkboxClick">
+            <input type="checkbox" v-model="client2Predict">
             Prediction
             </input>
-            <input type="checkbox" id="client2Interpolation" @click="checkboxClick">
+            <input type="checkbox" v-model="client2Interpolation">
             Interpolation
             </input>
-            <input type="checkbox" id="client2Rollback" @click="checkboxClick">
+            <input type="checkbox" v-model="client2Rollback">
             Rollback
             <canvas id="client2" style="width: 950px; height: 70px; display: block; padding-top: 10px;"></canvas>
         </div>
@@ -56,43 +56,64 @@
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script>
     const Net = netcode.Net
-    const data = { hello: "1111", status: { delay: 0, jitter: 0} };
-    const vm = new Vue({ el: "#app", data, watch: {
-        "status.delay": function(val) {
+    const data = {
+        hello: "1111",
+        status: { delay: 0, jitter: 0 },
+        client1Predict: false,
+        client1Interpolation: false,
+        client1Rollback: false,
+        client2Predict: false,
+        client2Interpolation: false,
+        client2Rollback: false
+    };
+    const watch = {
+        "status.delay": function (val) {
             Net.delay = Number(val) / 2 || 0
         },
-        "status.jitter": function(val) {
+        "status.jitter": function (val) {
             Net.jitter = Number(val) / 2 || 0
-        }
-    } });
+        },
+        "client1Predict": function (val) {
+            console.log(val)
+            window.c1.isPrediction = Boolean(val)
+        },
+        "client1Interpolation": function (val) {
+            window.c1.isInterpolation = Boolean(val)
+        },
+        "client1Rollback": function (val) {
+            window.c1.isRollback = Boolean(val)
+        },
+        "client2Predict": function (val) {
+            console.log(val)
+            window.c2.isPrediction = Boolean(val)
+        },
+        "client2Interpolation": function (val) {
+            window.c2.isInterpolation = Boolean(val)
+        },
+        "client2Rollback": function (val) {
+            window.c2.isRollback = Boolean(val)
+        },
+    }
+    const vm = new Vue({
+        el: "#app", data, watch
+    });
+
+    const server = new netcode.Server(document.getElementById("server"));
     const client1 = new netcode.Client(
         1,
         document.getElementById("client1"),
-        { left: "a", right: "d" }
     );
     const client2 = new netcode.Client(
         2,
-        document.getElementById("client2"),
-        { left: "ArrowLeft", right: "ArrowRight" }
+        document.getElementById("client2")
     );
-    const server = new netcode.Server(document.getElementById("server"));
-
     vm.hello = "aaaa";
     data.status.delay = 100;
     data.status.jitter = 20;
 
-    Net.client1 = client1;
-    Net.client2 = client2;
-    Net.server = server;
-
-    function checkboxClick(event) {
-        const t = event.target;
-        console.log(t.id, t.checked, t.value);
-        switch (t.id) {
-            case "client1Predict":
-                client1.isPrediction = t.checked
-        }
-    }
+    window.c1 = Net.client1 = client1;
+    window.c2 = Net.client2 = client2;
+    window.server = Net.server = server;
 
     function loop(timestamp) {
         server.loop(timestamp);
