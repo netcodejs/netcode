@@ -4,3 +4,5 @@ yarn-error.log
 coverage
 .vscode/
 .vscode
+example/bundle*
+coverage
