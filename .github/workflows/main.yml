@@ -59,7 +59,7 @@ jobs:
 
             - name: Build example
               if: ${{ github.event_name == 'push' }}
-              run: yarn example:build
+              run: 'yarn example:build'
               
             - name: Deploy 🚀
               uses: JamesIves/github-pages-deploy-action@4.1.4
