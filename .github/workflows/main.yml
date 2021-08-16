@@ -57,12 +57,12 @@ jobs:
       - name: Generate package array
         id: package-array
         run: |
-          echo '::set-output name=PACKAGE::[netcode, template]'
+          echo '::set-output name=PACKAGE::'['netcode', 'template']''
 
       - name: Test
         run: yarn test:ci
 
-      - name: Coveralls
+      - name: Coveralls - ${{ package }}
         uses: coverallsapp/github-action@master
         env:
           package: ${{ steps.package-array.outputs.PACKAGE }}
@@ -104,7 +104,7 @@ jobs:
           folder: package/netcode/example # The folder the action should deploy.
 
   finish:
-    needs: buildAndPublish
+    needs: testAndUploadCoverall
     runs-on: ubuntu-latest
     steps:
       - name: Coveralls - Finish
