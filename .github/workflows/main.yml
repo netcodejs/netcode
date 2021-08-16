@@ -62,16 +62,14 @@ jobs:
       - name: Test
         run: yarn test:ci
 
-      - name: Coveralls - ${{ package }}
+      - name: Coveralls - ${{ steps.package-array.outputs.PACKAGE }}
         uses: coverallsapp/github-action@master
-        env:
-          package: ${{ steps.package-array.outputs.PACKAGE }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: packages/${{ package }}/coverage/lcov.info
-          base-path: packages/${{ package }}
+          path-to-lcov: packages/${{ steps.package-array.outputs.PACKAGE }}/coverage/lcov.info
+          base-path: packages/${{ steps.package-array.outputs.PACKAGE }}
           parallel: true
-          flag-name: ${{ package }}
+          flag-name: ${{ steps.package-array.outputs.PACKAGE }}
 
   buildAndPublish:
     needs: multi_build_and_test
@@ -92,7 +90,7 @@ jobs:
       - name: Monorepo publish
         id: publish
         if: ${{ github.event_name == 'push' }}
-        run: yarn lerna publish from-git --registry https://registry.npmjs.org/:_authToken=${NPM_TOKEN}
+        run: yarn lerna publish from-git --registry https://registry.npmjs.org/:_authToken=${{ NPM_TOKEN }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
