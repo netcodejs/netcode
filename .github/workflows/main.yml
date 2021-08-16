@@ -8,18 +8,15 @@ on:
     branches:
       - main
 jobs:
-  build:
+  multi_build_and_test:
     name: ${{ matrix.os }} - Node.js v${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # node: ["10.x", "12.x", "14.x"]
-        node: ["12.x"]
-        # os: [ubuntu-latest, windows-latest, macOS-latest]
-        os: [ubuntu-latest]
-        coverall:
-          - netcode
-          - template
+        node: ["12.x", "14.x"]
+        # node: ["12.x"]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        # os: [ubuntu-latest]
 
     steps:
       - name: Checkout repo
@@ -34,23 +31,62 @@ jobs:
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
 
+      - name: yarn test
       # - name: Lint
       #   run: yarn lint
+      - name: Build
+        run: yarn build:ci
+
+  testAndUploadCoverall:
+    needs: multi_build_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Node 12.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install deps and build (with cache)
+        uses: bahmutov/npm-install@v1
+
+      - name: Generate package array
+        id: package-array
+        run: |
+          echo '::set-output name=PACKAGE::[netcode, template]'
 
       - name: Test
         run: yarn test:ci
 
       - name: Coveralls
         uses: coverallsapp/github-action@master
+        env:
+          package: ${{ steps.package-array.outputs.PACKAGE }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: packages/${{ matrix.coverall }}/coverage/lcov.info
-          base-path: packages/${{ matrix.coverall }}
+          path-to-lcov: packages/${{ package }}/coverage/lcov.info
+          base-path: packages/${{ package }}
           parallel: true
-          flag-name: ${{ matrix.coverall }}
+          flag-name: ${{ package }}
 
-      - name: Build
-        run: yarn build:ci
+  buildAndPublish:
+    needs: multi_build_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Use Node 12.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install deps and build (with cache)
+        uses: bahmutov/npm-install@v1
 
       - name: Monorepo publish
         id: publish
@@ -65,9 +101,9 @@ jobs:
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: package/netcode/example # The folder the action should deploy.
-  
+
   finish:
-    needs: build
+    needs: buildAndPublish
     runs-on: ubuntu-latest
     steps:
       - name: Coveralls - Finish
