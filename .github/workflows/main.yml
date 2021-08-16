@@ -42,7 +42,7 @@ jobs:
               uses: coverallsapp/github-action@master
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
-                base-path: packages/netcode/coverage/lcov.info
+                path-to-lcov: packages/netcode/coverage/lcov.info
 
 
             - name: Build
