@@ -90,7 +90,7 @@ jobs:
       - name: Monorepo publish
         id: publish
         if: ${{ github.event_name == 'push' }}
-        run: yarn lerna publish from-git --registry https://registry.npmjs.org/:_authToken=${{ NPM_TOKEN }}
+        run: yarn lerna publish from-git --registry https://registry.npmjs.org/:_authToken=${NPM_TOKEN}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
