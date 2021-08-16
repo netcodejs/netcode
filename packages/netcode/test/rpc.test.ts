@@ -10,7 +10,6 @@ import {
     Rpc,
     RpcType,
     RpcVar,
-    StringDataBuffer,
 } from "../src";
 import { StringDomainOption } from "../src/data/string-domain-option";
 import { wait } from "./util";

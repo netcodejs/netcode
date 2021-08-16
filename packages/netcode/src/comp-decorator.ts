@@ -11,7 +11,7 @@ import {
     Role,
 } from "./comp-schema";
 import { hash2compName, compName2ctr, hash2RpcName } from "./global-record";
-import { ARR_CONTAINER, NONE_CONTAINER } from "./macro";
+import { ARR_CONTAINER, NONE_CONTAINER } from "./builtin";
 import {
     fixupSerable,
     fixupSerableJIT,

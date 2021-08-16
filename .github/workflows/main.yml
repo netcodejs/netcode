@@ -31,7 +31,6 @@ jobs:
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
         with: 
-          useLockFile: false
           install-command: yarn --frozen-lockfile --silent
 
       - name: Test
@@ -57,13 +56,13 @@ jobs:
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
         with: 
-          useLockFile: false
           install-command: yarn --frozen-lockfile --silent
 
       - name: Generate package array
         id: package-array
-        run: |
-          echo '::set-output name=PACKAGE::- netcode\n- template'
+        uses: lucaspinheirogit/list-from-string-array-action@v1.4.3
+        with:
+          stringArray: '["netcode","template"]'
 
       - name: Test
         run: yarn test:ci
@@ -95,7 +94,6 @@ jobs:
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
         with: 
-          useLockFile: false
           install-command: yarn --frozen-lockfile --silent
 
       - name: Monorepo publish

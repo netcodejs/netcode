@@ -1,5 +1,5 @@
 import { Domain, Entity, Role, RpcType, StringDomainOption } from "../src";
-import { genLoop, wait } from "./util";
+import { genLoop } from "./util";
 
 beforeEach(() => {
     Domain.Clear();

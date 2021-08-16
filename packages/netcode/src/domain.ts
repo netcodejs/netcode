@@ -9,7 +9,7 @@ import {
 import { SupportNetDataType } from "./data/serializable";
 import { Entity } from "./entity";
 import { IComp } from "./comp-interface";
-import { NULL_NUM } from "./macro";
+import { NULL_NUM } from "./builtin";
 import {
     MessageEntityInfo,
     MessageManager,
@@ -27,7 +27,6 @@ class EntityNotValidError extends Error {}
 class EntityRepeatRegisteredError extends Error {}
 class EntityGroupOutOfRangeYouCanOpenAutoResize extends Error {}
 class DomainDuplicated extends Error {}
-class DomainLengthLimit extends Error {}
 class DomainCompCountNotMatch extends Error {}
 
 export type DomainConstructorParamters<TT extends new (...args: any) => any> =
@@ -247,7 +246,7 @@ export class Domain<T extends SupportNetDataType = any> {
         const rpcCbBuf = this._internalMsgMng.rpcCallbackBufferReader;
 
         inBuf.set(source);
-        const uuid = inBuf.readInt();
+        /* const uuid =  */ inBuf.readInt();
         const isServer = inBuf.readBoolean();
 
         if (isServer) {

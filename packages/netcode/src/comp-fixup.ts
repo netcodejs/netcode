@@ -7,7 +7,7 @@ import {
     SCHEME_KEY,
 } from "./comp-schema";
 import { IDataBufferWriter, IDataBufferReader } from "./data/serializable";
-import { NONE_CONTAINER } from "./macro";
+import { NONE_CONTAINER } from "./builtin";
 
 export function serValue(
     type: DataType,
@@ -55,6 +55,8 @@ export function genSerValueJit(
             return `${bufferStr}.writeBoolean(${valueStr});`;
         case DataTypeObect:
             return `${valueStr}.ser(${bufferStr});`;
+        default:
+            return "";
     }
 }
 
@@ -132,6 +134,8 @@ export function genDeserValueJit(
             return `
 ${recevierStr}.deser(${bufferStr})
             `;
+        default:
+            return "";
     }
 }
 

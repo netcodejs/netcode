@@ -1,17 +1,24 @@
 {
   "name": "@netcodejs/monorepo",
+  "private": true,
   "version": "0.0.9",
   "description": "A js game framework for state-synchronization.",
   "repository": "https://github.com/netcodejs/netcode",
   "license": "GPL-3.0-or-later",
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
+    "@size-limit/preset-small-lib": "^5.0.3",
     "husky": "^7.0.1",
-    "lerna": "^4.0.0",
     "lint-staged": "^11.1.2",
-    "prettier": "^2.3.2",
-    "tsdx": "^0.14.1"
+    "prettier": "^2.2.1",
+    "size-limit": "^5.0.3",
+    "tsdx": "^0.14.1",
+    "lerna": "^4.0.0",
+    "rollup-plugin-serve": "^1.1.0"
   },
   "scripts": {
     "build": "lerna run build",
@@ -22,5 +29,9 @@
   },
   "lint-staged": {
     "*.{ts,js,css,md}": "prettier --write"
+  },
+  "dependencies": {
+    "netcodejs": "file:packages\\netcode",
+    "template": "file:packages\\template"
   }
 }
