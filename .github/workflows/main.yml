@@ -1,72 +1,77 @@
 name: CI
 on:
-    push:
-        branches:
-            - main
-    workflow_dispatch:
-    pull_request:
-        branches:
-            - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 jobs:
-    build:
-        name: ${{ matrix.os }} - Node.js v${{ matrix.node }}
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                # node: ["10.x", "12.x", "14.x"]
-                node: ["12.x"]
-                # os: [ubuntu-latest, windows-latest, macOS-latest]
-                os: [ubuntu-latest]
-                coverall:
-                  - netcode
-                  - template
+  build:
+    name: ${{ matrix.os }} - Node.js v${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # node: ["10.x", "12.x", "14.x"]
+        node: ["12.x"]
+        # os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest]
+        coverall:
+          - netcode
+          - template
 
-        steps:
-            - name: Checkout repo
-              uses: actions/checkout@v2
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
 
-            - name: Use Node ${{ matrix.node }}
-              uses: actions/setup-node@v2
-              with:
-                  node-version: ${{ matrix.node }}
-                  registry-url: 'https://registry.npmjs.org'
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          registry-url: "https://registry.npmjs.org"
 
-            - name: Install deps and build (with cache)
-              uses: bahmutov/npm-install@v1
+      - name: Install deps and build (with cache)
+        uses: bahmutov/npm-install@v1
 
-            # - name: Lint
-            #   run: yarn lint
+      # - name: Lint
+      #   run: yarn lint
 
-            - name: Test
-              run: yarn test:ci
+      - name: Test
+        run: yarn test:ci
 
-            - name: Coveralls - ${{ matrix.coverall }}
-              uses: coverallsapp/github-action@master
-              with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
-                path-to-lcov: packages/${{ matrix.coverall }}/coverage/lcov.info
-                base-path: packages/${{ matrix.coverall }}
-                parallel: true
-                flag-name: ${{ matrix.coverall }}
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: packages/${{ matrix.coverall }}/coverage/lcov.info
+          base-path: packages/${{ matrix.coverall }}
+          parallel: true
+          flag-name: ${{ matrix.coverall }}
 
-            - name: Coveralls - Finish
-              uses: coverallsapp/github-action@master
-              with:
-                parallel-finished: true
+      - name: Build
+        run: yarn build:ci
 
-            - name: Build
-              run: yarn build:ci
+      - name: Monorepo publish
+        id: publish
+        if: ${{ github.event_name == 'push' }}
+        run: yarn lerna publish from-git --registry https://registry.npmjs.org/:_authToken=${NPM_TOKEN}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-            - name: Monorepo publish
-              id: publish
-              if: ${{ github.event_name == 'push' }}
-              run: yarn lerna publish from-git --registry https://registry.npmjs.org/:_authToken=${NPM_TOKEN}
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-            - name: Deploy example 🚀
-              uses: JamesIves/github-pages-deploy-action@4.1.4
-              if: ${{ github.event_name == 'push' }}
-              with:
-                  branch: gh-pages # The branch the action should deploy to.
-                  folder: package/netcode/example # The folder the action should deploy.
+      - name: Deploy example 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        if: ${{ github.event_name == 'push' }}
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: package/netcode/example # The folder the action should deploy.
+  
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls - Finish
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
