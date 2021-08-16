@@ -66,16 +66,16 @@ jobs:
       - name: Test
         run: yarn test:ci
 
-      - name: Coveralls - ${package_array}
+      - name: Coveralls - ${{ env.package_array }}
         uses: coverallsapp/github-action@master
         env:
           package_array: ${{ steps.package-array.outputs.PACKAGE }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: packages/${package_array}/coverage/lcov.info
-          base-path: packages/${package_array}
+          path-to-lcov: packages/${{ env.package_array }}/coverage/lcov.info
+          base-path: packages/${{ env.package_array }}
           parallel: true
-          flag-name: ${package_array}
+          flag-name: ${{ env.package_array }}
 
   buildAndPublish:
     needs: multi_build_and_test
