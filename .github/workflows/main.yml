@@ -58,25 +58,31 @@ jobs:
         with: 
           install-command: yarn --frozen-lockfile --silent
 
-      - name: Generate package array
-        id: package-array
-        uses: lucaspinheirogit/list-from-string-array-action@v1.4.3
-        with:
-          stringArray: '["netcode","template"]'
-
       - name: Test
         run: yarn test:ci
 
       - name: Coveralls - ${{ env.package_array }}
         uses: coverallsapp/github-action@master
         env:
-          package_array: ${{ steps.package-array.outputs.PACKAGE }}
+          package_array: "netcode"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: packages/${{ env.package_array }}/coverage/lcov.info
           base-path: packages/${{ env.package_array }}
           parallel: true
           flag-name: ${{ env.package_array }}
+
+      - name: Coveralls - ${{ env.package_array }}
+        uses: coverallsapp/github-action@master
+        env:
+          package_array: "template"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: packages/${{ env.package_array }}/coverage/lcov.info
+          base-path: packages/${{ env.package_array }}
+          parallel: true
+          flag-name: ${{ env.package_array }}
+
 
   buildAndPublish:
     needs: multi_build_and_test
