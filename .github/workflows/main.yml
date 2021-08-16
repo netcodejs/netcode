@@ -30,6 +30,8 @@ jobs:
 
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
+        with: 
+          useLockFile: false
 
       - name: Test
         run: yarn test
@@ -53,23 +55,27 @@ jobs:
 
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
+        with: 
+          useLockFile: false
 
       - name: Generate package array
         id: package-array
         run: |
-          echo '::set-output name=PACKAGE::'['netcode', 'template']''
+          echo '::set-output name=PACKAGE::[netcode, template]'
 
       - name: Test
         run: yarn test:ci
 
-      - name: Coveralls - ${{ steps.package-array.outputs.PACKAGE }}
+      - name: Coveralls - ${package_array}
         uses: coverallsapp/github-action@master
+        env:
+          package_array: ${{ steps.package-array.outputs.PACKAGE }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: packages/${{ steps.package-array.outputs.PACKAGE }}/coverage/lcov.info
-          base-path: packages/${{ steps.package-array.outputs.PACKAGE }}
+          path-to-lcov: packages/${package_array}/coverage/lcov.info
+          base-path: packages/${package_array}
           parallel: true
-          flag-name: ${{ steps.package-array.outputs.PACKAGE }}
+          flag-name: ${package_array}
 
   buildAndPublish:
     needs: multi_build_and_test
@@ -86,6 +92,8 @@ jobs:
 
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
+        with: 
+          useLockFile: false
 
       - name: Monorepo publish
         id: publish
