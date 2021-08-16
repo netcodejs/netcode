@@ -1,6 +1,4 @@
 name: CI
-env: 
-  coverall: [netcode, template]
 on:
     push:
         branches:
@@ -12,7 +10,8 @@ on:
 jobs:
     build:
         name: ${{ matrix.os }} - Node.js v${{ matrix.node }}
-
+        env: 
+          coverall: [netcode, template]
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
