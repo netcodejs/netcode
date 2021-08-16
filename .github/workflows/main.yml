@@ -32,6 +32,7 @@ jobs:
         uses: bahmutov/npm-install@v1
         with: 
           useLockFile: false
+          install-command: yarn --frozen-lockfile --silent
 
       - name: Test
         run: yarn test
@@ -57,11 +58,12 @@ jobs:
         uses: bahmutov/npm-install@v1
         with: 
           useLockFile: false
+          install-command: yarn --frozen-lockfile --silent
 
       - name: Generate package array
         id: package-array
         run: |
-          echo '::set-output name=PACKAGE::[netcode, template]'
+          echo '::set-output name=PACKAGE::- netcode\n- template'
 
       - name: Test
         run: yarn test:ci
@@ -94,6 +96,7 @@ jobs:
         uses: bahmutov/npm-install@v1
         with: 
           useLockFile: false
+          install-command: yarn --frozen-lockfile --silent
 
       - name: Monorepo publish
         id: publish
