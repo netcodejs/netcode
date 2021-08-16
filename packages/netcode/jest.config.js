@@ -2,8 +2,7 @@
  * For a detailed explanation regarding each configuration property and type check, visit:
  * https://jestjs.io/docs/en/configuration.html
  */
-
-export default {
+module.exports = {
     // All imported modules in your tests should be mocked automatically
     // automock: false,
 
@@ -24,6 +23,7 @@ export default {
         "src/**/*.ts",
         "!**/*.d.ts",
         "!**/base-dirty-data.ts",
+        "!src/lib/**/*",
     ],
 
     // The directory where Jest should output its coverage files
@@ -35,7 +35,7 @@ export default {
     // ],
 
     // Indicates which provider should be used to instrument code for coverage
-    coverageProvider: "babel",
+    // coverageProvider: "babel",
 
     // A list of reporter names that Jest uses when writing coverage reports
     // coverageReporters: [
@@ -75,7 +75,7 @@ export default {
     // ],
 
     // An array of file extensions your modules use
-    moduleFileExtensions: ["js", "json", "jsx", "ts", "tsx", "node"],
+    // moduleFileExtensions: ["js", "json", "jsx", "ts", "tsx", "node"],
 
     // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
     // moduleNameMapper: {},
@@ -108,7 +108,7 @@ export default {
     // resolver: undefined,
 
     // Automatically restore mock state between every test
-    restoreMocks: false,
+    // restoreMocks: false,
 
     // The root directory that Jest should scan for tests and modules within
     // rootDir: "test",
@@ -134,7 +134,7 @@ export default {
     // snapshotSerializers: [],
 
     // The test environment that will be used for testing
-    testEnvironment: "node",
+    // testEnvironment: "node",
 
     // Options that will be passed to the testEnvironment
     // testEnvironmentOptions: {},

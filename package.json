@@ -1,57 +1,37 @@
 {
-  "name": "netcodejs",
+  "name": "@netcodejs/monorepo",
+  "private": true,
   "version": "0.0.9",
   "description": "A js game framework for state-synchronization.",
-  "module": "dist/netcode.esm.js",
-  "exports": "./dist/netcode.cjs.js",
-  "main": "dist/netcode.cjs.js",
-  "types": "dist/index.d.ts",
   "repository": "https://github.com/netcodejs/netcode",
-  "author": "littlemoi",
   "license": "GPL-3.0-or-later",
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
-    "@babel/core": "^7.12.17",
-    "@babel/plugin-proposal-class-properties": "^7.12.13",
-    "@babel/plugin-proposal-decorators": "^7.12.13",
-    "@babel/preset-env": "^7.12.17",
-    "@babel/preset-typescript": "^7.12.17",
-    "@commitlint/cli": "^12.0.1",
-    "@commitlint/config-conventional": "^12.0.1",
-    "@rollup/plugin-commonjs": "^17.1.0",
-    "@rollup/plugin-replace": "^3.0.0",
-    "@types/jest": "^26.0.20",
-    "@types/rollup": "^0.54.0",
-    "babel-jest": "^26.6.3",
-    "babel-plugin-parameter-decorator": "^1.0.16",
-    "husky": "^7.0.0",
-    "jest": "^26.6.3",
-    "lint-staged": "^10.5.4",
+    "@commitlint/cli": "^13.1.0",
+    "@commitlint/config-conventional": "^13.1.0",
+    "@size-limit/preset-small-lib": "^5.0.3",
+    "husky": "^7.0.1",
+    "lint-staged": "^11.1.2",
     "prettier": "^2.2.1",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.39.0",
-    "rollup-plugin-serve": "^1.1.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript2": "^0.30.0",
-    "ts-node": "^9.1.1",
-    "tslib": "^2.1.0",
-    "typescript": "^4.1.5"
+    "size-limit": "^5.0.3",
+    "tsdx": "^0.14.1",
+    "lerna": "^4.0.0",
+    "rollup-plugin-serve": "^1.1.0"
   },
   "scripts": {
-    "build": "rimraf dist/ & yarn run rollup -c",
-    "build:dev": "rimraf dist/ & yarn run rollup -c rollup.config.dev.js",
-    "build:nojit": "rimraf dist/ & yarn run rollup -c rollup.config.nojit.js",
-    "test": "jest",
-    "example:watch": "yarn run rollup -c rollup.config.example.js --watch",
-    "example:build": "yarn run rollup -c rollup.config.example.js",
-    "test:coverage": "jest --coverage",
-    "prepare": "husky install"
+    "build": "lerna run build",
+    "build:ci": "lerna run build:ci",
+    "test": "lerna run test",
+    "test:ci": "lerna run test:ci",
+    "prepare": "lerna bootstrap && husky install"
   },
   "lint-staged": {
-    "!(example/bundle).{ts,js,css,md}": "prettier --write"
+    "*.{ts,js,css,md}": "prettier --write"
   },
-  "dependencies": {},
-  "files": [
-    "dist",
-    "README.md"
-  ]
+  "dependencies": {
+    "netcodejs": "file:packages\\netcode",
+    "template": "file:packages\\template"
+  }
 }

@@ -1,0 +1,37 @@
+{
+  "name": "netcodejs",
+  "version": "0.0.9",
+  "description": "A js game framework for state-synchronization.",
+  "module": "dist/netcodejs.esm.js",
+  "exports": "./dist/index.js",
+  "main": "dist/netcodejs.cjs.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/netcodejs/netcode",
+  "author": "littlemoi",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "build:example": "rollup -c ./rollup.config.example.js",
+    "build:ci": "tsdx build && yarn build:example",
+    "test": "tsdx test",
+    "test:ci": "tsdx test --ci --coverage",
+    "lint": "tsdx lint",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "size-limit": [
+    {
+      "path": "dist/netcodejs.cjs.production.min.js",
+      "limit": "12 KB"
+    },
+    {
+      "path": "dist/netcodejs.esm.js",
+      "limit": "12 KB"
+    }
+  ]
+}

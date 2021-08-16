@@ -7,11 +7,11 @@ import {
 import { StringDataBuffer } from "./string-databuffer";
 
 const stringInitializer: MessageManagerBufferInitializer<string> = {
-    newBufferReader(type: MessageManagerBufferType) {
+    newBufferReader(_type: MessageManagerBufferType) {
         return new StringDataBuffer();
     },
 
-    newBufferWriter(type: MessageManagerBufferType) {
+    newBufferWriter(_type: MessageManagerBufferType) {
         return new StringDataBuffer();
     },
 };

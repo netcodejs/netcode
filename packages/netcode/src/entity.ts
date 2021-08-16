@@ -3,7 +3,7 @@ import { ISchema } from "./comp-schema";
 import type { Domain } from "./domain";
 import { compName2ctr } from "./global-record";
 import { IComp } from "./comp-interface";
-import { NULL_NUM } from "./macro";
+import { NULL_NUM } from "./builtin";
 
 class ComponentHasNotDecorated extends Error {}
 /**
@@ -27,11 +27,11 @@ class ComponentHasNotDecorated extends Error {}
  ```
  */
 export class Entity<ProxyObj extends Object = any> {
-    private _id;
+    private _id: number;
     get id() {
         return this._id;
     }
-    private _version;
+    private _version: number;
     get version() {
         return this._version;
     }
@@ -45,7 +45,7 @@ export class Entity<ProxyObj extends Object = any> {
     };
 
     $comps = new Proxy<ProxyObj>(this as any, {
-        get(target: any, p, receiver) {
+        get(target: any, p, _receiver) {
             return target.get(compName2ctr[String(p)]);
         },
     });
@@ -76,7 +76,7 @@ export class Entity<ProxyObj extends Object = any> {
         ent._id = NULL_NUM;
         ent._version = NULL_NUM;
         ent.$comps = new Proxy<any>(ent, {
-            get(target: any, p, receiver) {
+            get(target: any, p, _receiver) {
                 return target.get(compName2ctr[String(p)]);
             },
         });
@@ -148,28 +148,28 @@ export class Entity<ProxyObj extends Object = any> {
         return this._comps.indexOf(ins);
     }
 
-    private _init() {
+    protected _init() {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
             c.init && c.init(i);
         }
     }
 
-    private _renderUpdate() {
+    protected _renderUpdate() {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
             c.renderUpdate && c.renderUpdate(i);
         }
     }
 
-    private _logicUpdate() {
+    protected _logicUpdate() {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
             c.logicUpdate && c.logicUpdate(i);
         }
     }
 
-    private _destroy() {
+    protected _destroy() {
         for (let i = 0, len = this._comps.length; i < len; i++) {
             const c = this._comps[i];
             c.destroy && c.destroy(i);

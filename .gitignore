@@ -6,3 +6,4 @@ coverage
 .vscode
 example/bundle*
 coverage
+*.log

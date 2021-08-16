@@ -1,4 +1,3 @@
-import { DataType } from "./comp-schema";
 import { ISerable } from "./data/serializable";
 
 const MAX_VERSION = (1 << 30) - 1;

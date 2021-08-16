@@ -10,7 +10,6 @@ import {
     NetSerable,
     NetVar,
     NONE_CONTAINER,
-    Rpc,
     RpcType,
     ISchema,
     getSchemaByPrototype,
@@ -252,10 +251,7 @@ describe("Domain-instance", () => {
         );
         expect(domain1).toBeTruthy();
         expect(() => {
-            const domain2 = Domain.Create(
-                domainName,
-                new StringDomainOption(RpcType.CLIENT)
-            );
+            Domain.Create(domainName, new StringDomainOption(RpcType.CLIENT));
         }).toThrow();
     });
 });

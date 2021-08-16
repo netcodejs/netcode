@@ -1,4 +1,4 @@
-import { NULL_NUM, NULL_STR } from "./macro";
+import { NULL_NUM, NULL_STR } from "./builtin";
 
 export interface PropSchema {
     paramIndex: number;

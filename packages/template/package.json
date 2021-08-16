@@ -1,0 +1,47 @@
+{
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "build:ci": "tsdx build",
+    "test": "tsdx test",
+    "test:ci": "tsdx test --ci --coverage",
+    "lint": "tsdx lint",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "name": "template",
+  "author": "moruiyi",
+  "module": "dist/template.esm.js",
+  "size-limit": [
+    {
+      "path": "dist/template.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/template.esm.js",
+      "limit": "10 KB"
+    }
+  ]
+}
