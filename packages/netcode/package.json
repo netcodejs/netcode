@@ -33,12 +33,13 @@
   },
   "scripts": {
     "build": "rimraf dist/ & yarn run rollup -c",
+    "build:ci": "yarn build && yarn example:build",
     "build:dev": "rimraf dist/ & yarn run rollup -c rollup.config.dev.js",
     "build:nojit": "rimraf dist/ & yarn run rollup -c rollup.config.nojit.js",
     "test": "jest",
+    "test:ci": "jest --coverage --ci --maxWorkers=2",
     "example:watch": "yarn run rollup -c rollup.config.example.js --watch",
-    "example:build": "yarn run rollup -c rollup.config.example.js",
-    "test:coverage": "jest --coverage"
+    "example:build": "yarn run rollup -c rollup.config.example.js"
   },
   "dependencies": {},
   "files": [

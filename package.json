@@ -14,7 +14,9 @@
   },
   "scripts": {
     "build": "lerna run build",
+    "build:ci": "lerna run build:ci",
     "test": "lerna run test",
+    "test:ci": "lerna run test:ci",
     "prepare": "lerna bootstrap && husky install"
   },
   "lint-staged": {
