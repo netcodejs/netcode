@@ -42,7 +42,7 @@ jobs:
               uses: coverallsapp/github-action@master
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
-                base-path: packages/netcode
+                base-path: packages/netcode/coverage/lcov.info
 
 
             - name: Build
@@ -58,10 +58,6 @@ jobs:
               env:
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-            - if: steps.publish != NaN && steps.publish.outputs != NaN && steps.publish.outputs.type != 'none'
-              run: |
-                  echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
-              
             - name: Deploy 🚀
               uses: JamesIves/github-pages-deploy-action@4.1.4
               if: ${{ github.event_name == 'push' }}
