@@ -48,19 +48,16 @@ jobs:
             - name: Build
               run: yarn build:ci
 
-            - name: Build example
-              run: yarn example:build
-
-            - name: Check version and publish
+            - name: Monorepo publish
               id: publish
               if: ${{ github.event_name == 'push' }}
               run: yarn lerna publish from-git --registry https://registry.npmjs.org/:_authToken=${NPM_TOKEN}
               env:
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-            - name: Deploy 🚀
+            - name: Deploy example 🚀
               uses: JamesIves/github-pages-deploy-action@4.1.4
               if: ${{ github.event_name == 'push' }}
               with:
                   branch: gh-pages # The branch the action should deploy to.
-                  folder: example # The folder the action should deploy.
+                  folder: package/netcode/example # The folder the action should deploy.
