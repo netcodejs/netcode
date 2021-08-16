@@ -115,7 +115,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: gh-pages # The branch the action should deploy to.
-          folder: package/netcode/example # The folder the action should deploy.
+          folder: packages/netcode/example # The folder the action should deploy.
 
   finish:
     needs: testAndUploadCoverall
