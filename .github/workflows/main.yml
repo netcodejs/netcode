@@ -10,8 +10,6 @@ on:
 jobs:
     build:
         name: ${{ matrix.os }} - Node.js v${{ matrix.node }}
-        env: 
-          coverall: [netcode, template]
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
@@ -19,6 +17,9 @@ jobs:
                 node: ["12.x"]
                 # os: [ubuntu-latest, windows-latest, macOS-latest]
                 os: [ubuntu-latest]
+                coverall:
+                  - netcode
+                  - template
 
         steps:
             - name: Checkout repo
@@ -39,14 +40,14 @@ jobs:
             - name: Test
               run: yarn test:ci
 
-            - name: Coveralls - ${{ coverall }}
+            - name: Coveralls - ${{ matrix.coverall }}
               uses: coverallsapp/github-action@master
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
-                path-to-lcov: packages/${{ coverall }}/coverage/lcov.info
-                base-path: packages/${{ coverall }}
+                path-to-lcov: packages/${{ matrix.coverall }}/coverage/lcov.info
+                base-path: packages/${{ matrix.coverall }}
                 parallel: true
-                flag-name: ${{ coverall }}
+                flag-name: ${{ matrix.coverall }}
 
             - name: Coveralls - Finish
               uses: coverallsapp/github-action@master
