@@ -30,6 +30,7 @@ function run() {
                 ...commonDefine,
                 "process.env.NODE_ENV": "development",
             },
+            sourcemap: true,
         }),
         builder.buildSync({
             entryPoints: ["src/index.ts"],
@@ -41,6 +42,7 @@ function run() {
                 "process.env.NODE_ENV": "production",
             },
             minify: true,
+            sourcemap: true,
         }),
         builder.buildSync({
             entryPoints: ["src/index.ts"],
@@ -51,6 +53,8 @@ function run() {
                 ...commonDefine,
                 "process.env.NODE_ENV": "production",
             },
+            sourcemap: true,
+            minify: true,
         }),
     ];
 

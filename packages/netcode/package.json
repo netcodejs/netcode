@@ -15,12 +15,8 @@
     "build:jit": "cross-env ENSURE_JIT=true yarn build",
     "build:example": "rollup -c ./rollup.config.example.js",
     "build:ci": "tsdx build && yarn build:example",
-    "test": "tsdx test",
-    "test:ci": "tsdx test --ci --coverage",
-    "lint": "tsdx lint",
-    "size": "size-limit",
-    "analyze": "size-limit --why",
-    "build:t": "esbuild --define:BUNDLER_USE_FOO=false --format=esm t.js"
+    "test": "jest",
+    "test:ci": "jest --ci --coverage"
   },
   "files": [
     "dist",
