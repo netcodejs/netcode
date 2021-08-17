@@ -11,6 +11,7 @@
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
+    "@types/jest": "^27.0.1",
     "@types/node": "^16.6.1",
     "cross-env": "^7.0.3",
     "esbuild": "^0.12.20",
