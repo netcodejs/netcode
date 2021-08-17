@@ -12,26 +12,28 @@
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
     "@size-limit/preset-small-lib": "^5.0.3",
+    "@types/node": "^16.6.1",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.12.20",
     "husky": "^7.0.1",
+    "lerna": "^4.0.0",
     "lint-staged": "^11.1.2",
     "prettier": "^2.2.1",
-    "size-limit": "^5.0.3",
-    "tsdx": "^0.14.1",
-    "lerna": "^4.0.0",
-    "rollup-plugin-serve": "^1.1.0"
+    "rimraf": "^3.0.2",
+    "size-limit": "^5.0.3"
   },
   "scripts": {
     "build": "lerna run build",
     "build:ci": "lerna run build:ci",
     "test": "lerna run test",
     "test:ci": "lerna run test:ci",
-    "prepare": "lerna bootstrap && husky install"
+    "prepare": "lerna bootstrap && husky install",
+    "size": "lerna run size"
   },
   "lint-staged": {
     "*.{ts,js,css,md}": "prettier --write"
   },
   "dependencies": {
-    "netcodejs": "file:packages\\netcode",
-    "template": "file:packages\\template"
+    "netcodejs": "file:packages\\netcode"
   }
 }

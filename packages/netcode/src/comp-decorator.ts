@@ -48,13 +48,19 @@ export function NetSerable(name: string, genSerable = true) {
         }
 
         if (genSerable) {
-            if (Config.JIT) {
+            if (
+                (process.env.DISABLE_RUNTIME_JIT && process.env.ENABLE_JIT) ||
+                (!process.env.DISABLE_RUNTIME_JIT && Config.JIT)
+            ) {
                 fixupSerableJIT(target.prototype);
             } else {
                 fixupSerable(target.prototype);
             }
         } else {
-            if (Config.JIT) {
+            if (
+                (process.env.DISABLE_RUNTIME_JIT && process.env.ENABLE_JIT) ||
+                (!process.env.DISABLE_RUNTIME_JIT && Config.JIT)
+            ) {
                 fixupSerableJITWithoutState(target.prototype);
             } else {
                 fixupSerableWithoutState(target.prototype);

@@ -10,15 +10,17 @@
   "author": "littlemoi",
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
+    "build": "node esbuild.js",
+    "build:nojit": "cross-env ENSURE_JIT=false yarn build",
+    "build:jit": "cross-env ENSURE_JIT=true yarn build",
     "build:example": "rollup -c ./rollup.config.example.js",
     "build:ci": "tsdx build && yarn build:example",
     "test": "tsdx test",
     "test:ci": "tsdx test --ci --coverage",
     "lint": "tsdx lint",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "build:t": "esbuild --define:BUNDLER_USE_FOO=false --format=esm t.js"
   },
   "files": [
     "dist",
@@ -26,12 +28,16 @@
   ],
   "size-limit": [
     {
-      "path": "dist/netcodejs.cjs.production.min.js",
-      "limit": "12 KB"
+      "path": "dist/netcodejs.dev.cjs.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/netcodejs.prod.cjs.js",
+      "limit": "8 KB"
     },
     {
       "path": "dist/netcodejs.esm.js",
-      "limit": "12 KB"
+      "limit": "10 KB"
     }
   ]
 }
