@@ -79,6 +79,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
 
+      - name: Fetch tags
+        run: git fetch --tags
+
       - name: Use Node 12.x
         uses: actions/setup-node@v2
         with:
