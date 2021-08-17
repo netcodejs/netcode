@@ -98,7 +98,7 @@ jobs:
 
       - name: Monorepo publish
         id: publish
-        run: yarn lerna publish from-git --yes --registry https://registry.npmjs.org/:_authToken=${NPM_TOKEN}
+        run: yarn lerna publish from-git --yes
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
