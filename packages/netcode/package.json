@@ -3,8 +3,7 @@
   "version": "0.0.10",
   "description": "A js game framework for state-synchronization.",
   "module": "dist/netcodejs.esm.js",
-  "exports": "./dist/index.js",
-  "main": "dist/netcodejs.cjs.js",
+  "main": "dist/netcodejs.prod.cjs.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/netcodejs/netcode",
   "author": "littlemoi",
@@ -14,7 +13,7 @@
     "build:nojit": "cross-env ENSURE_JIT=false yarn build",
     "build:jit": "cross-env ENSURE_JIT=true yarn build",
     "build:example": "node ./esbuild.example.js",
-    "build:ci": "yarn build && yarn build:example",
+    "build:ci": "yarn build && yarn build:example && tsc --emitDeclarationOnly --outdir dist",
     "test": "jest",
     "test:ci": "jest --ci --coverage"
   },
