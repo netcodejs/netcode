@@ -1,6 +1,6 @@
 {
   "name": "netcodejs",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "A js game framework for state-synchronization.",
   "module": "dist/netcodejs.esm.js",
   "exports": "./dist/index.js",
