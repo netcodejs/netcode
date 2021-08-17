@@ -21,17 +21,17 @@ console.log(commonDefine);
 
 function run() {
     const prom = [
-        builder.buildSync({
-            entryPoints: ["src/index.ts"],
-            bundle: true,
-            format: "cjs",
-            outfile: "dist/netcodejs.dev.cjs.js",
-            define: {
-                ...commonDefine,
-                "process.env.NODE_ENV": "development",
-            },
-            sourcemap: true,
-        }),
+        // builder.buildSync({
+        //     entryPoints: ["src/index.ts"],
+        //     bundle: true,
+        //     format: "cjs",
+        //     outfile: "dist/netcodejs.dev.cjs.js",
+        //     define: {
+        //         ...commonDefine,
+        //         "process.env.NODE_ENV": "development",
+        //     },
+        //     sourcemap: true,
+        // }),
         builder.buildSync({
             entryPoints: ["src/index.ts"],
             bundle: true,

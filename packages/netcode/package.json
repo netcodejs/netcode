@@ -13,8 +13,8 @@
     "build": "node esbuild.js",
     "build:nojit": "cross-env ENSURE_JIT=false yarn build",
     "build:jit": "cross-env ENSURE_JIT=true yarn build",
-    "build:example": "rollup -c ./rollup.config.example.js",
-    "build:ci": "tsdx build && yarn build:example",
+    "build:example": "node ./esbuild.example.js",
+    "build:ci": "yarn build && yarn build:example",
     "test": "jest",
     "test:ci": "jest --ci --coverage"
   },
