@@ -1,14 +1,5 @@
-const builder = require("esbuild");
-const rimarf = require("rimraf");
-
-const timeRecord = Date.now();
-
-rimarf("dist/", (err) => {
-    if (err) {
-        return console.error(err);
-    }
-    run();
-});
+import builder from "esbuild";
+import rimarf from "rimraf";
 
 const ensureJIT = process.env.ENSURE_JIT && JSON.parse(process.env.ENSURE_JIT);
 
@@ -19,19 +10,11 @@ const commonDefine = {
 
 console.log(commonDefine);
 
-function run() {
-    const prom = [
-        // builder.buildSync({
-        //     entryPoints: ["src/index.ts"],
-        //     bundle: true,
-        //     format: "cjs",
-        //     outfile: "dist/netcodejs.dev.cjs.js",
-        //     define: {
-        //         ...commonDefine,
-        //         "process.env.NODE_ENV": "development",
-        //     },
-        //     sourcemap: true,
-        // }),
+async function run() {
+    const timeRecord = Date.now();
+
+    await rimarf.sync("dist/");
+    await Promise.all([
         builder.buildSync({
             entryPoints: ["src/index.ts"],
             bundle: true,
@@ -56,11 +39,8 @@ function run() {
             sourcemap: true,
             minify: true,
         }),
-    ];
-
-    Promise.all(prom).then(() => {
-        console.log(
-            `Build finish! The time used is  ${Date.now() - timeRecord}ms`
-        );
-    });
+    ]);
+    `Build finish! The time used is  ${Date.now() - timeRecord}ms`;
 }
+
+run();

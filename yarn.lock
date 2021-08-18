@@ -4889,6 +4889,9 @@ log-update@^4.0.0:
     slice-ansi "^4.0.0"
     wrap-ansi "^6.2.0"
 
+"loki-buffer@file:packages/loki-buffer":
+  version "0.1.0"
+
 lru-cache@^6.0.0:
   version "6.0.0"
   resolved "https://registry.npm.taobao.org/lru-cache/download/lru-cache-6.0.0.tgz#6d6fe6570ebd96aaf90fcad1dafa3b2566db3a94"
@@ -5272,7 +5275,7 @@ neo-async@^2.6.0:
   integrity sha1-tKr7k+OustgXTKU88WOrfXMIMF8=
 
 "netcodejs@file:packages/netcode":
-  version "0.0.9"
+  version "0.0.12"
 
 nice-try@^1.0.4:
   version "1.0.5"
@@ -7069,6 +7072,11 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.nlark.com/typedarray/download/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
+
+typescript@^4.3.5:
+  version "4.3.5"
+  resolved "https://registry.nlark.com/typescript/download/typescript-4.3.5.tgz?cache=0&sync_timestamp=1629184733734&other_urls=https%3A%2F%2Fregistry.nlark.com%2Ftypescript%2Fdownload%2Ftypescript-4.3.5.tgz#4d1c37cc16e893973c45a06886b7113234f119f4"
+  integrity sha1-TRw3zBbok5c8RaBohrcRMjTxGfQ=
 
 uglify-js@^3.1.4:
   version "3.14.1"

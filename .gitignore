@@ -7,3 +7,4 @@ coverage
 example/bundle*
 coverage
 *.log
+package-lock.json

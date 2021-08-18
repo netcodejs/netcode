@@ -1,0 +1,34 @@
+{
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/loki-buffer.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "build:ci": "yarn build && tsc --emitDeclarationOnly --outdir dist",
+    "test": "jest",
+    "test:ci": "jest --ci --coverage"
+  },
+  "peerDependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "name": "loki-buffer",
+  "author": "Mr-lax",
+  "module": "dist/loki-buffer.esm.js"
+}
