@@ -1,4 +1,4 @@
-import { Deferred } from "../src";
+import { Deferred } from "@netcodejs/util";
 
 export interface Receiver {
     receive(data: any): void;

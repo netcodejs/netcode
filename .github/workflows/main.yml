@@ -1,4 +1,4 @@
-name: CI Any To Main
+name: CI
 on:
   push:
     branches:
@@ -32,12 +32,13 @@ jobs:
         with: 
           install-command: yarn --frozen-lockfile --silent
 
+      - name: Build
+        run: yarn build
+
       - name: Test
         run: yarn test
       # - name: Lint
       #   run: yarn lint
-      - name: Build
-        run: yarn build
 
   testAndUploadCoverall:
     needs: multi_build_and_test
@@ -56,14 +57,28 @@ jobs:
         uses: bahmutov/npm-install@v1
         with: 
           install-command: yarn --frozen-lockfile --silent
+        
+      - name: Build all package
+        run: yarn build
 
       - name: Test
-        run: yarn test:ci
+        run: yarn test:coverage
 
       - name: Coveralls - ${{ env.package_array }}
         uses: coverallsapp/github-action@master
         env:
           package_array: "netcode"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: packages/${{ env.package_array }}/coverage/lcov.info
+          base-path: packages/${{ env.package_array }}
+          parallel: true
+          flag-name: ${{ env.package_array }}
+
+      - name: Coveralls - ${{ env.package_array }}
+        uses: coverallsapp/github-action@master
+        env:
+          package_array: "util"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: packages/${{ env.package_array }}/coverage/lcov.info
@@ -94,13 +109,16 @@ jobs:
           install-command: yarn --frozen-lockfile --silent
 
       - name: Build
-        run: yarn build:ci
+        run: yarn build
 
       - name: Monorepo publish
         id: publish
         run: yarn lerna publish from-git --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Build example
+        run: yarn lerna run build:example --scope=netcodejs
 
       - name: Deploy example 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4

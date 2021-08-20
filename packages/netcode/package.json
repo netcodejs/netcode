@@ -9,13 +9,15 @@
   "author": "littlemoi",
   "license": "GPL-3.0-or-later",
   "scripts": {
+    "build:fast": "node esbuild.mjs",
+    "build": "yarn build:fast && tsc --emitDeclarationOnly --outdir dist",
+
+    "test": "jest",
+    "test:coverage": "jest --ci --coverage",
+
     "build:nojit": "cross-env ENSURE_JIT=false yarn build",
     "build:jit": "cross-env ENSURE_JIT=true yarn build",
-    "build:example": "node ./esbuild.example.js",
-    "build": "node esbuild.mjs",
-    "build:ci": "yarn build && yarn build:example && tsc --emitDeclarationOnly --outdir dist",
-    "test": "jest",
-    "test:ci": "jest --ci --coverage"
+    "build:example": "node ./esbuild.example.js"
   },
   "files": [
     "dist",
@@ -34,5 +36,8 @@
       "path": "dist/netcodejs.esm.js",
       "limit": "10 KB"
     }
-  ]
+  ],
+  "dependencies": {
+    "@netcodejs/util": "^0.0.0"
+  }
 }

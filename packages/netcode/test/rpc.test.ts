@@ -83,9 +83,12 @@ describe("rpc-return-type", () => {
     class Console extends IComp {
         @NetVar(DataType.F32)
         callCount = 0;
+        @NetVar(DataType.DOUBLE)
+        num: number = 0;
 
         @Rpc(Role.AUTHORITY, DataType.BOOL)
-        log(@RpcVar(DataType.INT) value: number) {
+        log(num: number, @RpcVar(DataType.INT) value: number) {
+            this.num = num;
             if (value <= 0) return Promise.resolve(false);
             console.log(`[${this.domain.name}]I am number: ${value}`);
             return Promise.resolve(true);
@@ -109,22 +112,26 @@ describe("rpc-return-type", () => {
         const clientLogic = client.get(serverEnt.id)!.get(Console)!;
         let check = false;
 
-        clientLogic.log(1).then((result) => {
+        clientLogic.log(123, 1).then((result) => {
             check = result;
         });
         server.setData(client.asData());
         await wait();
+        expect(serverLogic.num).toBe(123);
         client.setData(server.asData());
         await wait();
         expect(check).toEqual(true);
+        expect(clientLogic.num).toBe(123);
 
-        clientLogic.log(0).then((result) => {
+        clientLogic.log(124, 0).then((result) => {
             check = result;
         });
         server.setData(client.asData());
         await wait();
+        expect(serverLogic.num).toBe(124);
         client.setData(server.asData());
         await wait();
         expect(check).toEqual(false);
+        expect(clientLogic.num).toBe(124);
     });
 });
