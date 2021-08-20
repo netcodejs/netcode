@@ -28,7 +28,7 @@
     "build": "lerna run build",
     "build:fast": "lerna run build:fast",
     "test": "lerna run test",
-    "test:coverage": "lerna run test:ci",
+    "test:coverage": "lerna run test:coverage",
     "prepare": "lerna bootstrap && husky install"
   },
   "lint-staged": {
