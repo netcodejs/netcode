@@ -60,7 +60,7 @@ jobs:
         
       - name: Build all package
         run: yarn build
-        
+
       - name: Test
         run: yarn test:coverage
 
@@ -68,6 +68,17 @@ jobs:
         uses: coverallsapp/github-action@master
         env:
           package_array: "netcode"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: packages/${{ env.package_array }}/coverage/lcov.info
+          base-path: packages/${{ env.package_array }}
+          parallel: true
+          flag-name: ${{ env.package_array }}
+
+      - name: Coveralls - ${{ env.package_array }}
+        uses: coverallsapp/github-action@master
+        env:
+          package_array: "util"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: packages/${{ env.package_array }}/coverage/lcov.info

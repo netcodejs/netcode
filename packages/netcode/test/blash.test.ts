@@ -363,12 +363,12 @@ describe("Serable", () => {
     class LifecycleTestComp extends IComp {
         logicUpdate() {
             hasLogicUpdate = true;
-            logicTime = this.domain.logicTime.duration;
+            logicTime = this.logicTime.duration;
         }
 
         renderUpdate() {
             hasRenderUpdate = true;
-            renderTime = this.domain.renderTime.duration;
+            renderTime = this.renderTime.duration;
         }
 
         init() {
