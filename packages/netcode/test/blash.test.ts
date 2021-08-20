@@ -385,7 +385,8 @@ describe("Serable", () => {
             "default",
             new StringDomainOption(RpcType.SERVER)
         );
-        const e = new Entity(new LifecycleTestComp());
+        const lifecycle = new LifecycleTestComp();
+        const e = new Entity(lifecycle);
         d.reg(e);
         d.update(1);
         d.unreg(e);
