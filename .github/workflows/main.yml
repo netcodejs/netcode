@@ -34,7 +34,7 @@ jobs:
 
       - name: Build
         run: yarn build
-        
+
       - name: Test
         run: yarn test
       # - name: Lint
@@ -57,7 +57,10 @@ jobs:
         uses: bahmutov/npm-install@v1
         with: 
           install-command: yarn --frozen-lockfile --silent
-
+        
+      - name: Build all package
+        run: yarn build
+        
       - name: Test
         run: yarn test:coverage
 
