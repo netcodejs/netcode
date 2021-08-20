@@ -1,4 +1,4 @@
-import { composeVersion, decomposeVersion, Deferred } from "./misc";
+import { composeVersion, decomposeVersion } from "./misc";
 import {
     IDataBufferReader,
     IDataBufferWriter,
@@ -8,6 +8,7 @@ import {
 import { DataTypeVoid, ISchema } from "./comp-schema";
 import { RPC_MAX_UUID } from "./builtin";
 import { IComp } from "./comp-interface";
+import { Deferred } from "@netcodejs/util";
 
 export enum MessageType {
     UPDATE_COMPONENT,
