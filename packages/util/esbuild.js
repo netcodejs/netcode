@@ -9,29 +9,29 @@ rimarf("dist/", (err) => {
     }
     run();
 });
+
+const commonOption = {
+    entryPoints: ["src/index.ts"],
+    bundle: true,
+    define: {
+        "process.env.NODE_ENV": "production",
+    },
+    minify: true,
+    sourcemap: true,
+};
 function run() {
     const prom = [
         builder.buildSync({
-            entryPoints: ["src/index.ts"],
-            bundle: true,
+            ...commonOption,
             format: "cjs",
             outfile: "dist/util.cjs.js",
-            define: {
-                "process.env.NODE_ENV": "production",
-            },
-            minify: true,
-            sourcemap: true,
         }),
         builder.buildSync({
-            entryPoints: ["src/index.ts"],
-            bundle: true,
-            format: "esm",
+            ...commonOption,
             outfile: "dist/util.esm.js",
             define: {
                 "process.env.NODE_ENV": "production",
             },
-            sourcemap: true,
-            minify: true,
         }),
     ];
 

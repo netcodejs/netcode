@@ -19,6 +19,18 @@ const commonDefine = {
 
 console.log(commonDefine);
 
+const commonOption = {
+    entryPoints: ["src/index.ts"],
+    bundle: true,
+    define: {
+        ...commonDefine,
+        "process.env.NODE_ENV": "production",
+    },
+    sourcemap: true,
+    external: ["@netcodejs/util"],
+    minify: true,
+};
+
 function run() {
     const prom = [
         // builder.buildSync({
@@ -33,28 +45,14 @@ function run() {
         //     sourcemap: true,
         // }),
         builder.buildSync({
-            entryPoints: ["src/index.ts"],
-            bundle: true,
+            ...commonOption,
             format: "cjs",
             outfile: "dist/netcodejs.prod.cjs.js",
-            define: {
-                ...commonDefine,
-                "process.env.NODE_ENV": "production",
-            },
-            minify: true,
-            sourcemap: true,
         }),
         builder.buildSync({
-            entryPoints: ["src/index.ts"],
-            bundle: true,
+            ...commonOption,
             format: "esm",
             outfile: "dist/netcodejs.esm.js",
-            define: {
-                ...commonDefine,
-                "process.env.NODE_ENV": "production",
-            },
-            sourcemap: true,
-            minify: true,
         }),
     ];
 
