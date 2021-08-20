@@ -156,6 +156,7 @@ describe("entity-componrnt", () => {
         expect(ent.mget(LogicComponent)).toStrictEqual([logic, newLogic]);
         expect(view.get(ViewComponentNoDecoration)).toBeNull();
         expect(ent.mget(ViewComponentNoDecoration)).toStrictEqual([]);
+        expect(ent.mget(LengthArrComp)).toStrictEqual([]);
         expect(view.get(ArrComp)).toBeNull();
         expect(ent.has(ViewComponentNoDecoration)).toBeFalsy();
         expect(view.$comps.view === view);
@@ -169,6 +170,11 @@ describe("entity-componrnt", () => {
         expect(hasView).toBeTruthy();
         // expect(getView).not.toBeTruthy();
         expect(getView).toBeTruthy();
+
+        expect(ent.indexOf(view)).toBe(1);
+        expect(ent.indexOf(newLogic)).toBe(3);
+        expect(ent.indexOf(new ArrComp())).toBeLessThan(0);
+        expect(ent.indexOf(null!)).toBeLessThan(0);
     });
     test("addComp-white-no-decoration", () => {
         expect(() => {

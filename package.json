@@ -29,6 +29,8 @@
     "build:fast": "lerna run build:fast",
     "test": "lerna run test",
     "test:coverage": "lerna run test:coverage",
+    "test:main": "lerna run test --scope=netcodejs --stream",
+    "test:main:coverage": "lerna run test:coverage --scope=netcodejs --stream",
     "prepare": "lerna bootstrap && husky install"
   },
   "lint-staged": {
