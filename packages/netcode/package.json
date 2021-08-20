@@ -9,13 +9,15 @@
   "author": "littlemoi",
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "build": "node esbuild.js",
+    "build:fast": "node esbuild.js",
+    "build": "yarn build:fast && tsc --emitDeclarationOnly --outdir dist",
+
+    "test": "jest",
+    "test:coverage": "jest --ci --coverage",
+
     "build:nojit": "cross-env ENSURE_JIT=false yarn build",
     "build:jit": "cross-env ENSURE_JIT=true yarn build",
-    "build:example": "node ./esbuild.example.js",
-    "build:ci": "yarn build && yarn build:example && tsc --emitDeclarationOnly --outdir dist",
-    "test": "jest",
-    "test:ci": "jest --ci --coverage"
+    "build:example": "node ./esbuild.example.js"
   },
   "files": [
     "dist",

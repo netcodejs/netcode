@@ -1,4 +1,4 @@
-name: CI Any To Main
+name: CI
 on:
   push:
     branches:
@@ -58,7 +58,7 @@ jobs:
           install-command: yarn --frozen-lockfile --silent
 
       - name: Test
-        run: yarn test:ci
+        run: yarn test:coverage
 
       - name: Coveralls - ${{ env.package_array }}
         uses: coverallsapp/github-action@master
@@ -94,13 +94,16 @@ jobs:
           install-command: yarn --frozen-lockfile --silent
 
       - name: Build
-        run: yarn build:ci
+        run: yarn build
 
       - name: Monorepo publish
         id: publish
         run: yarn lerna publish from-git --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Build example
+        run: yarn lerna run build:example --scope=netcodejs
 
       - name: Deploy example 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
