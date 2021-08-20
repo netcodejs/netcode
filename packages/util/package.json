@@ -1,0 +1,24 @@
+{
+  "name": "@netcodejs/util",
+  "version": "0.0.0",
+  "description": "The utility for netcodejs",
+  "module": "dist/util.esm.js",
+  "main": "dist/util.cjs.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/netcodejs/netcode",
+  "author": "mooooooi",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "build": "node esbuild.js",
+    "build:nojit": "cross-env ENSURE_JIT=false yarn build",
+    "build:jit": "cross-env ENSURE_JIT=true yarn build",
+    "build:example": "node ./esbuild.example.js",
+    "build:ci": "yarn build && tsc --emitDeclarationOnly --outdir dist",
+    "test": "jest",
+    "test:ci": "jest --ci --coverage"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}

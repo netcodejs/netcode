@@ -11,6 +11,12 @@ export abstract class IComp {
     get $comps() {
         return this._entity!.$comps;
     }
+    get logicTime() {
+        return this.domain?.logicTime;
+    }
+    get renderTime() {
+        return this.domain?.renderTime;
+    }
 
     get<T extends IComp>(ctr: { new (): T }): T | null {
         return this._entity!.get(ctr);

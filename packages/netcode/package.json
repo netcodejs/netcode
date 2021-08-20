@@ -34,5 +34,8 @@
       "path": "dist/netcodejs.esm.js",
       "limit": "10 KB"
     }
-  ]
+  ],
+  "dependencies": {
+    "@netcodejs/util": "^0.0.0"
+  }
 }

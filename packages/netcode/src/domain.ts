@@ -98,7 +98,7 @@ export class Domain<T extends SupportNetDataType = any> {
     public readonly readonlyInternalMsgMng!: MessageManager<T>;
 
     private _fixedSecAccumulator = 0;
-    public readonly time: Entity;
+    public readonly singleton: Entity;
     public readonly logicTime: LogicTimeComp;
     public readonly renderTime: RenderTimeComp;
 
@@ -123,10 +123,10 @@ export class Domain<T extends SupportNetDataType = any> {
 
         this.logicTime = new LogicTimeComp();
         this.renderTime = new RenderTimeComp();
-        this.time = new Entity(this.logicTime, this.renderTime);
+        this.singleton = new Entity(this.logicTime, this.renderTime);
         this.logicTime.delta = this.option.fixedTimeSec;
 
-        this.reg(this.time);
+        this.reg(this.singleton);
     }
 
     //#region public methods
