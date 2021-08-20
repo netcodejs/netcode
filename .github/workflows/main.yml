@@ -32,12 +32,13 @@ jobs:
         with: 
           install-command: yarn --frozen-lockfile --silent
 
+      - name: Build
+        run: yarn build
+        
       - name: Test
         run: yarn test
       # - name: Lint
       #   run: yarn lint
-      - name: Build
-        run: yarn build
 
   testAndUploadCoverall:
     needs: multi_build_and_test
