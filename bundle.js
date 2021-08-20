@@ -63,6 +63,12 @@ var netcode = (() => {
     get $comps() {
       return this._entity.$comps;
     }
+    get logicTime() {
+      return this.domain.logicTime;
+    }
+    get renderTime() {
+      return this.domain.renderTime;
+    }
     get(ctr) {
       return this._entity.get(ctr);
     }
@@ -225,49 +231,6 @@ var netcode = (() => {
       throw new errrorClass();
     }
   }
-  var Deferred = class {
-    get value() {
-      return this._value;
-    }
-    constructor() {
-      this.state = "pending";
-      this.fate = "unresolved";
-      this.promise = new Promise((resolve, reject) => {
-        this._resolve = resolve;
-        this._reject = reject;
-      });
-      this.promise.then((res) => {
-        this.state = "fulfilled";
-        this._value = res;
-      }, () => this.state = "rejected");
-    }
-    resolve(value) {
-      if (this.fate === "resolved") {
-        throw "Deferred cannot be resolved twice";
-      }
-      this.fate = "resolved";
-      this._resolve(value);
-    }
-    reject(reason) {
-      if (this.fate === "resolved") {
-        throw "Deferred cannot be resolved twice";
-      }
-      this.fate = "resolved";
-      this._reject(reason);
-    }
-    isResolved() {
-      return this.fate === "resolved";
-    }
-    isPending() {
-      return this.state === "pending";
-    }
-    isFulfilled() {
-      return this.state === "fulfilled";
-    }
-    isRejected() {
-      return this.state === "rejected";
-    }
-  };
 
   // src/lib/crc-32/index.ts
   function signed_crc_table() {
@@ -1318,6 +1281,42 @@ if (this.entity.role.local == ${ms.type}) {
     UNREG_ENTITY: "unreg-entity"
   };
 
+  // ../util/dist/util.esm.js
+  var r = class {
+    get value() {
+      return this._value;
+    }
+    constructor() {
+      this.state = "pending", this.fate = "unresolved", this.promise = new Promise((t, e) => {
+        this._resolve = t, this._reject = e;
+      }), this.promise.then((t) => {
+        this.state = "fulfilled", this._value = t;
+      }, () => this.state = "rejected");
+    }
+    resolve(t) {
+      if (this.fate === "resolved")
+        throw "Deferred cannot be resolved twice";
+      this.fate = "resolved", this._resolve(t);
+    }
+    reject(t) {
+      if (this.fate === "resolved")
+        throw "Deferred cannot be resolved twice";
+      this.fate = "resolved", this._reject(t);
+    }
+    isResolved() {
+      return this.fate === "resolved";
+    }
+    isPending() {
+      return this.state === "pending";
+    }
+    isFulfilled() {
+      return this.state === "fulfilled";
+    }
+    isRejected() {
+      return this.state === "rejected";
+    }
+  };
+
   // src/message-manager.ts
   var MessageType;
   (function(MessageType2) {
@@ -1426,7 +1425,7 @@ if (this.entity.role.local == ${ms.type}) {
       if (ms.returnType == DataTypeVoid) {
         return;
       } else {
-        const deferred = new Deferred();
+        const deferred = new r();
         this._rpcDeferred.set(`${entity.id}|${compIdx}|${ms.hash}|${uuid}`, {
           deferred,
           timestamp
@@ -1521,9 +1520,9 @@ if (this.entity.role.local == ${ms.type}) {
       this.readonlyInternalMsgMng = this._internalMsgMng;
       this.logicTime = new LogicTimeComp();
       this.renderTime = new RenderTimeComp();
-      this.time = new Entity(this.logicTime, this.renderTime);
+      this.singleton = new Entity(this.logicTime, this.renderTime);
       this.logicTime.delta = this.option.fixedTimeSec;
-      this.reg(this.time);
+      this.reg(this.singleton);
     }
     static Create(name, option, uuid = str(name)) {
       if (this._name2domainMap.has(name)) {
@@ -2044,17 +2043,17 @@ if (this.entity.role.local == ${ms.type}) {
     static send(obj) {
       return {
         server: () => {
-          const defer = new Deferred();
+          const defer = new r();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._serverTcp.send(defer);
         },
         c1: () => {
-          const defer = new Deferred();
+          const defer = new r();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._client1Tcp.send(defer);
         },
         c2: () => {
-          const defer = new Deferred();
+          const defer = new r();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._client2Tcp.send(defer);
         }
