@@ -1282,40 +1282,109 @@ if (this.entity.role.local == ${ms.type}) {
   };
 
   // ../util/dist/util.esm.js
-  var r = class {
-    get value() {
-      return this._value;
-    }
-    constructor() {
-      this.state = "pending", this.fate = "unresolved", this.promise = new Promise((t, e) => {
-        this._resolve = t, this._reject = e;
-      }), this.promise.then((t) => {
-        this.state = "fulfilled", this._value = t;
-      }, () => this.state = "rejected");
-    }
-    resolve(t) {
-      if (this.fate === "resolved")
-        throw "Deferred cannot be resolved twice";
-      this.fate = "resolved", this._resolve(t);
-    }
-    reject(t) {
-      if (this.fate === "resolved")
-        throw "Deferred cannot be resolved twice";
-      this.fate = "resolved", this._reject(t);
-    }
-    isResolved() {
-      return this.fate === "resolved";
-    }
-    isPending() {
-      return this.state === "pending";
-    }
-    isFulfilled() {
-      return this.state === "fulfilled";
-    }
-    isRejected() {
-      return this.state === "rejected";
-    }
-  };
+  (() => {
+    var r = class {
+      get value() {
+        return this._value;
+      }
+      constructor() {
+        this.state = "pending", this.fate = "unresolved", this.promise = new Promise((t, e) => {
+          this._resolve = t, this._reject = e;
+        }), this.promise.then((t) => {
+          this.state = "fulfilled", this._value = t;
+        }, () => this.state = "rejected");
+      }
+      resolve(t) {
+        if (this.fate === "resolved")
+          throw "Deferred cannot be resolved twice";
+        this.fate = "resolved", this._resolve(t);
+      }
+      reject(t) {
+        if (this.fate === "resolved")
+          throw "Deferred cannot be resolved twice";
+        this.fate = "resolved", this._reject(t);
+      }
+      isResolved() {
+        return this.fate === "resolved";
+      }
+      isPending() {
+        return this.state === "pending";
+      }
+      isFulfilled() {
+        return this.state === "fulfilled";
+      }
+      isRejected() {
+        return this.state === "rejected";
+      }
+    };
+    var n = class {
+      constructor(t) {
+        this.capacity = t;
+        this._start = 0;
+        this._end = 0;
+        this._container = new Array(this._capacityPlusOne);
+      }
+      get _capacityPlusOne() {
+        return this.capacity + 1;
+      }
+      get length() {
+        return (this._end - this._start + this._capacityPlusOne) % this._capacityPlusOne;
+      }
+      get isEmpty() {
+        return this._start == this._end;
+      }
+      get isFull() {
+        return (this._end + 1) % this._capacityPlusOne == this._start;
+      }
+      get head() {
+        var t;
+        return (t = this._container[this._start]) != null ? t : null;
+      }
+      get tail() {
+        var t;
+        return this.isEmpty ? null : (t = this._container[(this._end - 1 + this._capacityPlusOne) % this._capacityPlusOne]) != null ? t : null;
+      }
+      get container() {
+        return this._container;
+      }
+      get(t) {
+        var s;
+        let e = this._getRealIndex(t);
+        return e == -1 ? null : (s = this._container[e]) != null ? s : null;
+      }
+      set(t, e) {
+        let s = this._getRealIndex(t);
+        this._container[s] = e;
+      }
+      push(t) {
+        if (this.isFull)
+          return -1;
+        let e = this._end++;
+        return this._end %= this._capacityPlusOne, this._container[e] = t, this._end - this._start + 1;
+      }
+      pop() {
+        var t;
+        return this.isEmpty ? null : (this._end--, this._end += this._capacityPlusOne, this._end %= this._capacityPlusOne, (t = this._container[this._end]) != null ? t : null);
+      }
+      unshift(t) {
+        if (this.isEmpty)
+          return null;
+        this._start--, this._start += this._capacityPlusOne, this._start %= this._capacityPlusOne;
+        let e = this._start;
+        return this._container[e] = t, this._end - this._start + 1;
+      }
+      shift() {
+        var e;
+        if (this.isEmpty)
+          return null;
+        let t = this._start++;
+        return this._start %= this._capacityPlusOne, (e = this._container[t]) != null ? e : null;
+      }
+      _getRealIndex(t) {
+        return t < 0 || t >= this.capacity ? -1 : (this._start + t) % this._capacityPlusOne;
+      }
+    };
+  })();
 
   // src/message-manager.ts
   var MessageType;
@@ -1425,7 +1494,7 @@ if (this.entity.role.local == ${ms.type}) {
       if (ms.returnType == DataTypeVoid) {
         return;
       } else {
-        const deferred = new r();
+        const deferred = new (void 0)();
         this._rpcDeferred.set(`${entity.id}|${compIdx}|${ms.hash}|${uuid}`, {
           deferred,
           timestamp
@@ -2043,17 +2112,17 @@ if (this.entity.role.local == ${ms.type}) {
     static send(obj) {
       return {
         server: () => {
-          const defer = new r();
+          const defer = new (void 0)();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._serverTcp.send(defer);
         },
         c1: () => {
-          const defer = new r();
+          const defer = new (void 0)();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._client1Tcp.send(defer);
         },
         c2: () => {
-          const defer = new r();
+          const defer = new (void 0)();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._client2Tcp.send(defer);
         }
