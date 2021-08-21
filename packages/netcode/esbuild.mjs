@@ -10,37 +10,33 @@ const commonDefine = {
 
 console.log(commonDefine);
 
-async function run() {
-    const timeRecord = Date.now();
+const commonOption = {
+    entryPoints: ["src/index.ts"],
+    bundle: true,
+    define: {
+        ...commonDefine,
+        "process.env.NODE_ENV": "production",
+    },
+    sourcemap: true,
+    external: ["@netcodejs/util", "@netcode/loki-buffer"],
+    minify: true,
+};
 
+async function run() {
     await rimarf.sync("dist/");
     await Promise.all([
         builder.buildSync({
-            entryPoints: ["src/index.ts"],
-            bundle: true,
+            ...commonOption,
             format: "cjs",
             outfile: "dist/netcodejs.prod.cjs.js",
-            define: {
-                ...commonDefine,
-                "process.env.NODE_ENV": "production",
-            },
-            minify: true,
-            sourcemap: true,
         }),
         builder.buildSync({
-            entryPoints: ["src/index.ts"],
-            bundle: true,
+            ...commonOption,
             format: "esm",
             outfile: "dist/netcodejs.esm.js",
-            define: {
-                ...commonDefine,
-                "process.env.NODE_ENV": "production",
-            },
-            sourcemap: true,
-            minify: true,
         }),
     ]);
-    `Build finish! The time used is  ${Date.now() - timeRecord}ms`;
+    console.log(`Build finish! The time used is  ${Date.now() - timeRecord}ms`);
 }
 
 run();
