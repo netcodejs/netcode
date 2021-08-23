@@ -116,25 +116,25 @@ export class ByteArray {
 
   readUInt(): number {
     const uInt = this._data_.getUint32(this._pos_);
-    this._pos_ += 2;
+    this._pos_ += 4;
     return Math.floor(uInt);
   }
 
   readInt(): number {
     const tInt = this._data_.getInt32(this._pos_);
-    this._pos_ += 2;
+    this._pos_ += 4;
     return tInt;
   }
 
   readShort(): number {
     const short = this._data_.getInt16(this._pos_);
-    this._pos_ += 1;
+    this._pos_ += 2;
     return short;
   }
 
   readUShort(): number {
     const value = this._data_.getUint16(this._pos_);
-    this._pos_ += 1;
+    this._pos_ += 2;
     return value;
   }
 
@@ -308,9 +308,13 @@ export class ByteArray {
     for (let i = 0, sz: number = value.length; i < sz; i++) {
       const c: number = value.charCodeAt(i);
       if (c <= 0x7f) {
+        count += 1;
       } else if (c <= 0x7ff) {
+        count += 2;
       } else if (c <= 0xffff) {
+        count += 3;
       } else {
+        count += 4;
       }
     }
     return count;

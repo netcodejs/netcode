@@ -12,10 +12,7 @@ export class VarNumberUtils {
   }
   //写入int
   static writeInt(value: number, buffer: ByteArray) {
-    VarNumberUtils.writeRawVarint64(
-      buffer,
-      VarNumberUtils.encodeZigZag32(value)
-    );
+    VarNumberUtils.writeRawVarint(buffer, VarNumberUtils.encodeZigZag32(value));
   }
 
   //读取long
@@ -26,10 +23,7 @@ export class VarNumberUtils {
   }
   //写入long
   static writeLong(value: number, buffer: ByteArray): void {
-    VarNumberUtils.writeRawVarint64(
-      buffer,
-      VarNumberUtils.encodeZigZag64(value)
-    );
+    VarNumberUtils.writeRawVarint(buffer, VarNumberUtils.encodeZigZag64(value));
   }
 
   //内部编码方法
@@ -45,7 +39,7 @@ export class VarNumberUtils {
     let result = 0;
     for (let shift = 0; shift < 64; shift += 7) {
       const b = VarNumberUtils.readRawByte(buffer);
-      result != (b & 127) << shift;
+      result |= (b & 127) << shift;
       if ((b & 0x80) == 0) {
         return result;
       }
@@ -53,7 +47,7 @@ export class VarNumberUtils {
     throw new Error('readRawVarint64SlowPath');
   }
 
-  private static writeRawVarint64(buffer: ByteArray, value: number): void {
+  private static writeRawVarint(buffer: ByteArray, value: number): void {
     while (true) {
       if ((value & ~127) == 0) {
         VarNumberUtils.writeRawByte(buffer, value);

@@ -67,38 +67,26 @@ export class Compress {
   }
 
   readUnsignedInt(): number {
-    const uInt = this._data_.getUint16(this._pos_);
-    this._pos_ += 16;
+    const uInt = this._data_.getUint32(this._pos_);
+    this._pos_ += 32;
     return Math.floor(uInt);
   }
 
   readInt(): number {
-    const tInt = this._data_.getInt16(this._pos_);
-    this._pos_ += 16;
+    const tInt = this._data_.getInt32(this._pos_);
+    this._pos_ += 32;
     return tInt;
   }
 
   readShort(): number {
-    const short = this._data_.getInt8(this._pos_);
-    this._pos_ += 8;
+    const short = this._data_.getInt16(this._pos_);
+    this._pos_ += 16;
     return short;
   }
 
   readUnsignedShort(): number {
-    const value = this._data_.getUint8(this._pos_);
-    this._pos_ += 8;
-    return value;
-  }
-
-  readLong(): number {
-    const value = this._data_.getInt32(this._pos_);
-    this._pos_ += 32;
-    return value;
-  }
-
-  readUnsignedLong(): number {
-    const value = this._data_.getUint32(this._pos_);
-    this._pos_ += 32;
+    const value = this._data_.getUint16(this._pos_);
+    this._pos_ += 16;
     return value;
   }
 
@@ -127,39 +115,27 @@ export class Compress {
   }
 
   writeInt(value: number): void {
-    this.ensureWrite(this._pos_ + 16);
-    this._data_.setInt16(this._pos_, value);
-    this._pos_ += 16;
-  }
-
-  writeUnsignedInt(value: number): void {
-    this.ensureWrite(this._pos_ + 2);
-    this._data_.setUint16(this._pos_, value);
-    this._pos_ += 16;
-  }
-
-  writeShort(value: number): void {
-    this.ensureWrite(this._pos_ + 8);
-    this._data_.setInt8(this._pos_, value);
-    this._pos_ += 8;
-  }
-
-  writeUnsignedShort(value: number): void {
-    this.ensureWrite(this._pos_ + 8);
-    this._data_.setUint8(this._pos_, value);
-    this._pos_ += 8;
-  }
-
-  writeLong(value: number): void {
     this.ensureWrite(this._pos_ + 32);
     this._data_.setInt32(this._pos_, value);
     this._pos_ += 32;
   }
 
-  writeUnsignedLong(value: number): void {
+  writeUnsignedInt(value: number): void {
     this.ensureWrite(this._pos_ + 32);
     this._data_.setUint32(this._pos_, value);
     this._pos_ += 32;
+  }
+
+  writeShort(value: number): void {
+    this.ensureWrite(this._pos_ + 16);
+    this._data_.setInt16(this._pos_, value);
+    this._pos_ += 16;
+  }
+
+  writeUnsignedShort(value: number): void {
+    this.ensureWrite(this._pos_ + 16);
+    this._data_.setUint16(this._pos_, value);
+    this._pos_ += 16;
   }
 
   writeFloat(value: number): void {

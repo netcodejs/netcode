@@ -10,6 +10,9 @@ test('blah', () => {
   writer.writeInt(4);
   writer.writeShort(5);
   writer.writeBoolean(true);
+  writer.writeVarInt(1);
+  writer.writeVarLong(123);
+  writer.writeString('hhh');
 
   const readerBuf = writerBuf;
   const reader = new ByteArray(readerBuf);
@@ -20,6 +23,9 @@ test('blah', () => {
   expect(reader.readInt()).toBe(4);
   expect(reader.readShort()).toBe(5);
   expect(reader.readBoolean()).toBe(true);
+  expect(reader.readVarInt()).toBe(1);
+  expect(reader.readVarLong()).toBe(123);
+  expect(reader.readString()).toBe('hhh');
 });
 
 test.todo('support float!');
