@@ -44,8 +44,9 @@ export enum Role {
 
 // prettier-ignore
 export enum DataType {
-    NONE, I8 = 1, U8, I16, U16, I32, U32, F32, F64,
-    SHORT, ushort, INT, uint, LONG, ulong, FLOAT, DOUBLE, STRING, BOOL
+    NONE, 
+    I8 = 1, U8, I16, U16, I32, U32, F32, F64,
+    BYTE, UBYTE, SHORT, USHORT, INT, UINT, LONG, ULONG, FLOAT, DOUBLE, STRING, BOOL
 }
 export const DataTypeObect = 99 as DataType;
 export const DataTypeVoid = 98 as DataType;

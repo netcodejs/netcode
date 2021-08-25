@@ -1,6 +1,6 @@
 import { IComp } from "../comp-interface";
 import { Short } from "../base-dirty-data";
-import { NetSerable, NetVar, Rpc } from "../comp-decorator";
+import { NetSerable, NetVar, Rpc } from "../comp.dec";
 import {
     IDataBufferReader,
     IDataBufferWriter,

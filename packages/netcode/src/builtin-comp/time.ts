@@ -1,6 +1,6 @@
 import { IComp } from "../comp-interface";
 import { DataType } from "../comp-schema";
-import { NetSerable, NetVar } from "../comp-decorator";
+import { NetSerable, NetVar } from "../comp.dec";
 import { Float } from "../base-dirty-data";
 
 export interface ITime {

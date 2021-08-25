@@ -1,5 +1,5 @@
 import { DataType } from "./comp-schema";
-import { NetSerable, NetVar } from "./comp-decorator";
+import { NetSerable, NetVar } from "./comp.dec";
 import {
     IDataBufferReader,
     IDataBufferWriter,
@@ -137,7 +137,7 @@ export class Uint extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;
     private _value: number = 0;
-    @NetVar(DataType.uint)
+    @NetVar(DataType.UINT)
     get value() {
         return this._value;
     }
@@ -214,7 +214,7 @@ export class Ulong extends ADirty<number> implements ISerable {
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar(DataType.ulong)
+    @NetVar(DataType.ULONG)
     get value() {
         return this._value;
     }
@@ -290,7 +290,7 @@ export class Ushort extends ADirty<number> implements ISerable {
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar(DataType.ushort)
+    @NetVar(DataType.USHORT)
     get value() {
         return this._value;
     }

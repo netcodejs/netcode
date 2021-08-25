@@ -3,7 +3,7 @@ export * from "./comp-schema";
 export * from "./array-map";
 export * from "./builtin";
 export * from "./misc";
-export * from "./comp-decorator";
+export * from "./comp.dec";
 export * from "./entity";
 export * from "./domain";
 export * from "./base-dirty-data";

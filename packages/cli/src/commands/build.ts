@@ -1,6 +1,5 @@
 import { Command, flags } from "@oclif/command";
 import { build, Format } from "esbuild";
-import { TypeInfo } from "../esbuild-plugin-typeinfo";
 import * as path from "path";
 
 export default class Build extends Command {
@@ -35,9 +34,10 @@ export default class Build extends Command {
         this.log(`handle entry file: ${p}`);
         await build({
             entryPoints: [p],
-            plugins: [TypeInfo()],
+            plugins: [],
             bundle: true,
             format: flags.format as Format,
+            outfile: "bundle.js",
         });
     }
 }

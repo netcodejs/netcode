@@ -2,6 +2,7 @@ const builder = require("esbuild");
 const rimarf = require("rimraf");
 
 const timeRecord = Date.now();
+const { NetTypeSchema } = require("@netcodejs/cli");
 
 rimarf("dist/", (err) => {
     if (err) {
@@ -29,6 +30,7 @@ const commonOption = {
     sourcemap: true,
     external: ["@netcodejs/util"],
     minify: true,
+    plugins: [NetTypeSchema()],
 };
 
 function run() {
@@ -44,12 +46,12 @@ function run() {
         //     },
         //     sourcemap: true,
         // }),
-        builder.buildSync({
+        builder.build({
             ...commonOption,
             format: "cjs",
             outfile: "dist/netcodejs.prod.cjs.js",
         }),
-        builder.buildSync({
+        builder.build({
             ...commonOption,
             format: "esm",
             outfile: "dist/netcodejs.esm.js",

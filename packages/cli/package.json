@@ -11,6 +11,7 @@
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "esbuild": "^0.12.22",
+    "esbuild-plugin-type-schema": "^1.0.3",
     "fast-glob": "^3.2.7",
     "ts-morph": "^11.0.3",
     "tslib": "^1"
@@ -18,6 +19,7 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1",
     "@types/node": "^10",
+    "esbuild-plugin-type-schema": "^1.0.4",
     "globby": "^10",
     "rimraf": "^3.0.2",
     "ts-node": "^8",
@@ -50,7 +52,8 @@
     "postpack": "rimraf oclif.manifest.json",
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "./bin/run build test/index.ts",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif-dev readme && git add README.md",
+    "build": "tsc"
   },
   "types": "lib/index.d.ts"
 }
