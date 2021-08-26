@@ -2,7 +2,7 @@ import { ProtoOf } from "./misc";
 import { DataType, Role } from "./comp-schema";
 import { IComp } from "./comp-interface";
 
-export function NetSerable(_name: string, _genSerable = true) {
+export function NetSerable(_name?: string) {
     return function <T>(_target: { new (): T }) {};
 }
 

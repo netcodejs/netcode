@@ -4,7 +4,7 @@ import {
     IDataBufferWriter,
     ISerable,
     SupportNetDataType,
-} from "./data/serializable";
+} from "@netcodejs/iser";
 import { DataTypeVoid, ISchema } from "./comp-schema";
 import { RPC_MAX_UUID } from "./builtin";
 import { IComp } from "./comp-interface";

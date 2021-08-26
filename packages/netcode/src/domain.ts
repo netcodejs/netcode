@@ -6,7 +6,7 @@ import {
     Role,
     SCHEME_KEY,
 } from "./comp-schema";
-import { SupportNetDataType } from "./data/serializable";
+import { SupportNetDataType } from "@netcodejs/iser";
 import { Entity } from "./entity";
 import { IComp } from "./comp-interface";
 import { NULL_NUM } from "./builtin";

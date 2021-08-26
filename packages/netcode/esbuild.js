@@ -29,7 +29,7 @@ const commonOption = {
     },
     sourcemap: true,
     external: ["@netcodejs/util"],
-    minify: true,
+    // minify: true,
     plugins: [NetTypeSchema()],
 };
 

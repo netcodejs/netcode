@@ -7,11 +7,13 @@
   },
   "bugs": "https://github.com/netcodejs/netcode/issues",
   "dependencies": {
+    "@netcodejs/iser": "^0.0.1",
+    "@netcodejs/util": "^0.0.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "esbuild": "^0.12.22",
-    "esbuild-plugin-type-schema": "^1.0.3",
+    "esbuild-plugin-type-schema": "^1.0.5",
     "fast-glob": "^3.2.7",
     "ts-morph": "^11.0.3",
     "tslib": "^1"
@@ -19,7 +21,6 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1",
     "@types/node": "^10",
-    "esbuild-plugin-type-schema": "^1.0.4",
     "globby": "^10",
     "rimraf": "^3.0.2",
     "ts-node": "^8",

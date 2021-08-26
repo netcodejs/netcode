@@ -36,6 +36,7 @@
     }
   ],
   "dependencies": {
+    "@netcodejs/iser": "^0.0.1",
     "@netcodejs/util": "^0.0.0"
   },
   "devDependencies": {

@@ -5,10 +5,10 @@ import {
     IDataBufferReader,
     IDataBufferWriter,
     ISerable,
-} from "../data/serializable";
+} from "@netcodejs/iser";
 import { DataType, Role, RpcType } from "../comp-schema";
 
-@NetSerable("role", false)
+@NetSerable("role")
 export class RoleComp extends IComp implements ISerable {
     //#region property
     @NetVar(Short)

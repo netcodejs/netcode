@@ -19,5 +19,3 @@ declare type ulong = number;
 declare type long = number;
 declare type float = number;
 declare type double = number;
-
-declare;

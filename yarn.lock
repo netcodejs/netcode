@@ -3162,10 +3162,10 @@ esbuild-jest@^0.5.0:
     "@babel/plugin-transform-modules-commonjs" "^7.12.13"
     babel-jest "^26.6.3"
 
-esbuild-plugin-type-schema@^1.0.3:
-  version "1.0.4"
-  resolved "https://registry.nlark.com/esbuild-plugin-type-schema/download/esbuild-plugin-type-schema-1.0.4.tgz?cache=0&sync_timestamp=1629818925131&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fesbuild-plugin-type-schema%2Fdownload%2Fesbuild-plugin-type-schema-1.0.4.tgz#b97d1496fb4ebfa6ee1e5a8d44074170571e4772"
-  integrity sha1-uX0UlvtOv6buHlqNRAdBcFceR3I=
+esbuild-plugin-type-schema@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.nlark.com/esbuild-plugin-type-schema/download/esbuild-plugin-type-schema-1.0.5.tgz?cache=0&sync_timestamp=1629907854395&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fesbuild-plugin-type-schema%2Fdownload%2Fesbuild-plugin-type-schema-1.0.5.tgz#1213dad202fb27cee5d786e138bfaaec2f843684"
+  integrity sha1-EhPa0gL7J87l14bhOL+q7C+ENoQ=
   dependencies:
     ts-morph "^11.0.3"
 
@@ -5659,11 +5659,6 @@ neo-async@^2.6.0:
   version "2.6.2"
   resolved "https://registry.nlark.com/neo-async/download/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha1-tKr7k+OustgXTKU88WOrfXMIMF8=
-
-"netcodejs@file:packages/netcode":
-  version "0.0.12"
-  dependencies:
-    "@netcodejs/util" "^0.0.0"
 
 nice-try@^1.0.4:
   version "1.0.5"

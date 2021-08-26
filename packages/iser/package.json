@@ -1,0 +1,14 @@
+{
+  "name": "@netcodejs/iser",
+  "version": "0.0.1",
+  "author": "moruiyi @mooooooi",
+  "bugs": "https://github.com/netcodejs/netcode/issues",
+  "files": [
+    "types"
+  ],
+  "homepage": "https://github.com/netcodejs/netcode",
+  "license": "MIT",
+  "repository": "netcodejs/netcode",
+  "types": "types/index.d.ts",
+  "main": "types/index.d.ts"
+}

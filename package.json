@@ -35,8 +35,5 @@
   },
   "lint-staged": {
     "*.{ts,js,css,md}": "prettier --write"
-  },
-  "dependencies": {
-    "netcodejs": "file:packages\\netcode"
   }
 }

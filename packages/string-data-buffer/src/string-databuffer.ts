@@ -1,4 +1,4 @@
-import { IDataBufferReader, IDataBufferWriter } from "./serializable";
+import type { IDataBufferReader, IDataBufferWriter } from "@netcodejs/iser";
 
 const tempTypedBuffer = {
     int: new Int32Array(1),

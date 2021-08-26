@@ -4,7 +4,7 @@ import {
     IDataBufferReader,
     IDataBufferWriter,
     ISerable,
-} from "./data/serializable";
+} from "@netcodejs/iser";
 
 export abstract class ADirty<T> {
     abstract get value(): T;
@@ -18,7 +18,7 @@ export abstract class ADirty<T> {
     }
 }
 
-@NetSerable("Int", false)
+@NetSerable()
 export class Int extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;
@@ -56,7 +56,7 @@ export class Int extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Float", false)
+@NetSerable()
 export class Float extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;
@@ -94,7 +94,7 @@ export class Float extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Long", false)
+@NetSerable()
 export class Long extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;
@@ -132,7 +132,7 @@ export class Long extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Uint", false)
+@NetSerable()
 export class Uint extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;
@@ -170,7 +170,7 @@ export class Uint extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Double", false)
+@NetSerable()
 export class Double extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;
@@ -208,7 +208,7 @@ export class Double extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Ulong", false)
+@NetSerable()
 export class Ulong extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;
@@ -246,7 +246,7 @@ export class Ulong extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Short", false)
+@NetSerable()
 export class Short extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;
@@ -284,7 +284,7 @@ export class Short extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable("Ulong", false)
+@NetSerable()
 export class Ushort extends ADirty<number> implements ISerable {
     @NetVar(DataType.BOOL)
     dirty: boolean = true;

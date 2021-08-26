@@ -6,7 +6,7 @@ import {
     Schema,
     SCHEME_KEY,
 } from "./comp-schema";
-import { IDataBufferWriter, IDataBufferReader } from "./data/serializable";
+import { IDataBufferWriter, IDataBufferReader } from "@netcodejs/iser";
 import { NONE_CONTAINER } from "./builtin";
 
 export function serValue(

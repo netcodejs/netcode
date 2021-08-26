@@ -1,4 +1,4 @@
-import { ISerable } from "./data/serializable";
+import { ISerable } from "@netcodejs/iser";
 
 const MAX_VERSION = (1 << 30) - 1;
 export function composeVersion(num: number, destoryed: boolean | 0 | 1) {

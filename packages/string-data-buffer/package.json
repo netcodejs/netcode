@@ -1,0 +1,25 @@
+{
+  "name": "@netcodejs/string-data-buffer",
+  "version": "0.0.1",
+  "author": "moruiyi @mooooooi",
+  "bugs": "https://github.com/netcodejs/netcode/issues",
+  "files": [
+    "types"
+  ],
+  "homepage": "https://github.com/netcodejs/netcode",
+  "license": "MIT",
+  "repository": "netcodejs/netcode",
+  "types": "types/index.d.ts",
+  "dependencies": {
+    "@netcodejs/iser": "^0.0.1"
+  },
+  "devDependencies": {
+    "netcodejs": "^0.0.12"
+  },
+  "peerDependencies": {
+    "netcodejs": "^0.0.12"
+  },
+  "scripts": {
+    "build": "node ./esbuild.js && tsc --emitDeclarationOnly --outdir dist"
+  }
+}
