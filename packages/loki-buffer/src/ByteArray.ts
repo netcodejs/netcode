@@ -145,7 +145,7 @@ export class ByteArray {
   }
 
   readFloat(): number {
-    const float = (this._data_.getFloat32(this._pos_) * 100) / 100;
+    const float = this._data_.getInt32(this._pos_) / 1000;
     this._pos_ += 4;
     return float;
   }
@@ -242,7 +242,7 @@ export class ByteArray {
   }
 
   writeLong(value: number): void {
-    if (value != 0 && (value > Number.MAX_VALUE || value << Number.MIN_VALUE)) {
+    if (value != 0 && (value > Number.MAX_VALUE || value < Number.MIN_VALUE)) {
       logError('writeLong error -- Out of bounds');
     }
     let head: number;
@@ -265,7 +265,8 @@ export class ByteArray {
 
   writeFloat(value: number): void {
     this.ensureWrite(this._pos_ + 4);
-    this._data_.setFloat32(this._pos_, value);
+    value = value * 1000;
+    this._data_.setInt32(this._pos_, value);
     this._pos_ += 4;
   }
 

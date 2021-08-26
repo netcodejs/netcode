@@ -66,7 +66,7 @@ export class Compress {
     return this._data_.getInt8(this._pos_);
   }
 
-  readUnsignedInt(): number {
+  readUInt(): number {
     const uInt = this._data_.getUint32(this._pos_);
     this._pos_ += 32;
     return Math.floor(uInt);
@@ -84,7 +84,7 @@ export class Compress {
     return short;
   }
 
-  readUnsignedShort(): number {
+  readUShort(): number {
     const value = this._data_.getUint16(this._pos_);
     this._pos_ += 16;
     return value;
@@ -120,7 +120,7 @@ export class Compress {
     this._pos_ += 32;
   }
 
-  writeUnsignedInt(value: number): void {
+  writeUInt(value: number): void {
     this.ensureWrite(this._pos_ + 32);
     this._data_.setUint32(this._pos_, value);
     this._pos_ += 32;
@@ -132,16 +132,10 @@ export class Compress {
     this._pos_ += 16;
   }
 
-  writeUnsignedShort(value: number): void {
+  writeUShort(value: number): void {
     this.ensureWrite(this._pos_ + 16);
     this._data_.setUint16(this._pos_, value);
     this._pos_ += 16;
-  }
-
-  writeFloat(value: number): void {
-    this.ensureWrite(this._pos_ + 32);
-    this._data_.setFloat32(this._pos_, value);
-    this._pos_ += 32;
   }
 
   writeDouble(value: number): void {
@@ -160,7 +154,7 @@ export class Compress {
   }
 }
 
-class CompressBytes {
+export class CompressBytes {
   public byteLength = 0;
   public pos = 0;
   public _buffer;
@@ -407,25 +401,6 @@ class CompressBytes {
   }
 
   setUint32(pos: number, value: number): void {
-    this.pos = pos;
-    if (pos % 8 == 0 && pos / 8 <= this._buffer.length) {
-      this._idx++;
-      this._buffer[this._idx] = value;
-    } else if (pos % 8 == 0 && pos / 8 > this._buffer.length) {
-      let newBuffer = new Int8Array(this.byteLength * 1.5);
-      for (let i = 0; i < this.byteLength; i++) {
-        newBuffer[i] = this._buffer[i];
-      }
-      this.byteLength = this.byteLength * 1.5;
-    } else if (pos % 8 != 0) {
-      let i = value >> pos % 8;
-      this._buffer[this._idx] = (this._buffer[this._idx] + i) << pos % 8;
-      this._idx++;
-      this._buffer[this._idx] = value - i;
-    }
-  }
-
-  setFloat32(pos: number, value: number): void {
     this.pos = pos;
     if (pos % 8 == 0 && pos / 8 <= this._buffer.length) {
       this._idx++;
