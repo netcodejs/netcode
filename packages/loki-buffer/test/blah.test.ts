@@ -1,4 +1,5 @@
 import { ByteArray } from '../src';
+// import { Compress } from '../src/Compress';
 
 test('blah', () => {
   const writerBuf = new ArrayBuffer(100);
@@ -35,6 +36,9 @@ test('blah', () => {
   expect(reader.readVarLong()).toBe(123);
   expect(reader.readUByte()).toBe(123);
   expect(reader.readString()).toBe('hhh');
+
+  // const compress = new ArrayBuffer(100);
+  // const conpressbyte = new Compress(compress);
 });
 
 test.todo('support float!');
