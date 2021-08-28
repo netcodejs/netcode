@@ -1,6 +1,4 @@
 import { logError } from './log';
-import { LongBits } from './LongBits';
-import { VarNumberUtils } from './VarNumberUtils';
 
 const BIG: number = 4294967296;
 
@@ -20,24 +18,10 @@ type REleType = ByteType | RVoNewType | RVoCreateType;
 
 type WEleType = ByteType | WVoType;
 
-const tmpLongBits = new LongBits(0, 0);
-
-export function readBit(ori: number, index = 0, len = 4): number {
-  let flag = 0;
-  for (let i = 0; i < len; i++) {
-    flag |= 1 << i;
-  }
-  return (ori >> index) & flag;
-}
-
-export function writeBit(ori: number, value: number, index: number): number {
-  return ori | (value << index);
-}
-
 export class ByteArray {
   private _len_ = 0;
 
-  private _pos_ = 0;
+  public _pos_ = 0;
 
   private _byteView_: Uint8Array = null as never;
 
@@ -421,88 +405,6 @@ export class ByteArray {
     const uint8Array = new Uint8Array(arraybuffer);
     this._byteView_.set(uint8Array.subarray(offset, offset + rlen), this._pos_);
     this._pos_ += rlen;
-  }
-
-  readVarInt(): number {
-    return VarNumberUtils.readInt(this);
-  }
-
-  readVarLong(): number {
-    return this._readLongVarint().toNumber(false);
-  }
-
-  readUnsignedVarLong(): number {
-    return this._readLongVarint().toNumber(true);
-  }
-
-  writeVarInt(value: number): void {
-    VarNumberUtils.writeInt(value, this);
-  }
-
-  writeVarLong(value: number): void {
-    const bits = tmpLongBits.setToNumber(value);
-    const length = bits.length();
-    this.ensureWrite(this._pos_ + length);
-    this._writeVarint64(bits, this._data_, this._pos_);
-    this._pos_ += length;
-  }
-
-  private _readLongVarint(): LongBits {
-    // tends to deopt with local vars for octet etc.
-    const bits = tmpLongBits.setTo(0, 0);
-    const buf = this._byteView_;
-    let i = 0;
-    if (this._len_ - this._pos_ > 4) {
-      // fast route(lo)
-      for (; i < 4; i++) {
-        // 1st.4th
-        bits.lo = (bits.lo | ((buf[this._pos_] & 127) << (i * 7))) >>> 0;
-        if (buf[this._pos_++] < 128) return bits;
-      }
-      // 5th
-      bits.lo = (bits.lo | ((buf[this._pos_] & 127) << 28)) >>> 0;
-      bits.hi = (bits.hi | ((buf[this._pos_] & 127) >> 4)) >>> 0;
-      if (buf[this._pos_++] < 128) return bits;
-      i = 0;
-    } else {
-      for (; i < 3; i++) {
-        /* istanbul ignore if */
-        if (this._pos_ >= this._len_) throw new Error(`indexOutOfRange`);
-        //1st..3th
-        bits.lo = (bits.lo | ((buf[this._pos_] & 127) << (i * 7))) >>> 0;
-        return bits;
-      }
-    }
-    if (this._len_ - this._pos_ > 4) {
-      // fast route (hi)
-      for (; i < 5; i++) {
-        //6th..10th
-        bits.hi = (bits.hi | ((buf[this._pos_] & 127) << (i * 7 + 3))) >>> 0;
-        if (buf[this._pos_++] < 128) return bits;
-      }
-    } else {
-      for (; i < 5; i++) {
-        /* istanbul ignore if */
-        if (this._pos_ >= this._len_) throw new Error(`indexOutRange`);
-        //6th..10th
-        bits.hi = (bits.hi | ((buf[this._pos_] & 127) << (i * 7 + 3))) >>> 0;
-        if (buf[this._pos_++] < 128) return bits;
-      }
-    }
-    throw Error('invalid varint encoding');
-  }
-
-  private _writeVarint64(val: LongBits, buf: DataView, pos: number): void {
-    while (val.hi) {
-      buf.setInt8(pos++, (val.lo & 127) | 128);
-      val.lo = ((val.lo >>> 7) | (val.hi << 25)) >>> 0;
-      val.hi >>>= 7;
-    }
-    while (val.lo > 127) {
-      buf.setInt8(pos++, (val.lo & 127) | 128);
-      val.lo >>>= 7;
-    }
-    buf.setInt8(pos++, val.lo);
   }
 }
 

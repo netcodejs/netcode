@@ -1,3 +1,4 @@
+import { clearConfigCache } from 'prettier';
 import { ByteArray } from '../src';
 // import { Compress } from '../src/Compress';
 
@@ -12,11 +13,12 @@ test('blah', () => {
   writer.writeShort(5);
   writer.writeBoolean(true);
   writer.writeLong(123);
-  writer.writeVarInt(1);
-  writer.writeVarInt(512); //1000000000 -> 11000000 00001000 -128 8
-  writer.writeVarLong(123);
-  writer.writeVarLong(123);
   writer.writeString('hhh');
+
+  writer._set(0, 1);
+  expect(writer._get(0)).toBe(1);
+  writer._byteSet_(0, 1);
+  expect(writer._byteAt_(0)).toBe(1);
 
   const readerBuf = writerBuf;
   const reader = new ByteArray(readerBuf);
@@ -28,17 +30,7 @@ test('blah', () => {
   expect(reader.readShort()).toBe(5);
   expect(reader.readBoolean()).toBe(true);
   expect(reader.readLong()).toBe(123);
-  expect(reader.readVarInt()).toBe(1);
-
-  expect(reader.readByte()).toBe(-128);
-  expect(reader.readByte()).toBe(8);
-
-  expect(reader.readVarLong()).toBe(123);
-  expect(reader.readUByte()).toBe(123);
   expect(reader.readString()).toBe('hhh');
-
-  // const compress = new ArrayBuffer(100);
-  // const conpressbyte = new Compress(compress);
 });
 
 test.todo('support float!');
