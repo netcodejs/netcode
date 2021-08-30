@@ -4,9 +4,8 @@ import {
     DataTypeObect,
     ISchema,
     Schema,
-    SCHEME_KEY,
+    SCHEME_HASH_KEY,
 } from "./comp-schema";
-import { IDataBufferWriter, IDataBufferReader } from "@netcodejs/iser";
 import { NONE_CONTAINER } from "./builtin";
 
 export function serValue(
@@ -140,13 +139,13 @@ ${recevierStr}.deser(${bufferStr})
 }
 
 export function fixupSerable(prototype: any) {
-    const schema = prototype[SCHEME_KEY] as Schema;
+    const schema = prototype[SCHEME_HASH_KEY] as Schema;
     fixedupSerableState(prototype, schema);
     fixedupSerableRpc(prototype, schema);
 }
 
 export function fixupSerableWithoutState(prototype: any) {
-    const schema = prototype[SCHEME_KEY] as Schema;
+    const schema = prototype[SCHEME_HASH_KEY] as Schema;
     fixedupSerableRpc(prototype, schema);
 }
 
@@ -256,13 +255,13 @@ export function fixedupSerableRpc(prototype: any, schema: Schema) {
 }
 
 export function fixupSerableJIT(prototype: any) {
-    const schema = prototype[SCHEME_KEY] as Schema;
+    const schema = prototype[SCHEME_HASH_KEY] as Schema;
     fixedupSerableStateJit(prototype, schema);
     fixedupSerableRpcJit(prototype, schema);
 }
 
 export function fixupSerableJITWithoutState(prototype: any) {
-    const schema = prototype[SCHEME_KEY] as Schema;
+    const schema = prototype[SCHEME_HASH_KEY] as Schema;
     fixedupSerableRpcJit(prototype, schema);
 }
 

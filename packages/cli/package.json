@@ -7,19 +7,19 @@
   },
   "bugs": "https://github.com/netcodejs/netcode/issues",
   "dependencies": {
-    "@netcodejs/iser": "^0.0.1",
     "@netcodejs/util": "^0.0.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "esbuild": "^0.12.22",
-    "esbuild-plugin-type-schema": "^1.0.5",
+    "esbuild-plugin-type-schema": "^1.0.6",
     "fast-glob": "^3.2.7",
     "ts-morph": "^11.0.3",
     "tslib": "^1"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",
+    "@types/netcodejs__iser": "^0.0.1",
     "@types/node": "^10",
     "globby": "^10",
     "rimraf": "^3.0.2",
@@ -54,7 +54,8 @@
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "./bin/run build test/index.ts",
     "version": "oclif-dev readme && git add README.md",
-    "build": "tsc"
+    "build:fast": "node esbuild.js",
+    "build": "yarn build:fast && tsc --declaration --emitDeclarationOnly"
   },
   "types": "lib/index.d.ts"
 }

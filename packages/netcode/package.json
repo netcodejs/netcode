@@ -36,10 +36,11 @@
     }
   ],
   "dependencies": {
-    "@netcodejs/iser": "^0.0.1",
     "@netcodejs/util": "^0.0.0"
   },
   "devDependencies": {
-    "@netcodejs/cli": "^0.0.1"
+    "@types/netcodejs": "^0.0.12",
+    "@netcodejs/cli": "^0.0.1",
+    "@types/netcodejs__iser": "^0.0.1"
   }
 }

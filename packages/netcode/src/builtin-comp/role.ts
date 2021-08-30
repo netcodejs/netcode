@@ -1,11 +1,6 @@
 import { IComp } from "../comp-interface";
 import { Short } from "../base-dirty-data";
 import { NetSerable, NetVar, Rpc } from "../comp.dec";
-import {
-    IDataBufferReader,
-    IDataBufferWriter,
-    ISerable,
-} from "@netcodejs/iser";
 import { DataType, Role, RpcType } from "../comp-schema";
 
 @NetSerable("role")

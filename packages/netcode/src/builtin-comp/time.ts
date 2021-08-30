@@ -1,6 +1,5 @@
 import { IComp } from "../comp-interface";
-import { DataType } from "../comp-schema";
-import { NetSerable, NetVar } from "../comp.dec";
+import { NetArr, NetSerable, NetVar } from "../comp.dec";
 import { Float } from "../base-dirty-data";
 
 export interface ITime {
@@ -10,7 +9,7 @@ export interface ITime {
 
 @NetSerable("logic_time")
 export class LogicTimeComp extends IComp implements ITime {
-    @NetVar(Float)
+    @NetVar()
     $delta = new Float(0);
 
     get delta() {
@@ -20,8 +19,14 @@ export class LogicTimeComp extends IComp implements ITime {
         this.$delta.value = value;
     }
 
-    @NetVar(DataType.DOUBLE)
-    duration: number = 0;
+    @NetVar()
+    duration: long = 0;
+
+    @NetArr()
+    test: u32[] = [];
+
+    @NetArr()
+    test1: Float[] = [];
 }
 
 @NetSerable("render_time")

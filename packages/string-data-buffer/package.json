@@ -11,7 +11,7 @@
   "repository": "netcodejs/netcode",
   "types": "types/index.d.ts",
   "dependencies": {
-    "@netcodejs/iser": "^0.0.1"
+    "@types/netcodejs__iser": "^0.0.1"
   },
   "devDependencies": {
     "netcodejs": "^0.0.12"

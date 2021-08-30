@@ -3162,10 +3162,10 @@ esbuild-jest@^0.5.0:
     "@babel/plugin-transform-modules-commonjs" "^7.12.13"
     babel-jest "^26.6.3"
 
-esbuild-plugin-type-schema@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.nlark.com/esbuild-plugin-type-schema/download/esbuild-plugin-type-schema-1.0.5.tgz?cache=0&sync_timestamp=1629907854395&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fesbuild-plugin-type-schema%2Fdownload%2Fesbuild-plugin-type-schema-1.0.5.tgz#1213dad202fb27cee5d786e138bfaaec2f843684"
-  integrity sha1-EhPa0gL7J87l14bhOL+q7C+ENoQ=
+esbuild-plugin-type-schema@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.nlark.com/esbuild-plugin-type-schema/download/esbuild-plugin-type-schema-1.0.6.tgz?cache=0&sync_timestamp=1629999683881&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fesbuild-plugin-type-schema%2Fdownload%2Fesbuild-plugin-type-schema-1.0.6.tgz#4a7a1f63e7a30ded60b22fa0bbd71bc54ae02536"
+  integrity sha1-SnofY+ejDe1gsi+gu9cbxUrgJTY=
   dependencies:
     ts-morph "^11.0.3"
 

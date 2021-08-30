@@ -1,10 +1,4 @@
-import { DataType } from "./comp-schema";
 import { NetSerable, NetVar } from "./comp.dec";
-import {
-    IDataBufferReader,
-    IDataBufferWriter,
-    ISerable,
-} from "@netcodejs/iser";
 
 export abstract class ADirty<T> {
     abstract get value(): T;
@@ -20,10 +14,10 @@ export abstract class ADirty<T> {
 
 @NetSerable()
 export class Int extends ADirty<number> implements ISerable {
-    @NetVar(DataType.BOOL)
+    @NetVar()
     dirty: boolean = true;
     private _value: number = 0;
-    @NetVar(DataType.INT)
+    @NetVar()
     get value() {
         return this._value;
     }
@@ -58,11 +52,11 @@ export class Int extends ADirty<number> implements ISerable {
 
 @NetSerable()
 export class Float extends ADirty<number> implements ISerable {
-    @NetVar(DataType.BOOL)
+    @NetVar()
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar(DataType.FLOAT)
+    @NetVar()
     get value() {
         return this._value;
     }
@@ -96,11 +90,11 @@ export class Float extends ADirty<number> implements ISerable {
 
 @NetSerable()
 export class Long extends ADirty<number> implements ISerable {
-    @NetVar(DataType.BOOL)
+    @NetVar()
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar(DataType.LONG)
+    @NetVar()
     get value() {
         return this._value;
     }
@@ -134,10 +128,10 @@ export class Long extends ADirty<number> implements ISerable {
 
 @NetSerable()
 export class Uint extends ADirty<number> implements ISerable {
-    @NetVar(DataType.BOOL)
+    @NetVar()
     dirty: boolean = true;
     private _value: number = 0;
-    @NetVar(DataType.UINT)
+    @NetVar()
     get value() {
         return this._value;
     }
@@ -172,12 +166,12 @@ export class Uint extends ADirty<number> implements ISerable {
 
 @NetSerable()
 export class Double extends ADirty<number> implements ISerable {
-    @NetVar(DataType.BOOL)
+    @NetVar()
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar(DataType.DOUBLE)
-    get value() {
+    @NetVar()
+    get value(): u32 {
         return this._value;
     }
     set value(inValue) {
@@ -210,11 +204,11 @@ export class Double extends ADirty<number> implements ISerable {
 
 @NetSerable()
 export class Ulong extends ADirty<number> implements ISerable {
-    @NetVar(DataType.BOOL)
+    @NetVar()
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar(DataType.ULONG)
+    @NetVar()
     get value() {
         return this._value;
     }
@@ -248,11 +242,11 @@ export class Ulong extends ADirty<number> implements ISerable {
 
 @NetSerable()
 export class Short extends ADirty<number> implements ISerable {
-    @NetVar(DataType.BOOL)
+    @NetVar()
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar(DataType.SHORT)
+    @NetVar()
     get value() {
         return this._value;
     }
@@ -285,16 +279,16 @@ export class Short extends ADirty<number> implements ISerable {
 }
 
 @NetSerable()
-export class Ushort extends ADirty<number> implements ISerable {
-    @NetVar(DataType.BOOL)
+export class Ushort extends ADirty<number> /* implements ISerable */ {
+    @NetVar()
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar(DataType.USHORT)
-    get value() {
+    @NetVar()
+    get value(): short {
         return this._value;
     }
-    set value(inValue) {
+    set value(inValue: short) {
         if (this._value !== inValue) {
             this._value = inValue;
             this.dirty = true;
@@ -306,18 +300,18 @@ export class Ushort extends ADirty<number> implements ISerable {
         this._value = value;
     }
 
-    ser(buffer: IDataBufferWriter<any>): void {
-        const dirty = this.getsetDirty();
-        buffer.writeBoolean(dirty);
-        if (dirty) {
-            buffer.writeUshort(this._value);
-        }
-    }
+    // ser(buffer: IDataBufferWriter<any>): void {
+    //     const dirty = this.getsetDirty();
+    //     buffer.writeBoolean(dirty);
+    //     if (dirty) {
+    //         buffer.writeUshort(this._value);
+    //     }
+    // }
 
-    deser(buffer: IDataBufferReader<any>): void {
-        this.dirty = buffer.readBoolean();
-        if (this.dirty) {
-            this._value = buffer.readUshort();
-        }
-    }
+    // deser(buffer: IDataBufferReader<any>): void {
+    //     this.dirty = buffer.readBoolean();
+    //     if (this.dirty) {
+    //         this._value = buffer.readUshort();
+    //     }
+    // }
 }

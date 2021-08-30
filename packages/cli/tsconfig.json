@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "declaration": true,
     "importHelpers": true,
     "module": "commonjs",
+    "lib": ["ESNext"],
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "target": "es2017",
+    "target": "ES6",
     "experimentalDecorators": true
   },
   "include": [

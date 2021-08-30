@@ -4,9 +4,8 @@ import {
     ISchema,
     RpcType,
     Role,
-    SCHEME_KEY,
+    SCHEME_HASH_KEY,
 } from "./comp-schema";
-import { SupportNetDataType } from "@netcodejs/iser";
 import { Entity } from "./entity";
 import { IComp } from "./comp-interface";
 import { NULL_NUM } from "./builtin";
@@ -449,7 +448,7 @@ export class Domain<T extends SupportNetDataType = any> {
             const methodName = hash2RpcName[param.methodHash];
             const unknown = comp[methodName].apply(comp, argus);
 
-            const s = comp[SCHEME_KEY];
+            const s = comp[SCHEME_HASH_KEY];
             const ms = s.methods[methodName];
             if (ms.returnType != DataTypeVoid) {
                 const w = param!;
@@ -474,7 +473,7 @@ export class Domain<T extends SupportNetDataType = any> {
                 ISchema &
                 Record<string, Function>;
             if (!comp) continue;
-            const s = comp[SCHEME_KEY];
+            const s = comp[SCHEME_HASH_KEY];
             const methodName = hash2RpcName[param.methodHash];
             const ms = s.methods[methodName];
             let result: any;

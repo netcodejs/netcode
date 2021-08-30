@@ -1,10 +1,4 @@
 import { composeVersion, decomposeVersion } from "./misc";
-import {
-    IDataBufferReader,
-    IDataBufferWriter,
-    ISerable,
-    SupportNetDataType,
-} from "@netcodejs/iser";
 import { DataTypeVoid, ISchema } from "./comp-schema";
 import { RPC_MAX_UUID } from "./builtin";
 import { IComp } from "./comp-interface";
@@ -141,7 +135,7 @@ export class MessageManager<T extends SupportNetDataType> {
         // comp index
         buf.writeInt(compIdx);
         // comp hash
-        buf.writeLong(comp.__schema__.hash);
+        buf.writeLong(comp.__hash__);
         // ser comp
         comp.ser(buf);
 

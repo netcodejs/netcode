@@ -1,5 +1,5 @@
 import { RoleComp } from "./builtin-comp/";
-import { ISchema } from "./comp-schema";
+import { ISchema, SCHEME_HASH_KEY } from "./comp-schema";
 import type { Domain } from "./domain";
 import { compName2ctr } from "./global-record";
 import { IComp } from "./comp-interface";
@@ -93,10 +93,10 @@ export class Entity<ProxyObj extends Object = any> {
     protected _initComp(c: ISchema & IComp) {
         const map = this._compMap;
         c["_entity"] = this;
-        if (!c.__schema__ || c.__schema__.hash == NULL_NUM) {
+        if (!c[SCHEME_HASH_KEY] == null) {
             throw new ComponentHasNotDecorated("Component must use @NetComp");
         }
-        const hash = c.__schema__.hash;
+        const hash = c[SCHEME_HASH_KEY];
         if (map.has(hash)) {
             map.set(hash, [map.get(hash) as any, c]);
         } else {

@@ -31,7 +31,9 @@
     "test:coverage": "lerna run test:coverage",
     "test:main": "lerna run test --scope=netcodejs --stream",
     "test:main:coverage": "lerna run test:coverage --scope=netcodejs --stream",
-    "prepare": "lerna bootstrap && husky install"
+    "prepare": "lerna bootstrap && husky install",
+    "build:dev": "lerna run build:fast --scope=@netcodejs/cli --scope=netcodejs",
+    "build:n": "lerna run build:fast --scope=netcodejs"
   },
   "lint-staged": {
     "*.{ts,js,css,md}": "prettier --write"

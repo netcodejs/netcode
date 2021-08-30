@@ -1,5 +1,3 @@
-import { ISerable } from "@netcodejs/iser";
-
 const MAX_VERSION = (1 << 30) - 1;
 export function composeVersion(num: number, destoryed: boolean | 0 | 1) {
     num = num % MAX_VERSION;

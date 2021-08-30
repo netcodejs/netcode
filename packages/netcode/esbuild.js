@@ -3,6 +3,7 @@ const rimarf = require("rimraf");
 
 const timeRecord = Date.now();
 const { NetTypeSchema } = require("@netcodejs/cli");
+const pkg = require("./package.json");
 
 rimarf("dist/", (err) => {
     if (err) {
@@ -28,7 +29,7 @@ const commonOption = {
         "process.env.NODE_ENV": "production",
     },
     sourcemap: true,
-    external: ["@netcodejs/util"],
+    external: Object.keys(pkg.dependencies),
     // minify: true,
     plugins: [NetTypeSchema()],
 };
@@ -58,9 +59,14 @@ function run() {
         }),
     ];
 
-    Promise.all(prom).then(() => {
-        console.log(
-            `Build finish! The time used is  ${Date.now() - timeRecord}ms`
-        );
-    });
+    Promise.all(prom)
+        .then(() => {
+            console.log(
+                `Build finish! The time used is  ${Date.now() - timeRecord}ms`
+            );
+        })
+        .catch((e) => {
+            console.error(e);
+            process.exit(1);
+        });
 }

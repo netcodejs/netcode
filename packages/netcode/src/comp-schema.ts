@@ -75,28 +75,12 @@ export function genMethodSchema(o = Object.create(null)): MethodSchema {
     return o;
 }
 
-export const SCHEME_KEY = "__schema__";
-export type ISchema = { [SCHEME_KEY]: Schema };
+export const SCHEME_HASH_KEY = "__hash__";
+export type ISchema = { [SCHEME_HASH_KEY]: number };
 
-export function getSchemaByPrototype(prototype: any): Schema | null {
-    if (prototype.hasOwnProperty(SCHEME_KEY)) {
-        return (prototype as any)[SCHEME_KEY];
+export function getHash(prototype: any): Schema | null {
+    if (prototype.hasOwnProperty(SCHEME_HASH_KEY)) {
+        return (prototype as any)[SCHEME_HASH_KEY];
     }
     return null;
-}
-
-export function getOrCreateScheme(prototype: any): Schema {
-    if (prototype.hasOwnProperty(SCHEME_KEY)) {
-        return (prototype as any)[SCHEME_KEY];
-    }
-
-    const s = genSchema() as Schema;
-    (prototype as any)[SCHEME_KEY] = s;
-    const superCtr = Object.getPrototypeOf(prototype);
-
-    const superSchema = superCtr[SCHEME_KEY] as Schema;
-    if (superSchema) {
-        s.raw.push.apply(s.raw, superSchema.raw);
-    }
-    return s;
 }
