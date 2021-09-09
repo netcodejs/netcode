@@ -1,2 +1,2 @@
 export { run } from "@oclif/command";
-export { NetTypeSchema } from "./net-type-schema";
+// export { NetTypeSchema } from "./net-type-schema";

@@ -1,20 +1,24 @@
 import {
     DataType,
+    Float,
     IComp,
+    NetArr,
     NetSerable,
     NetVar,
     Role,
     Rpc,
     RpcType,
     RpcVar,
-} from "../src";
+} from "netcodejs";
 
 @NetSerable("vec")
 export class Vector {
-    @NetVar(DataType.INT)
-    x: number = 0;
-    @NetVar(DataType.INT)
-    y: number = 0;
+    @NetVar()
+    x: int = 0;
+    @NetVar()
+    y: int = 0;
+    @NetArr()
+    z: Float[] = [];
 }
 
 @NetSerable("trans")
@@ -23,10 +27,9 @@ export class Transform extends IComp {
     pos = new Vector();
 
     @Rpc(Role.AUTHORITY)
-    serverMove(
-        @RpcVar(DataType.FLOAT) x: number,
-        @RpcVar(DataType.FLOAT) y: number
-    ) {
+    serverMove(x: float, y: float): void {}
+
+    serverMove_Imp(@RpcVar() x: float, @RpcVar() y: float) {
         if (x != 0 || y != 0) {
             console.log(`${x} : ${y}`);
         }
@@ -37,11 +40,11 @@ export class Transform extends IComp {
 
 @NetSerable("view")
 export class View extends IComp {
-    @NetVar(DataType.INT)
-    color = 0xffffff;
+    @NetVar()
+    color: int = 0xffffff;
 
     @Rpc(Role.AUTHORITY)
-    changeColor(@RpcVar(DataType.INT) inColor: number) {
+    changeColor(inColor: int) {
         this.color = inColor;
     }
 

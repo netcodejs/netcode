@@ -39,8 +39,9 @@
     "@netcodejs/util": "^0.0.0"
   },
   "devDependencies": {
-    "@types/netcodejs": "^0.0.12",
     "@netcodejs/cli": "^0.0.1",
+    "@netcodejs/string-data-buffer": "^0.0.1",
+    "@types/netcodejs": "^0.0.12",
     "@types/netcodejs__iser": "^0.0.1"
   }
 }

@@ -7,6 +7,7 @@
 
 <!-- toc -->
 
+-   [@netcodejs/cli](#netcodejscli)
 -   [Usage](#usage)
 -   [Commands](#commands)
 <!-- tocstop -->
@@ -20,7 +21,7 @@ $ npm install -g @netcodejs/cli
 $ netcode-cli COMMAND
 running command...
 $ netcode-cli (-v|--version|version)
-@netcodejs/cli/0.0.1 win32-x64 node-v14.15.1
+@netcodejs/cli/0.0.1 linux-x64 node-v14.17.4
 $ netcode-cli --help [COMMAND]
 USAGE
   $ netcode-cli COMMAND
@@ -34,7 +35,7 @@ USAGE
 <!-- commands -->
 
 -   [`netcode-cli build [FILE]`](#netcode-cli-build-file)
--   [`netcode-cli hello [FILE]`](#netcode-cli-hello-file)
+-   [`netcode-cli code-gen [FILEPATH]`](#netcode-cli-code-gen-filepath)
 -   [`netcode-cli help [COMMAND]`](#netcode-cli-help-command)
 
 ## `netcode-cli build [FILE]`
@@ -58,25 +59,22 @@ EXAMPLE
 
 _See code: [src/commands/build.ts](https://github.com/netcodejs/netcode/blob/v0.0.1/src/commands/build.ts)_
 
-## `netcode-cli hello [FILE]`
+## `netcode-cli code-gen [FILEPATH]`
 
 describe the command here
 
 ```
 USAGE
-  $ netcode-cli hello [FILE]
+  $ netcode-cli code-gen [FILEPATH]
 
 OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
+  -h, --help  show CLI help
 
 EXAMPLE
-  $ netcode-cli hello
-  hello world from ./src/hello.ts!
+  $ netcode-cli code-gen
 ```
 
-_See code: [src/commands/hello.ts](https://github.com/netcodejs/netcode/blob/v0.0.1/src/commands/hello.ts)_
+_See code: [src/commands/code-gen.ts](https://github.com/netcodejs/netcode/blob/v0.0.1/src/commands/code-gen.ts)_
 
 ## `netcode-cli help [COMMAND]`
 

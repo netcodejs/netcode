@@ -9,7 +9,9 @@
   "homepage": "https://github.com/netcodejs/netcode",
   "license": "MIT",
   "repository": "netcodejs/netcode",
-  "types": "types/index.d.ts",
+  "types": "dist/index.d.ts",
+  "main": "dist/string-data-buffer.cjs.js",
+  "module": "dist/string-data-buffer.esm.js",
   "dependencies": {
     "@types/netcodejs__iser": "^0.0.1"
   },

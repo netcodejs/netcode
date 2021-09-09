@@ -1,11 +1,5 @@
 import { LogicTimeComp, RenderTimeComp } from "./builtin-comp";
-import {
-    DataTypeVoid,
-    ISchema,
-    RpcType,
-    Role,
-    SCHEME_HASH_KEY,
-} from "./comp-schema";
+import { ISchema, RpcType, Role } from "./comp-schema";
 import { Entity } from "./entity";
 import { IComp } from "./comp-interface";
 import { NULL_NUM } from "./builtin";
@@ -18,8 +12,8 @@ import {
 } from "./message-manager";
 import { asSerable, assert } from "./misc";
 import { ArrayMap } from "./array-map";
-import { compName2ctr, hash2compName, hash2RpcName } from "./global-record";
-import { deserValue, serValue } from "./comp-fixup";
+import { compName2ctr, hash2compName } from "./global-record";
+// import { deserValue, serValue } from "./comp-fixup";
 import { str2hash as hash } from "@netcodejs/util";
 
 class EntityNotValidError extends Error {}
@@ -442,25 +436,23 @@ export class Domain<T extends SupportNetDataType = any> {
                 ISchema &
                 Record<string, Function>;
             if (!comp) continue;
-            const argus = comp["deser" + param.methodHash](
-                this._internalMsgMng.rpcbufferReader
-            );
-            const methodName = hash2RpcName[param.methodHash];
-            const unknown = comp[methodName].apply(comp, argus);
+            comp.__deserRpc(param, this._internalMsgMng);
+            // const methodName = hash2RpcName[param.methodHash];
+            // const unknown = comp[methodName].apply(comp, argus);
 
-            const s = comp[SCHEME_HASH_KEY];
-            const ms = s.methods[methodName];
-            if (ms.returnType != DataTypeVoid) {
-                const w = param!;
-                unknown?.then((result: any) => {
-                    this._internalMsgMng.sendRpcCallback(w);
-                    serValue(
-                        ms.returnType,
-                        result,
-                        this._internalMsgMng.rpcCallbackBufferWriter
-                    );
-                });
-            }
+            // const s = comp[SCHEME_HASH_KEY];
+            // const ms = s.methods[methodName];
+            // if (ms.returnType != DataTypeVoid) {
+            //     const w = param!;
+            //     unknown?.then((result: any) => {
+            //         this._internalMsgMng.sendRpcCallback(w);
+            //         serValue(
+            //             ms.returnType,
+            //             result,
+            //             this._internalMsgMng.rpcCallbackBufferWriter
+            //         );
+            //     });
+            // }
         }
     }
 
@@ -473,22 +465,23 @@ export class Domain<T extends SupportNetDataType = any> {
                 ISchema &
                 Record<string, Function>;
             if (!comp) continue;
-            const s = comp[SCHEME_HASH_KEY];
-            const methodName = hash2RpcName[param.methodHash];
-            const ms = s.methods[methodName];
-            let result: any;
-            if (ms.returnType != DataTypeVoid) {
-                result = deserValue(
-                    ms.returnType,
-                    this._internalMsgMng.rpcCallbackBufferReader,
-                    undefined,
-                    ms.returnRefCtr
-                );
-            }
-            const callbackRecord =
-                this._internalMsgMng.getRpcCallbackRecord(param);
-            if (!callbackRecord) continue;
-            callbackRecord.deferred.resolve(result);
+            comp.__deserRpcCallback(param, this._internalMsgMng);
+            // const s = comp[SCHEME_HASH_KEY];
+            // const methodName = hash2RpcName[param.methodHash];
+            // const ms = s.methods[methodName];
+            // let result: any;
+            // if (ms.returnType != DataTypeVoid) {
+            //     result = deserValue(
+            //         ms.returnType,
+            //         this._internalMsgMng.rpcCallbackBufferReader,
+            //         undefined,
+            //         ms.returnRefCtr
+            //     );
+            // }
+            // const callbackRecord =
+            //     this._internalMsgMng.getRpcCallbackRecord(param);
+            // if (!callbackRecord) continue;
+            // callbackRecord.deferred.resolve(result);
         }
     }
 

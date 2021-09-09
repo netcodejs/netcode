@@ -1,5 +1,5 @@
 import { composeVersion, decomposeVersion } from "./misc";
-import { DataTypeVoid, ISchema } from "./comp-schema";
+import { ISchema } from "./comp-schema";
 import { RPC_MAX_UUID } from "./builtin";
 import { IComp } from "./comp-interface";
 import { Deferred } from "@netcodejs/util";
@@ -195,7 +195,7 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     sendRpc(
-        methodName: string,
+        methodHash: number,
         component: IComp & ISchema & Record<string, Function>,
         params: any[],
         timestamp: number
@@ -209,28 +209,22 @@ export class MessageManager<T extends SupportNetDataType> {
         const entity = comp.entity;
         const compIdx = entity.indexOf(component);
         const buf = this.rpcbufferWriter;
-        // schema
-        const s = comp.__schema__;
-        // method schema
-        const ms = s.methods[methodName];
         // entity id
         buf.writeInt(entity.id);
         // comp index
         buf.writeUshort(compIdx);
         // method hash
-        buf.writeLong(ms.hash);
+        buf.writeLong(methodHash);
         // timestamp
         buf.writeLong(timestamp);
         // uuid
         buf.writeUint(uuid);
         // param
-        component["ser" + ms.hash](buf, params);
-        if (ms.returnType == DataTypeVoid) {
-            return;
-        } else {
+        const hasReturnValue = component.__serRpc(buf, methodHash, params);
+        if (hasReturnValue) {
             const deferred = new Deferred();
             this._rpcDeferred.set(
-                `${entity.id}|${compIdx}|${ms.hash}|${uuid}`,
+                `${entity.id}|${compIdx}|${methodHash}|${uuid}`,
                 {
                     deferred,
                     timestamp,
@@ -238,6 +232,7 @@ export class MessageManager<T extends SupportNetDataType> {
             );
             return deferred.promise;
         }
+        return void 0;
     }
 
     endSendRpc() {

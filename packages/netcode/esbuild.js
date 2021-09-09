@@ -2,7 +2,6 @@ const builder = require("esbuild");
 const rimarf = require("rimraf");
 
 const timeRecord = Date.now();
-const { NetTypeSchema } = require("@netcodejs/cli");
 const pkg = require("./package.json");
 
 rimarf("dist/", (err) => {
@@ -31,7 +30,7 @@ const commonOption = {
     sourcemap: true,
     external: Object.keys(pkg.dependencies),
     // minify: true,
-    plugins: [NetTypeSchema()],
+    plugins: [],
 };
 
 function run() {

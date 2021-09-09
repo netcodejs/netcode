@@ -1,4 +1,4 @@
-import { NetSerable, NetVar } from "./comp.dec";
+import { Serable, Var } from "./comp.dec";
 
 export abstract class ADirty<T> {
     abstract get value(): T;
@@ -12,12 +12,12 @@ export abstract class ADirty<T> {
     }
 }
 
-@NetSerable()
+@Serable
 export class Int extends ADirty<number> implements ISerable {
-    @NetVar()
+    @Var
     dirty: boolean = true;
     private _value: number = 0;
-    @NetVar()
+    @Var
     get value() {
         return this._value;
     }
@@ -50,13 +50,13 @@ export class Int extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable()
+@Serable
 export class Float extends ADirty<number> implements ISerable {
-    @NetVar()
+    @Var
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar()
+    @Var
     get value() {
         return this._value;
     }
@@ -88,13 +88,13 @@ export class Float extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable()
+@Serable
 export class Long extends ADirty<number> implements ISerable {
-    @NetVar()
+    @Var
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar()
+    @Var
     get value() {
         return this._value;
     }
@@ -126,12 +126,12 @@ export class Long extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable()
+@Serable
 export class Uint extends ADirty<number> implements ISerable {
-    @NetVar()
+    @Var
     dirty: boolean = true;
     private _value: number = 0;
-    @NetVar()
+    @Var
     get value() {
         return this._value;
     }
@@ -164,13 +164,13 @@ export class Uint extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable()
+@Serable
 export class Double extends ADirty<number> implements ISerable {
-    @NetVar()
+    @Var
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar()
+    @Var
     get value(): u32 {
         return this._value;
     }
@@ -202,13 +202,13 @@ export class Double extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable()
+@Serable
 export class Ulong extends ADirty<number> implements ISerable {
-    @NetVar()
+    @Var
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar()
+    @Var
     get value() {
         return this._value;
     }
@@ -240,13 +240,13 @@ export class Ulong extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable()
+@Serable
 export class Short extends ADirty<number> implements ISerable {
-    @NetVar()
+    @Var
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar()
+    @Var
     get value() {
         return this._value;
     }
@@ -278,13 +278,13 @@ export class Short extends ADirty<number> implements ISerable {
     }
 }
 
-@NetSerable()
-export class Ushort extends ADirty<number> /* implements ISerable */ {
-    @NetVar()
+@Serable
+export class Ushort extends ADirty<number> implements ISerable {
+    @Var
     dirty: boolean = true;
 
     private _value: number = 0;
-    @NetVar()
+    @Var
     get value(): short {
         return this._value;
     }
@@ -300,18 +300,18 @@ export class Ushort extends ADirty<number> /* implements ISerable */ {
         this._value = value;
     }
 
-    // ser(buffer: IDataBufferWriter<any>): void {
-    //     const dirty = this.getsetDirty();
-    //     buffer.writeBoolean(dirty);
-    //     if (dirty) {
-    //         buffer.writeUshort(this._value);
-    //     }
-    // }
+    ser(buffer: IDataBufferWriter<any>): void {
+        const dirty = this.getsetDirty();
+        buffer.writeBoolean(dirty);
+        if (dirty) {
+            buffer.writeUshort(this._value);
+        }
+    }
 
-    // deser(buffer: IDataBufferReader<any>): void {
-    //     this.dirty = buffer.readBoolean();
-    //     if (this.dirty) {
-    //         this._value = buffer.readUshort();
-    //     }
-    // }
+    deser(buffer: IDataBufferReader<any>): void {
+        this.dirty = buffer.readBoolean();
+        if (this.dirty) {
+            this._value = buffer.readUshort();
+        }
+    }
 }
