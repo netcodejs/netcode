@@ -3,6 +3,6 @@
     "include": ["src", "types"],
     "compilerOptions": {
         "rootDir": "./src",
-        "strict": false
-    }
+        "strict": false,
+    },
 }

@@ -2,16 +2,6 @@ import { LogicTimeComp, RenderTimeComp } from "./builtin-comp/time";
 import { Float } from "./base-dirty-data";
 
 // AUTO GENERAOTE!, PLZ DONT EDIT!!
-LogicTimeComp.prototype.ser = serlogic_time;
-LogicTimeComp.prototype.deser = deserlogic_time;
-
-RenderTimeComp.prototype.ser = serrender_time;
-RenderTimeComp.prototype.deser = deserrender_time;
-
-declare module "./base-dirty-data" {}
-
-declare module "./builtin-comp/role" {}
-
 declare module "./builtin-comp/time" {
     interface LogicTimeComp {
         ser(buffer: IDataBufferWriter): void;
@@ -23,8 +13,10 @@ declare module "./builtin-comp/time" {
         deser(buffer: IDataBufferReader): void;
     }
 }
-
-function serlogic_time(this: LogicTimeComp, buffer: IDataBufferWriter) {
+LogicTimeComp.prototype.ser = function (
+    this: LogicTimeComp,
+    buffer: IDataBufferWriter
+) {
     this.$delta.ser(buffer);
     buffer.writeLong(this.duration);
 
@@ -52,9 +44,12 @@ function serlogic_time(this: LogicTimeComp, buffer: IDataBufferWriter) {
         obj.ser(buffer);
     }
     // AUTO GEN - test1 end
-}
+};
 
-function deserlogic_time(this: LogicTimeComp, buffer: IDataBufferReader) {
+LogicTimeComp.prototype.deser = function (
+    this: LogicTimeComp,
+    buffer: IDataBufferReader
+) {
     this.$delta.deser(buffer);
     this.duration = buffer.readLong();
 
@@ -81,8 +76,14 @@ function deserlogic_time(this: LogicTimeComp, buffer: IDataBufferReader) {
         obj.deser(buffer);
     }
     // AUTO GEN - test1 end
-}
+};
 
-function serrender_time(this: RenderTimeComp, buffer: IDataBufferWriter) {}
+RenderTimeComp.prototype.ser = function (
+    this: RenderTimeComp,
+    _buffer: IDataBufferWriter
+) {};
 
-function deserrender_time(this: RenderTimeComp, buffer: IDataBufferReader) {}
+RenderTimeComp.prototype.deser = function (
+    this: RenderTimeComp,
+    _buffer: IDataBufferReader
+) {};

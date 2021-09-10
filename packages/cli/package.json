@@ -15,6 +15,7 @@
     "esbuild": "^0.12.22",
     "fast-glob": "^3.2.7",
     "hash-wasm": "^4.9.0",
+    "normalize-path": "^3.0.0",
     "ts-morph": "^11.0.3",
     "tslib": "^1"
   },
@@ -22,6 +23,7 @@
     "@oclif/dev-cli": "^1",
     "@types/netcodejs__iser": "^0.0.1",
     "@types/node": "^10",
+    "@types/normalize-path": "^3.0.0",
     "globby": "^10",
     "rimraf": "^3.0.2",
     "ts-node": "^8",

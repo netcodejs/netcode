@@ -24,7 +24,7 @@
     "lint-staged": "^11.1.2",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
-    "typescript": "^4.3.5"
+    "typescript": "^4.4.2"
   },
   "scripts": {
     "build": "lerna run build",
@@ -36,7 +36,8 @@
     "prepare": "lerna bootstrap && husky install",
     "build:dev": "lerna run build:fast --scope=@netcodejs/cli --scope=netcodejs",
     "build:n": "lerna run build:fast --scope=netcodejs",
-    "gen:example": "yarn netcode"
+    "gen:example": "yarn netcode",
+    "gen": "packages/cli/bin/run"
   },
   "lint-staged": {
     "*.{ts,js,css,md}": "prettier --write"

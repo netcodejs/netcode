@@ -16,7 +16,7 @@ import {
     StructureKind,
     WriterFunction,
 } from "ts-morph";
-import * as chalk from "chalk";
+import chalk from "chalk";
 import {
     PropTypeInfo,
     MethodTypeInfo,
@@ -24,6 +24,11 @@ import {
     ClassTypeInfo,
 } from "../type-info";
 import { onProgress, resolveModulePath } from "../net-type-schema";
+import normalizePath from "normalize-path";
+
+function pathJoin(...args: string[]) {
+    return normalizePath(path.join(...args));
+}
 
 export default class CodeGen extends Command {
     static description = "describe the command here";
@@ -47,23 +52,24 @@ export default class CodeGen extends Command {
         }
         const finalPath = path.isAbsolute(args.filePath)
             ? args.filePath
-            : path.join(process.cwd(), args.filePath);
+            : pathJoin(process.cwd(), args.filePath);
 
         const finalOutPath = path.isAbsolute(flags.outFile!)
             ? flags.outFile!
-            : path.join(process.cwd(), flags.outFile!);
+            : pathJoin(process.cwd(), flags.outFile!);
 
-        const decPaths = glob.sync(path.join(finalPath, "**/*.dec.ts"));
+        const decPaths = glob.sync(pathJoin(finalPath, "**/*.dec.ts"));
         this.log(chalk.bgBlueBright(decPaths.join(", ")));
         const tsconfigPathArr = glob.sync([
-            path.join(finalPath, "**/tsconfig.json"),
+            pathJoin(finalPath, "**/tsconfig.json"),
         ]);
         if (tsconfigPathArr.length <= 0) {
-            throw "Cannot find any tsconfig.json!";
+            this.error("Cannot find any tsconfig.json!", { exit: 1 });
+            return;
         }
         const tsconfigPath = tsconfigPathArr[0];
         this.log("find taconfig: ", tsconfigPathArr);
-        console.log("Use: " + tsconfigPath);
+        this.log("Use: " + tsconfigPath);
 
         const projectInitNow = performance.now();
         const project = new Project({
@@ -72,7 +78,7 @@ export default class CodeGen extends Command {
         const rootDir = project.compilerOptions.get().rootDir ?? finalOutPath;
 
         const outFileSF = project.createSourceFile(
-            path.join(rootDir, "generated.ts"),
+            pathJoin(rootDir, "generated.ts"),
             "// AUTO GENERAOTE!, PLZ DONT EDIT!!",
             {
                 overwrite: true,
@@ -88,19 +94,13 @@ export default class CodeGen extends Command {
         //         CodeGen.collectDecorator(decNames, sf);
         //     });
         // }
-        decNames
-            .add("NetSerable")
-            .add("NetVar")
-            .add("NetArr")
-            .add("Rpc")
-            .add("RpcVar")
-            .add("RpcArr");
+        decNames.add("Serable").add("Var").add("Rpc");
 
         console.log(decNames);
         // real gen
         const allSFs = project.getSourceFiles();
         project.getRootDirectories;
-        const funcs: OptionalKind<FunctionDeclarationStructure>[] = [];
+        const funcs: WriterFunction[] = [];
         const imports: Map<string, Set<string>> = new Map();
         const modules: OptionalKind<ModuleDeclarationStructure>[] = [];
         for (let sf of allSFs) {
@@ -128,7 +128,7 @@ export default class CodeGen extends Command {
         }
 
         outFileSF.addModules(modules);
-        outFileSF.addFunctions(funcs);
+        outFileSF.addStatements(funcs);
         outFileSF.addImportDeclarations(
             Array.from(imports.entries()).map(([key, nameds]) => {
                 return {
@@ -204,7 +204,7 @@ export default class CodeGen extends Command {
         sf: SourceFile,
         decNames: Set<string>,
         outSF: SourceFile,
-        outFunctions: OptionalKind<FunctionDeclarationStructure>[],
+        outFunctions: WriterFunction[],
         outImports: Map<string, Set<string>>,
         outModules: OptionalKind<ModuleDeclarationStructure>[]
     ): WriterFunction {
@@ -312,16 +312,18 @@ export default class CodeGen extends Command {
                 );
             }
 
-            outModules.push({
-                name: JSON.stringify(relativePath),
-                hasDeclareKeyword: true,
-                statements: interfaces.map((inter) => {
-                    return {
-                        kind: StructureKind.Interface,
-                        ...inter,
-                    };
-                }),
-            });
+            if (interfaces.length > 0) {
+                outModules.push({
+                    name: JSON.stringify(relativePath),
+                    hasDeclareKeyword: true,
+                    statements: interfaces.map((inter) => {
+                        return {
+                            kind: StructureKind.Interface,
+                            ...inter,
+                        };
+                    }),
+                });
+            }
         };
     }
 }

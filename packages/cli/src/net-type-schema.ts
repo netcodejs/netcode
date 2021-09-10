@@ -15,6 +15,7 @@ import {
     StatementStructures,
     SyntaxKind,
     TypeChecker,
+    WriterFunction,
 } from "ts-morph";
 import { AccessorTypeInfo, ClassTypeInfo, PropTypeInfo } from "./type-info";
 
@@ -38,7 +39,7 @@ export function pushImport(
 export function onProgress(
     context: ProgressContext,
     clsInfo: ClassTypeInfo,
-    outFunctions: OptionalKind<FunctionDeclarationStructure>[],
+    outFunctions: WriterFunction[],
     outInterfaces: OptionalKind<InterfaceDeclarationStructure>[],
     outImports: Map<string, Set<string>>,
     writer: CodeBlockWriter
@@ -60,11 +61,6 @@ export function onProgress(
     if (!clsInfo.target.getMethod("ser")) {
         pushImport(outImports, context.currentModuleSpecifier, realClassName);
 
-        writer
-            .writeLine(`${realClassName}.prototype.ser = ser${className};`)
-            .writeLine(`${realClassName}.prototype.deser = deser${className};`)
-            .spaceIfLastNot();
-
         const props = [...clsInfo.properties, ...clsInfo.accessores]
             .map((p, idx) => handlePropOrAccessor(p, idx))
             .filter((s) => {
@@ -77,32 +73,55 @@ export function onProgress(
                 return s;
             });
 
-        outFunctions.push(
-            {
-                name: `ser${className}`,
-                parameters: [
-                    { name: "this", type: realClassName },
-                    { name: "buffer", type: "IDataBufferWriter" },
-                ],
-                statements: props
-                    .map((p) =>
-                        genSerFunctionStr(p.name, p.typeName, p.containerType)
-                    )
-                    .flat(),
-            },
-            {
-                name: `deser${className}`,
-                parameters: [
-                    { name: "this", type: realClassName },
-                    { name: "buffer", type: "IDataBufferReader" },
-                ],
-                statements: props
-                    .map((p) =>
-                        genDeserFunctionStr(p.name, p.typeName, p.containerType)
-                    )
-                    .flat(),
-            }
-        );
+        outFunctions.push((writer) => {
+            writer
+                .write(`${realClassName}.prototype.ser`)
+                .space()
+                .write("=")
+                .space()
+                .write(
+                    `function(this: ${realClassName}, ${
+                        props.length > 0 ? "buffer" : "_buffer"
+                    }: IDataBufferWriter)`
+                )
+                .block(() => {
+                    props
+                        .map((p) =>
+                            genSerFunctionStr(
+                                p.name,
+                                p.typeName,
+                                p.containerType
+                            )
+                        )
+                        .flat()
+                        .forEach((p) => writer.writeLine(p));
+                });
+        });
+
+        outFunctions.push((writer) => {
+            writer
+                .write(`${realClassName}.prototype.deser`)
+                .space()
+                .write("=")
+                .space()
+                .write(
+                    `function(this: ${realClassName}, ${
+                        props.length > 0 ? "buffer" : "_buffer"
+                    }: IDataBufferReader)`
+                )
+                .block(() => {
+                    props
+                        .map((p) =>
+                            genDeserFunctionStr(
+                                p.name,
+                                p.typeName,
+                                p.containerType
+                            )
+                        )
+                        .flat()
+                        .forEach((p) => writer.writeLine(p));
+                });
+        });
 
         outInterfaces.push({
             name: realClassName,
@@ -144,7 +163,10 @@ export function onProgress(
                 }
 
                 if (!typeName) {
-                    throw `Cannot resolve ${realClassName}#${name} arg${idx}`;
+                    console.error(
+                        `Cannot resolve ${realClassName}#${name} arg${idx}`
+                    );
+                    return;
                 }
                 return {
                     typeName,
@@ -157,6 +179,16 @@ export function onProgress(
                     const module = context.currentFileNamed2Module[typeName];
                     pushImport(outImports, module, typeName);
                 }
+            });
+
+            outFunctions.push((writer) => {
+                writer
+                    .write(`${realClassName}.prototype.${name}`)
+                    .space()
+                    .write("=")
+                    .space()
+                    .write(`function()`)
+                    .block();
             });
         });
     }
@@ -175,7 +207,7 @@ export function onProgress(
 
 export function getClassName(clsInfo: ClassTypeInfo) {
     const netSerableDecor = clsInfo.decors.find(
-        (d) => d.getName() === "NetSerable"
+        (d) => d.getName() === "Serable"
     );
     if (!netSerableDecor) return null;
     const args = netSerableDecor.getArguments();
@@ -190,29 +222,18 @@ export function handlePropOrAccessor(
     info: PropTypeInfo | AccessorTypeInfo,
     index: number
 ) {
-    let netVarDecor: Decorator | null = null;
-    let netArrDecor: Decorator | null = null;
-    info.decors.forEach((decor) => {
-        if (decor.getName() === "NetVar") {
-            netVarDecor = decor;
-        } else if (decor.getName() === "NetArr") {
-            netArrDecor = decor;
-        }
+    const netVarDecor = info.decors.find((decor) => {
+        return decor.getName() === "Var";
     });
 
     const name = info.target.getName();
-    if (netVarDecor && netArrDecor) {
-        throw `The property ${name} has both @NetVar and @NetArr!`;
+    if (!netVarDecor) {
+        console.error(`The property ${name} has both @NetVar and @NetArr!`);
+        return;
     }
 
-    if (!netVarDecor && !netArrDecor) {
-        return null!;
-    }
-
-    const containerType = netArrDecor ? "arr" : "var";
-
-    const decor = netArrDecor! ?? netVarDecor!;
     let type = info.target.getType();
+    const containerType = type.isArray() ? "arr" : "var";
     if (type.isArray()) type = type.getArrayElementTypeOrThrow();
     const typeSymbol = type.getSymbol();
     let typeName = typeSymbol?.getName();

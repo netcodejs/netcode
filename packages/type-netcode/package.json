@@ -1,6 +1,6 @@
 {
-  "name": "@types/netcodejs",
-  "version": "0.0.12",
+  "name": "@types/netcode",
+  "version": "0.0.1",
   "description": "A js game framework for state-synchronization.",
   "types": "types/index.d.ts",
   "repository": "https://github.com/netcodejs/netcode",

@@ -1,5 +1,4 @@
 import { Role } from "./comp-schema";
-import { ProtoOf } from "./misc";
 
 // export type DataTypeMappingPrimitive = {
 //     [DataType.NONE]: never;
@@ -25,15 +24,18 @@ export function Var<VarName extends string>(
     _prototype: any,
     _varName: VarName
 ) {}
-export function Rpc(role: Role) {
-    return function <
-        PropertyName extends string,
-        T extends Record<string, any> &
-            Record<PropertyName, (...args) => Promise<any>>
-    >(
-        prototype: T & Record<`${PropertyName}_impl`, T[PropertyName]>,
-        propertyName: PropertyName
-    ) {};
+
+type RpcDecorator = <
+    PropertyName extends string,
+    T extends Record<string, any> &
+        Record<PropertyName, (...args) => Promise<any> | void>
+>(
+    _prototype: T & Record<`${PropertyName}_impl`, T[PropertyName]>,
+    _propertyName: PropertyName
+) => void;
+
+export function Rpc(_role: Role) {
+    return function () {} as RpcDecorator;
 }
 
 export function Type() {}
