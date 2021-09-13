@@ -22,6 +22,8 @@ import {
     MethodTypeInfo,
     AccessorTypeInfo,
     ClassTypeInfo,
+    DecoratorMap,
+    pushDecorator,
 } from "../type-info";
 import { onProgress, resolveModulePath } from "../net-type-schema";
 import normalizePath from "normalize-path";
@@ -227,8 +229,12 @@ export default class CodeGen extends Command {
                             decNames.has(propDecor.getName())
                         );
                     if (propDecors.length <= 0) continue;
+                    const decors: DecoratorMap = {};
+                    for (let dec of propDecors) {
+                        pushDecorator(decors, dec);
+                    }
                     propInfoArr.push({
-                        decors: propDecors,
+                        decors,
                         target: prop,
                     });
                 }
@@ -243,8 +249,12 @@ export default class CodeGen extends Command {
                         );
                     if (methodDecors.length <= 0) continue;
 
+                    const decors: DecoratorMap = {};
+                    for (let dec of methodDecors) {
+                        pushDecorator(decors, dec);
+                    }
                     methodInfoArr.push({
-                        decors: methodDecors,
+                        decors,
                         target: method,
                         params: method.getParameters().map((param) => {
                             const paramDecors = param
@@ -252,9 +262,13 @@ export default class CodeGen extends Command {
                                 .filter((paramDecor) =>
                                     decNames.has(paramDecor.getName())
                                 );
+                            const decors: DecoratorMap = {};
+                            for (let dec of paramDecors) {
+                                pushDecorator(decors, dec);
+                            }
                             return {
                                 target: param,
-                                decors: paramDecors,
+                                decors,
                             };
                         }),
                     });
@@ -266,18 +280,26 @@ export default class CodeGen extends Command {
                 ];
                 const accessorInfoArr: AccessorTypeInfo[] = [];
                 for (const accessor of accessores) {
-                    const decors = accessor
+                    const accessorDecors = accessor
                         .getDecorators()
                         .filter((dec) => decNames.has(dec.getName()));
-                    if (decors.length <= 0) continue;
+                    if (accessorDecors.length <= 0) continue;
+                    const decors: DecoratorMap = {};
+                    for (let dec of accessorDecors) {
+                        pushDecorator(decors, dec);
+                    }
                     accessorInfoArr.push({
                         decors,
                         target: accessor,
                     });
                 }
 
+                const decors: DecoratorMap = {};
+                for (let dec of clsDecors) {
+                    pushDecorator(decors, dec);
+                }
                 const classTypeInfo: ClassTypeInfo = {
-                    decors: clsDecors,
+                    decors,
                     target: cls,
                     properties: propInfoArr,
                     methods: methodInfoArr,

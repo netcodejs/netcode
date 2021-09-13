@@ -7,29 +7,47 @@ import {
     PropertyDeclaration,
 } from "ts-morph";
 
+export type DecoratorMap = Record<string, Decorator[]>;
+
+export function pushDecorator(map: DecoratorMap, dec: Decorator) {
+    const name = dec.getName();
+    let arr = map[name];
+    if (!arr) {
+        arr = [];
+        map[name] = arr;
+    }
+    arr.push(dec);
+}
+
+export function getDecorator(map: DecoratorMap, name: string) {
+    const arr = map[name];
+    if (!arr || arr.length <= 0) return null;
+    return arr[0];
+}
+
 export interface PropTypeInfo {
-    decors: Decorator[];
+    decors: DecoratorMap;
     target: PropertyDeclaration;
 }
 
 export interface AccessorTypeInfo {
-    decors: Decorator[];
+    decors: DecoratorMap;
     target: AccessorDeclaration;
 }
 
 export interface MethodTypeInfo {
-    decors: Decorator[];
+    decors: DecoratorMap;
     target: MethodDeclaration;
     params: ParamTypeInfo[];
 }
 
 export interface ParamTypeInfo {
-    decors: Decorator[];
+    decors: DecoratorMap;
     target: ParameterDeclaration;
 }
 
 export interface ClassTypeInfo {
-    decors: Decorator[];
+    decors: DecoratorMap;
     target: ClassDeclaration;
     properties: PropTypeInfo[];
     methods: MethodTypeInfo[];

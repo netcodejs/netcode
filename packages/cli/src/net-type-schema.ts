@@ -6,6 +6,7 @@ import {
     CodeBlockWriter,
     Decorator,
     FunctionDeclarationStructure,
+    FunctionTypeNode,
     ImportDeclarationStructure,
     ImportSpecifier,
     InterfaceDeclarationStructure,
@@ -17,7 +18,12 @@ import {
     TypeChecker,
     WriterFunction,
 } from "ts-morph";
-import { AccessorTypeInfo, ClassTypeInfo, PropTypeInfo } from "./type-info";
+import {
+    AccessorTypeInfo,
+    ClassTypeInfo,
+    getDecorator,
+    PropTypeInfo,
+} from "./type-info";
 
 export interface ProgressContext {
     currentModuleSpecifier: string;
@@ -58,19 +64,20 @@ export function onProgress(
         type: "number",
     });
 
+    let needImport = false;
     if (!clsInfo.target.getMethod("ser")) {
-        pushImport(outImports, context.currentModuleSpecifier, realClassName);
-
+        needImport = true;
         const props = [...clsInfo.properties, ...clsInfo.accessores]
             .map((p, idx) => handlePropOrAccessor(p, idx))
             .filter((s) => {
+                if (!s) return false;
                 if (s.hasSymbol) {
                     const module = context.currentFileNamed2Module[s.typeName];
                     if (module) {
                         pushImport(outImports, module, s.typeName);
                     }
                 }
-                return s;
+                return !!s;
             });
 
         outFunctions.push((writer) => {
@@ -88,9 +95,9 @@ export function onProgress(
                     props
                         .map((p) =>
                             genSerFunctionStr(
-                                p.name,
-                                p.typeName,
-                                p.containerType
+                                p!.name,
+                                p!.typeName,
+                                p!.containerType
                             )
                         )
                         .flat()
@@ -113,13 +120,13 @@ export function onProgress(
                     props
                         .map((p) =>
                             genDeserFunctionStr(
-                                p.name,
-                                p.typeName,
-                                p.containerType
+                                p!.name,
+                                p!.typeName,
+                                p!.containerType
                             )
                         )
                         .flat()
-                        .forEach((p) => writer.writeLine(p));
+                        .forEach((p) => writer.writeLine(p as string));
                 });
         });
 
@@ -141,74 +148,128 @@ export function onProgress(
     }
 
     // Handle rpc ser and deser
-    if (clsInfo.methods.length > 0) {
-        const mds = clsInfo.methods;
-        mds.forEach((md) => {
-            const name = md.target.getName();
-            const paramsParsed = md.params.map((param, idx) => {
-                let type = param.target.getType();
-                if (type.isArray()) type = type.getArrayElementTypeOrThrow();
-                const typeSymbol = type.getSymbol();
-                let typeName = typeSymbol?.getName();
-                if (!typeName) {
-                    let typeNode = param.target.getTypeNode();
-                    if (typeNode) {
-                        if (typeNode.getKind() === SyntaxKind.ArrayType) {
-                            typeNode = (
-                                typeNode as ArrayTypeNode
-                            ).getElementTypeNode();
-                        }
-                        typeName = typeNode.getText();
+    clsInfo.methods.forEach((md) => {
+        const rpcDec = getDecorator(md.decors, "Rpc");
+        if (!rpcDec) return;
+        needImport = true;
+        const name = md.target.getName();
+        const paramsParsed = md.params.map((param, idx) => {
+            let type = param.target.getType();
+            if (type.isArray()) type = type.getArrayElementTypeOrThrow();
+            const typeSymbol = type.getSymbol();
+            let typeName = typeSymbol?.getName();
+            if (!typeName) {
+                let typeNode = param.target.getTypeNode();
+                if (typeNode) {
+                    if (typeNode.getKind() === SyntaxKind.ArrayType) {
+                        typeNode = (
+                            typeNode as ArrayTypeNode
+                        ).getElementTypeNode();
                     }
+                    typeName = typeNode.getText();
                 }
+            }
 
-                if (!typeName) {
-                    console.error(
-                        `Cannot resolve ${realClassName}#${name} arg${idx}`
-                    );
-                    return;
-                }
-                return {
-                    typeName,
-                    isArray: type.isArray(),
-                    hasSymbol: !!typeSymbol,
-                };
-            });
-            paramsParsed.forEach(({ typeName, isArray, hasSymbol }) => {
-                if (hasSymbol) {
-                    const module = context.currentFileNamed2Module[typeName];
-                    pushImport(outImports, module, typeName);
-                }
-            });
-
-            outFunctions.push((writer) => {
-                writer
-                    .write(`${realClassName}.prototype.${name}`)
-                    .space()
-                    .write("=")
-                    .space()
-                    .write(`function()`)
-                    .block();
-            });
+            if (!typeName) {
+                console.error(
+                    `Cannot resolve ${realClassName}#${name} arg${idx}`
+                );
+                return;
+            }
+            return {
+                typeName,
+                isArray: type.isArray(),
+                hasSymbol: !!typeSymbol,
+            };
         });
-    }
+        paramsParsed.forEach((obj) => {
+            if (!obj) return;
+            const { typeName, isArray, hasSymbol } = obj;
+            if (hasSymbol) {
+                const module = context.currentFileNamed2Module[typeName];
+                pushImport(outImports, module, typeName);
+            }
+        });
 
-    // console.log("class: " + className);
+        genRpcFunction(realClassName, name, outFunctions);
+    });
+
     clsInfo.properties.forEach((prop) => {
-        // console.log("prop: " + prop.target.getName());
-        prop.decors.forEach((decor) => decor.remove());
+        const rpcDec = getDecorator(prop.decors, "Rpc");
+        if (!rpcDec) return;
+        needImport = true;
+        const name = prop.target.getName();
+        const propType = prop.target.getType();
+        const propSymbol = propType.getSymbolOrThrow();
+        const propClr = propSymbol.getDeclarations()[0];
+        if (!(propClr instanceof FunctionTypeNode)) return;
+
+        const paramsParsed = propClr.getParameters().map((param, idx) => {
+            let type = param.getType();
+            if (type.isArray()) type = type.getArrayElementTypeOrThrow();
+            const typeSymbol = type.getSymbol();
+            let typeName = typeSymbol?.getName();
+            if (!typeName) {
+                let typeNode = param.getTypeNode();
+                if (typeNode) {
+                    if (typeNode.getKind() === SyntaxKind.ArrayType) {
+                        typeNode = (
+                            typeNode as ArrayTypeNode
+                        ).getElementTypeNode();
+                    }
+                    typeName = typeNode.getText();
+                }
+            }
+
+            if (!typeName) {
+                console.error(
+                    `Cannot resolve ${realClassName}#${name} arg${idx}`
+                );
+                return;
+            }
+            return {
+                typeName,
+                isArray: type.isArray(),
+                hasSymbol: !!typeSymbol,
+            };
+        });
+        paramsParsed.forEach((obj) => {
+            if (!obj) return;
+            const { typeName, isArray, hasSymbol } = obj;
+            if (hasSymbol) {
+                const module = context.currentFileNamed2Module[typeName];
+                pushImport(outImports, module, typeName);
+            }
+        });
+
+        genRpcFunction(realClassName, name, outFunctions);
     });
-    clsInfo.accessores.forEach((accessor) => {
-        // console.log("accessor: " + accessor.target.getName());
-        accessor.decors.forEach((decor) => decor.remove());
+
+    if (needImport) {
+        pushImport(outImports, context.currentModuleSpecifier, realClassName);
+    }
+}
+
+function genRpcFunction(
+    realClassName: string,
+    rpcName: string,
+    outFunctions: WriterFunction[]
+) {
+    outFunctions.push((writer) => {
+        writer
+            .write(`${realClassName}.prototype.${rpcName}`)
+            .space()
+            .write("=")
+            .space()
+            .write(`async function(this: ${realClassName})`)
+            .block(() => {
+                writer.write(`return this.${rpcName}_impl();`);
+            });
     });
-    clsInfo.methods.forEach((md) => md.decors.forEach((dec) => dec.remove()));
 }
 
 export function getClassName(clsInfo: ClassTypeInfo) {
-    const netSerableDecor = clsInfo.decors.find(
-        (d) => d.getName() === "Serable"
-    );
+    const netSerableDecor = getDecorator(clsInfo.decors, "Serable");
     if (!netSerableDecor) return null;
     const args = netSerableDecor.getArguments();
     if (args.length === 0) {
@@ -222,9 +283,7 @@ export function handlePropOrAccessor(
     info: PropTypeInfo | AccessorTypeInfo,
     index: number
 ) {
-    const netVarDecor = info.decors.find((decor) => {
-        return decor.getName() === "Var";
-    });
+    const netVarDecor = getDecorator(info.decors, "Var");
 
     const name = info.target.getName();
     if (!netVarDecor) {

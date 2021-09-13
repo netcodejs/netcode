@@ -1,5 +1,6 @@
-import { LogicTimeComp, RenderTimeComp } from "./builtin-comp/time";
+import { RoleComp } from "./builtin-comp/role";
 import { Float } from "./base-dirty-data";
+import { LogicTimeComp, RenderTimeComp } from "./builtin-comp/time";
 
 // AUTO GENERAOTE!, PLZ DONT EDIT!!
 declare module "./builtin-comp/time" {
@@ -13,6 +14,14 @@ declare module "./builtin-comp/time" {
         deser(buffer: IDataBufferReader): void;
     }
 }
+RoleComp.prototype.upgrade = async function (this: RoleComp) {
+    return this.upgrade_impl();
+};
+
+RoleComp.prototype.downgrade = async function (this: RoleComp) {
+    return this.downgrade_impl();
+};
+
 LogicTimeComp.prototype.ser = function (
     this: LogicTimeComp,
     buffer: IDataBufferWriter
