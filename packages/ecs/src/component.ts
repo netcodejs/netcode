@@ -1,6 +1,10 @@
+import { Archetype } from "./archetype";
+
 export interface ComponentConstructor<Def extends ComponentDefinition = any> {
     readonly typeId: number;
-    readonly definition: Def;
+    readonly definition: Readonly<Def>;
+    readonly isFlag: boolean;
+    readonly byteLength: number;
     new (): DefineClass<Def>;
 }
 
@@ -50,4 +54,7 @@ export type ComponentDefinitionValue2Primitive<
 
 export type DefineClass<Def extends ComponentDefinition> = {
     [key in keyof Def]: ComponentDefinitionValue2Primitive<Def[key]>;
+} & {
+    readonly archetype: Archetype;
+    readonly offset: number;
 };
