@@ -8,7 +8,7 @@ export class Archetype {
     get view() {
         return this._view;
     }
-    private _entityIdx2chunkIdMap: Map<number, number>;
+    private _entitySet: SparseSet;
     private _length = 0;
     private _opacity: number;
     get opacity() {
@@ -31,20 +31,28 @@ export class Archetype {
         this._opacity = Archetype.INITIAL_OPCAITY;
         this._buffer = new ArrayBuffer(Archetype.INITIAL_OPCAITY * byteLength);
         this._view = new DataView(this._buffer);
-        this._entityIdx2chunkIdMap = new Map();
+        this._entitySet = new SparseSet();
     }
 
-    add(index: number) {
+    addEntity(index: number) {
         if (this._length >= this._opacity) {
             this.resize();
         }
-        const chunkId = this._length++;
-        this._entityIdx2chunkIdMap.set(index, chunkId);
-        return chunkId;
+
+        this._entitySet.add(index);
     }
 
-    remove(index: number) {
-        return this._entityIdx2chunkIdMap.delete(index);
+    removeEntity(index: number) {
+        return this._entitySet.remove(index);
+    }
+
+    getChunkId(index: number) {
+        if (!this._entitySet.has(index)) return -1;
+        return this._entitySet.sparse[index];
+    }
+
+    getChunkEntityId(): readonly number[] {
+        return this._entitySet.packed;
     }
 
     resize(length: number = this._getNewSize()) {
@@ -59,5 +67,34 @@ export class Archetype {
     protected _getNewSize() {
         const size = Math.ceil(this._opacity * 1.5);
         return size - (size % 2);
+    }
+}
+
+export class SparseSet {
+    packed: number[] = [];
+    sparse: number[] = [];
+
+    has(x: number) {
+        return (
+            this.sparse[x] < this.packed.length &&
+            this.packed[this.sparse[x]] === x
+        );
+    }
+
+    add(x: number) {
+        if (!this.has(x)) {
+            this.sparse[x] = this.packed.length;
+            this.packed.push(x);
+        }
+    }
+
+    remove(x: number) {
+        if (this.has(x)) {
+            const last = this.packed.pop()!;
+            if (x !== last) {
+                this.sparse[last] = this.sparse[x];
+                this.packed[this.sparse[x]] = last;
+            }
+        }
     }
 }

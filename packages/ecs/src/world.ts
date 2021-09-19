@@ -73,8 +73,8 @@ export class World {
 
         const oldArchetype = this._archetypes.get(oldMask);
         const newArchetype = this._archetypes.get(newMask);
-        newArchetype.add(entity.index);
-        oldArchetype.remove(entity.index);
+        newArchetype.addEntity(entity.index);
+        oldArchetype.removeEntity(entity.index);
     }
 
     getComponent<T extends ComponentConstructor>(
@@ -107,10 +107,16 @@ export class World {
 
     //#region archetype
     createArchetype(...ctrs: ComponentConstructor[]): Archetype {
-        return new Archetype(mask, byteLength);
+        const arch = new Archetype(ctrs);
+        this._archetypes.set(arch.mask, arch);
+        return arch;
     }
 
-    createArchetypeEntity(archetype: Archetype) {}
+    createArchetypeEntity(archetype: Archetype) {
+        const entity = this.createEntity();
+        archetype.addEntity(entity);
+        return entity;
+    }
 
     getArchetype(mask: number) {
         return this._archetypes.get(mask);

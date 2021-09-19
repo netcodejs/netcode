@@ -1,4 +1,5 @@
 import { Archetype } from "./archetype";
+import { BitArray } from "./custom-typed-array";
 
 export interface ComponentConstructor<Def extends ComponentDefinition = any> {
     readonly typeId: number;
@@ -18,8 +19,21 @@ export enum Type {
     f32,
     f64,
     bool,
-    string,
+    native,
 }
+
+export const Type2TypedArray = {
+    [Type.i8]: Int8Array,
+    [Type.u8]: Uint8Array,
+    [Type.i16]: Int16Array,
+    [Type.u16]: Uint16Array,
+    [Type.i32]: Int32Array,
+    [Type.u32]: Uint32Array,
+    [Type.f32]: Float32Array,
+    [Type.f64]: Float64Array,
+    [Type.bool]: BitArray,
+    [Type.native]: Array,
+};
 
 export type Type2Primitive = {
     [Type.i8]: number;
@@ -31,7 +45,7 @@ export type Type2Primitive = {
     [Type.f32]: number;
     [Type.f64]: number;
     [Type.bool]: boolean;
-    [Type.string]: string;
+    [Type.native]: any;
 };
 
 export type ElementType<T extends ReadonlyArray<unknown>> =
