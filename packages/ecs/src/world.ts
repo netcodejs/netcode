@@ -1,6 +1,13 @@
 import { Archetype } from "./archetype";
-import { ComponentConstructor, ComponentDefinition, Type } from "./component";
-import { resetBit, setBit, testBit } from "./util";
+import { ComponentConstructor, ComponentDefinition } from "./component";
+import { Entity } from "./entity";
+import {
+    generateDefinePrototype,
+    resetBit,
+    setBit,
+    sortDefine,
+    testBit,
+} from "./util";
 
 const MAX_ENTITY = (1 << 16) - 1;
 export class World {
@@ -9,12 +16,16 @@ export class World {
     static define<T extends ComponentDefinition>(
         define?: T
     ): ComponentConstructor<T> {
+        const [sorted, byteLength] = sortDefine(define);
         const ctr = {
             typeId: this._compCtrs.length,
-            definition: define,
+            definition: sorted,
             isFlag: !define || Object.keys(define).length === 0,
-            byteLength: 0,
+            byteLength,
         } as ComponentConstructor<T>;
+        ctr.prototype = {};
+        generateDefinePrototype(ctr);
+
         this._compCtrs.push(ctr);
         return ctr;
     }
@@ -32,7 +43,7 @@ export class World {
     validate(entity: Entity) {
         if (entity.index < 0 || entity.index >= MAX_ENTITY) return false;
         const currentVersion = this._entityVersions[entity.index];
-        return entity.version !== currentVersion;
+        return entity.version === currentVersion;
     }
 
     //#region entity
@@ -60,21 +71,29 @@ export class World {
     //#endregion
 
     //#region component
-    addComponent<T extends ComponentConstructor>(entity: Entity, ctr: T): void {
-        if (!this.validate(entity)) return;
+    addComponent<T extends ComponentConstructor>(
+        entity: Entity,
+        ctr: T
+    ): InstanceType<T> {
+        if (!this.validate(entity)) return null;
         const compId = ctr.typeId;
         const oldMask = this._entityComps[entity.index];
-        if (testBit(oldMask, compId)) return;
+        if (testBit(oldMask, compId)) return this.getComponent(entity, ctr);
         const newMask = setBit(oldMask, compId);
         this._entityComps[entity.index] = newMask;
         if (ctr.isFlag) {
-            return;
+            return null;
         }
 
         const oldArchetype = this._archetypes.get(oldMask);
         const newArchetype = this._archetypes.get(newMask);
-        newArchetype.addEntity(entity.index);
+        const chunkId = newArchetype.addEntity(entity.index);
         oldArchetype.removeEntity(entity.index);
+
+        const ins = Object.create(ctr.prototype);
+        ins.archetype = newArchetype;
+        ins.offset = chunkId * newArchetype.byteLength;
+        return ins;
     }
 
     getComponent<T extends ComponentConstructor>(
@@ -84,9 +103,16 @@ export class World {
         if (!this.validate(entity)) return null;
         const compId = ctr.typeId;
         const comps = this._entityComps[entity.index];
-        if (testBit(comps, compId)) return null;
+        if (!testBit(comps, compId)) return null;
         this._entityComps[entity.index] = setBit(comps, compId);
-        return null;
+
+        const mask = this._entityComps[entity.index];
+        const arch = this._archetypes.get(mask);
+        const chunkId = arch.getChunkId(entity.index);
+        const ins = Object.create(ctr.prototype);
+        ins.archetype = arch;
+        ins.offset = chunkId * arch.byteLength;
+        return ins;
     }
 
     removeComponent<T extends ComponentConstructor>(
@@ -114,7 +140,8 @@ export class World {
 
     createArchetypeEntity(archetype: Archetype) {
         const entity = this.createEntity();
-        archetype.addEntity(entity);
+        this._entityComps[entity.index] = archetype.mask;
+        archetype.addEntity(entity.index);
         return entity;
     }
 
@@ -123,17 +150,3 @@ export class World {
     }
     //#endregion
 }
-
-const Vector = World.define({ x: Type.i16, y: Type.i16, z: Type.string });
-type Vector = InstanceType<typeof Vector>;
-
-const Position = World.define({ pos: Vector, angle: [Type.i16] });
-type Position = InstanceType<typeof Position>;
-
-let w: World;
-let ent = w.createEntity();
-let vec = w.addComponent(ent, Vector);
-w.removeComponent(ent, Vector);
-
-let pos: Position;
-pos.angle[0];

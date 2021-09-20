@@ -1,12 +1,14 @@
 import { Archetype } from "./archetype";
 import { BitArray } from "./custom-typed-array";
 
-export interface ComponentConstructor<Def extends ComponentDefinition = any> {
+export interface ComponentConstructor<
+    Define extends ComponentDefinition = ComponentDefinition
+> {
     readonly typeId: number;
-    readonly definition: Readonly<Def>;
+    readonly definition: SortedComponentdefinition;
     readonly isFlag: boolean;
     readonly byteLength: number;
-    new (): DefineClass<Def>;
+    new (): DefineClass<Define>;
 }
 
 export enum Type {
@@ -34,6 +36,7 @@ export const Type2TypedArray = {
     [Type.bool]: BitArray,
     [Type.native]: Array,
 };
+export type Type2TypedArray = typeof Type2TypedArray;
 
 export type Type2Primitive = {
     [Type.i8]: number;
@@ -46,6 +49,7 @@ export type Type2Primitive = {
     [Type.f64]: number;
     [Type.bool]: boolean;
     [Type.native]: any;
+    never: never;
 };
 
 export type ElementType<T extends ReadonlyArray<unknown>> =
@@ -53,22 +57,60 @@ export type ElementType<T extends ReadonlyArray<unknown>> =
 
 export type ComponentDefinition = Record<
     string,
-    Type | [Type] | ComponentConstructor
+    | Type
+    | [def: Type, length: number]
+    | ComponentConstructor
+    | [def: ComponentConstructor, length: number]
+>;
+
+export enum DefineValueType {
+    PLAIN,
+    COMPLEX,
+}
+
+export type SortedComponentdefinitionValue = (
+    | {
+          type: DefineValueType.COMPLEX;
+          sign: ComponentConstructor;
+      }
+    | {
+          type: DefineValueType;
+          sign: Type;
+      }
+) & {
+    length: number;
+    offset: number;
+    isArray: boolean;
+};
+export type SortedComponentdefinition = Record<
+    string,
+    SortedComponentdefinitionValue
 >;
 
 export type ComponentDefinitionValue2Primitive<
-    T extends Type | [Type] | ComponentConstructor
-> = T extends number
+    T extends
+        | Type
+        | [def: Type, length: number]
+        | ComponentConstructor
+        | [def: ComponentConstructor, length: number],
+    R = T extends [any, number] ? T[0] : unknown
+> = T extends Type
     ? Type2Primitive[T]
-    : T extends [Type]
-    ? Type2Primitive[ElementType<T>]
     : T extends ComponentConstructor
     ? InstanceType<T>
+    : R extends Type
+    ? Array<Type2Primitive[R]>
+    : R extends ComponentConstructor
+    ? Array<InstanceType<R>>
     : unknown;
 
-export type DefineClass<Def extends ComponentDefinition> = {
-    [key in keyof Def]: ComponentDefinitionValue2Primitive<Def[key]>;
-} & {
-    readonly archetype: Archetype;
-    readonly offset: number;
-};
+export type DefineClass<Def extends ComponentDefinition = ComponentDefinition> =
+    {
+        [key in keyof Def]: (() => ComponentDefinitionValue2Primitive<
+            Def[key]
+        >) &
+            ((val: ComponentDefinitionValue2Primitive<Def[key]>) => void);
+    } & {
+        archetype: Archetype;
+        offset: number;
+    };

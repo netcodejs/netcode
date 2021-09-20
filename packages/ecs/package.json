@@ -1,7 +1,11 @@
 {
   "name": "@netcodejs/ecs",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "author": "mooooooi",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  }
 }

@@ -3,14 +3,11 @@ import { setBit } from "./util";
 
 export class Archetype {
     static readonly INITIAL_OPCAITY = 100;
-    private _buffer: ArrayBuffer;
-    private _view: DataView;
-    get view() {
-        return this._view;
-    }
     private _entitySet: SparseSet;
-    private _length = 0;
     private _opacity: number;
+    private _length: number;
+    private _buffer: ArrayBuffer;
+    readonly view: DataView;
     get opacity() {
         return this._opacity;
     }
@@ -29,8 +26,12 @@ export class Archetype {
         this.byteLength = byteLength;
 
         this._opacity = Archetype.INITIAL_OPCAITY;
-        this._buffer = new ArrayBuffer(Archetype.INITIAL_OPCAITY * byteLength);
-        this._view = new DataView(this._buffer);
+        this._length = 0;
+        this._buffer = new ArrayBuffer(
+            this.byteLength * Archetype.INITIAL_OPCAITY
+        );
+        this.view = new DataView(this._buffer);
+
         this._entitySet = new SparseSet();
     }
 
@@ -39,7 +40,7 @@ export class Archetype {
             this.resize();
         }
 
-        this._entitySet.add(index);
+        return this._entitySet.add(index);
     }
 
     removeEntity(index: number) {
@@ -61,7 +62,7 @@ export class Archetype {
 
         this._buffer = newBuffer;
         this._opacity = length;
-        this._view = new DataView(this._buffer);
+        (this.view as DataView) = new DataView(this._buffer);
     }
 
     protected _getNewSize() {
@@ -82,10 +83,12 @@ export class SparseSet {
     }
 
     add(x: number) {
-        if (!this.has(x)) {
-            this.sparse[x] = this.packed.length;
-            this.packed.push(x);
+        if (this.has(x)) {
+            return this.sparse[x];
         }
+        this.sparse[x] = this.packed.length;
+        this.packed.push(x);
+        return this.sparse[x];
     }
 
     remove(x: number) {
