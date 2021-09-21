@@ -107,7 +107,7 @@ export function sortDefine(
 
 export function generateDefinePrototype(ctr: ComponentConstructor) {
     for (let [name, define] of Object.entries(ctr.definition)) {
-        if (define.type === DefineValueType.PLAIN) {
+        if (!define.isArray && define.type === DefineValueType.PLAIN) {
             switch (define.sign) {
                 case Type.i8:
                     ctr.prototype[name] = function (
@@ -239,16 +239,6 @@ export function generateDefinePrototype(ctr: ComponentConstructor) {
                     };
                     break;
             }
-        } else if (define.type === DefineValueType.COMPLEX) {
-            ctr.prototype[name] = function (this: DefineClass) {
-                const obj = Object.create(
-                    (define.sign as ComponentConstructor)
-                        .prototype as ComponentConstructor
-                );
-                obj.archetype = this.archetype;
-                obj.offset = this.offset + define.offset;
-                return obj;
-            };
         }
     }
 }

@@ -8,7 +8,7 @@ export interface ComponentConstructor<
     readonly definition: SortedComponentdefinition;
     readonly isFlag: boolean;
     readonly byteLength: number;
-    new (): DefineClass<Define>;
+    new (archetype: Archetype, offset: number): DefineClass<Define>;
 }
 
 export enum Type {
@@ -36,7 +36,18 @@ export const Type2TypedArray = {
     [Type.bool]: BitArray,
     [Type.native]: Array,
 };
-export type Type2TypedArray = typeof Type2TypedArray;
+export interface Type2TypedArray {
+    [Type.i8]: Int8Array;
+    [Type.u8]: Uint8Array;
+    [Type.i16]: Int16Array;
+    [Type.u16]: Uint16Array;
+    [Type.i32]: Int32Array;
+    [Type.u32]: Uint32Array;
+    [Type.f32]: Float32Array;
+    [Type.f64]: Float64Array;
+    [Type.bool]: BitArray;
+    [Type.native]: Array<any>;
+}
 
 export type Type2Primitive = {
     [Type.i8]: number;
@@ -74,7 +85,7 @@ export type SortedComponentdefinitionValue = (
           sign: ComponentConstructor;
       }
     | {
-          type: DefineValueType;
+          type: DefineValueType.PLAIN;
           sign: Type;
       }
 ) & {
@@ -99,17 +110,17 @@ export type ComponentDefinitionValue2Primitive<
     : T extends ComponentConstructor
     ? InstanceType<T>
     : R extends Type
-    ? Array<Type2Primitive[R]>
+    ? Type2TypedArray[R]
     : R extends ComponentConstructor
     ? Array<InstanceType<R>>
     : unknown;
 
 export type DefineClass<Def extends ComponentDefinition = ComponentDefinition> =
     {
-        [key in keyof Def]: (() => ComponentDefinitionValue2Primitive<
-            Def[key]
-        >) &
-            ((val: ComponentDefinitionValue2Primitive<Def[key]>) => void);
+        readonly [key in keyof Def]: Def[key] extends Type
+            ? (() => ComponentDefinitionValue2Primitive<Def[key]>) &
+                  ((val: ComponentDefinitionValue2Primitive<Def[key]>) => void)
+            : ComponentDefinitionValue2Primitive<Def[key]>;
     } & {
         archetype: Archetype;
         offset: number;

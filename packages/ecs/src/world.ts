@@ -1,5 +1,11 @@
 import { Archetype } from "./archetype";
-import { ComponentConstructor, ComponentDefinition } from "./component";
+import {
+    ComponentConstructor,
+    ComponentDefinition,
+    DefineValueType,
+    SortedComponentdefinition,
+    Type2TypedArray,
+} from "./component";
 import { Entity } from "./entity";
 import {
     generateDefinePrototype,
@@ -17,17 +23,54 @@ export class World {
         define?: T
     ): ComponentConstructor<T> {
         const [sorted, byteLength] = sortDefine(define);
-        const ctr = {
-            typeId: this._compCtrs.length,
-            definition: sorted,
-            isFlag: !define || Object.keys(define).length === 0,
-            byteLength,
-        } as ComponentConstructor<T>;
-        ctr.prototype = {};
-        generateDefinePrototype(ctr);
+        const ctr = class {
+            static typeId: number;
+            static definition: SortedComponentdefinition;
+            static isFlag: boolean;
+            static byteLength: number;
 
-        this._compCtrs.push(ctr);
-        return ctr;
+            constructor(
+                readonly archetype: Archetype,
+                readonly offset: number
+            ) {
+                for (let [name, define] of Object.entries(ctr.definition)) {
+                    if (define.isArray) {
+                        if (define.type === DefineValueType.COMPLEX) {
+                            const arr = new Array(define.length);
+                            for (let i = 0, len = define.length; i < len; i++) {
+                                arr[i] = new define.sign(
+                                    archetype,
+                                    offset + define.offset * i
+                                );
+                            }
+                            this[name] = arr;
+                        } else if (define.type === DefineValueType.PLAIN) {
+                            this[name] = new Type2TypedArray[define.sign](
+                                define.length
+                            );
+                        }
+                    } else {
+                        if (define.type === DefineValueType.COMPLEX) {
+                            this[name] = new define.sign(
+                                archetype,
+                                offset + define.offset
+                            );
+                        }
+                    }
+                }
+            }
+        };
+
+        ctr.typeId = this._compCtrs.length;
+        ctr.definition = sorted;
+        ctr.isFlag = !define || Object.keys(define).length === 0;
+        ctr.byteLength = byteLength;
+
+        const readonlyCtr = ctr as ComponentConstructor<T>;
+        generateDefinePrototype(readonlyCtr);
+
+        this._compCtrs.push(readonlyCtr);
+        return readonlyCtr;
     }
 
     private _entityComps = new Uint32Array(MAX_ENTITY);
@@ -90,10 +133,8 @@ export class World {
         const chunkId = newArchetype.addEntity(entity.index);
         oldArchetype.removeEntity(entity.index);
 
-        const ins = Object.create(ctr.prototype);
-        ins.archetype = newArchetype;
-        ins.offset = chunkId * newArchetype.byteLength;
-        return ins;
+        const ins = new ctr(newArchetype, chunkId * newArchetype.byteLength);
+        return ins as InstanceType<T>;
     }
 
     getComponent<T extends ComponentConstructor>(
@@ -109,10 +150,8 @@ export class World {
         const mask = this._entityComps[entity.index];
         const arch = this._archetypes.get(mask);
         const chunkId = arch.getChunkId(entity.index);
-        const ins = Object.create(ctr.prototype);
-        ins.archetype = arch;
-        ins.offset = chunkId * arch.byteLength;
-        return ins;
+        const ins = new ctr(arch, chunkId * arch.byteLength);
+        return ins as InstanceType<T>;
     }
 
     removeComponent<T extends ComponentConstructor>(

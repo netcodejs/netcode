@@ -24,9 +24,16 @@ test("component", () => {
     const arch = w.createArchetype(Transform);
     const e = w.createArchetypeEntity(arch);
     const trs = w.getComponent(e, Transform);
-    trs.pos().x(123);
-    trs.pos().z(124);
-    expect(trs.pos().x()).toBe(123);
-    expect(trs.pos().y()).toBe(0);
-    expect(trs.pos().z()).toBe(124);
+    trs.pos.x(123);
+    trs.pos.z(124);
+    expect(trs.pos.x()).toBe(123);
+    expect(trs.pos.y()).toBe(0);
+    expect(trs.pos.z()).toBe(124);
+
+    trs.angles[0] = 123;
+    expect(trs.angles[0]).toBe(123);
+    expect(trs.angles[3]).toBe(0);
+
+    expect(Array.isArray(trs.pots)).toBe(true);
+    expect(ArrayBuffer.isView(trs.angles)).toBe(true);
 });
