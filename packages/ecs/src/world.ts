@@ -25,7 +25,8 @@ export class World {
         const [sorted, byteLength] = sortDefine(define);
         const ctr = class {
             static typeId: number;
-            static definition: SortedComponentdefinition;
+            static definition: ComponentDefinition;
+            static sortedDefinition: SortedComponentdefinition;
             static isFlag: boolean;
             static byteLength: number;
 
@@ -33,7 +34,9 @@ export class World {
                 readonly archetype: Archetype,
                 readonly offset: number
             ) {
-                for (let [name, define] of Object.entries(ctr.definition)) {
+                for (let [name, define] of Object.entries(
+                    ctr.sortedDefinition
+                )) {
                     if (define.isArray) {
                         if (define.type === DefineValueType.COMPLEX) {
                             const arr = new Array(define.length);
@@ -62,7 +65,8 @@ export class World {
         };
 
         ctr.typeId = this._compCtrs.length;
-        ctr.definition = sorted;
+        ctr.sortedDefinition = sorted;
+        ctr.definition = define;
         ctr.isFlag = !define || Object.keys(define).length === 0;
         ctr.byteLength = byteLength;
 

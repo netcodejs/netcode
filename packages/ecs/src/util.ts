@@ -106,7 +106,7 @@ export function sortDefine(
 }
 
 export function generateDefinePrototype(ctr: ComponentConstructor) {
-    for (let [name, define] of Object.entries(ctr.definition)) {
+    for (let [name, define] of Object.entries(ctr.sortedDefinition)) {
         if (!define.isArray && define.type === DefineValueType.PLAIN) {
             switch (define.sign) {
                 case Type.i8:

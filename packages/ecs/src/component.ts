@@ -5,7 +5,8 @@ export interface ComponentConstructor<
     Define extends ComponentDefinition = ComponentDefinition
 > {
     readonly typeId: number;
-    readonly definition: SortedComponentdefinition;
+    readonly sortedDefinition: SortedComponentdefinition;
+    readonly definition: ComponentDefinition;
     readonly isFlag: boolean;
     readonly byteLength: number;
     new (archetype: Archetype, offset: number): DefineClass<Define>;
