@@ -34,6 +34,8 @@ export class World {
                 readonly archetype: Archetype,
                 readonly offset: number
             ) {
+                const view = archetype.view;
+                const buffer = view.buffer;
                 for (let [name, define] of Object.entries(
                     ctr.sortedDefinition
                 )) {
@@ -43,12 +45,16 @@ export class World {
                             for (let i = 0, len = define.length; i < len; i++) {
                                 arr[i] = new define.sign(
                                     archetype,
-                                    offset + define.offset * i
+                                    offset +
+                                        define.offset +
+                                        define.sign.byteLength * i
                                 );
                             }
                             this[name] = arr;
                         } else if (define.type === DefineValueType.PLAIN) {
                             this[name] = new Type2TypedArray[define.sign](
+                                buffer,
+                                offset + define.offset,
                                 define.length
                             );
                         }
@@ -181,7 +187,7 @@ export class World {
         return arch;
     }
 
-    createArchetypeEntity(archetype: Archetype) {
+    createEntityByArchetype(archetype: Archetype) {
         const entity = this.createEntity();
         this._entityComps[entity.index] = archetype.mask;
         archetype.addEntity(entity.index);

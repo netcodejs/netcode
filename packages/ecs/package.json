@@ -6,6 +6,8 @@
   "author": "mooooooi",
   "license": "MIT",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test-debug": "jest -i",
+    "build": "node build.js"
   }
 }

@@ -34,9 +34,10 @@ export const Type2TypedArray = {
     [Type.u32]: Uint32Array,
     [Type.f32]: Float32Array,
     [Type.f64]: Float64Array,
-    [Type.bool]: BitArray,
-    [Type.native]: Array,
+    // [Type.bool]: BitArray,
+    // [Type.native]: Array,
 };
+
 export interface Type2TypedArray {
     [Type.i8]: Int8Array;
     [Type.u8]: Uint8Array;
