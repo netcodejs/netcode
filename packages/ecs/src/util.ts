@@ -1,10 +1,11 @@
 import {
     ComponentConstructor,
-    ComponentDefinition,
-    DefineClass,
-    DefineValueType,
-    SortedComponentdefinition,
+    ComponentSchema,
+    Component,
+    PlainSignature,
+    SortedComponentSchema,
     Type,
+    ComplexSignature,
 } from "./component";
 import { Entity } from "./entity";
 
@@ -48,7 +49,7 @@ export function isComponentConstructor(
     return typeof sign !== "number";
 }
 
-export function getPlainByteLength(type: Type, length = 1) {
+export function getPlainByteLength(type: Type) {
     switch (type) {
         case Type.i8:
         case Type.u8:
@@ -56,189 +57,376 @@ export function getPlainByteLength(type: Type, length = 1) {
             return length;
         case Type.i16:
         case Type.u16:
-            return 2 * length;
+            return 2;
         case Type.i32:
         case Type.u32:
         case Type.f32:
-            return 4 * length;
+            return 4;
         case Type.f64:
-            return 8 * length;
+            return 8;
         default:
             return 0;
     }
 }
 
 export function sortDefine(
-    define: ComponentDefinition
-): [SortedComponentdefinition, number] {
+    define: ComponentSchema
+): [SortedComponentSchema, number] {
     let byteLength = 0;
     const entries = Object.entries(define);
-    const out = {};
-    for (let [propName, define] of entries) {
-        let sign: Type | ComponentConstructor;
+    const out: SortedComponentSchema = {
+        plains: [],
+        plainArrays: [],
+        complexs: [],
+        complexArrays: [],
+    };
+    for (let [name, define] of entries) {
+        let valueType: Type | ComponentConstructor;
         let length = 1;
         let isArray = false;
         const offset = byteLength;
         if (Array.isArray(define)) {
             isArray = true;
-            [sign, length] = define;
+            [valueType, length] = define;
         } else {
-            sign = define;
+            valueType = define;
         }
 
-        let type = DefineValueType.PLAIN;
-        if (isComponentConstructor(sign)) {
-            type = DefineValueType.COMPLEX;
-            byteLength += sign.byteLength * length;
+        if (isComponentConstructor(valueType)) {
+            byteLength += valueType.byteLength * length;
+            if (isArray) {
+                out.complexArrays.push({
+                    type: valueType,
+                    length,
+                    offset,
+                    name,
+                });
+            } else {
+                out.complexs.push({
+                    type: valueType,
+                    offset,
+                    name,
+                });
+            }
         } else {
-            byteLength += getPlainByteLength(sign, length);
+            const singleSize = getPlainByteLength(valueType);
+            byteLength += singleSize * length;
+            if (isArray) {
+                out.plainArrays.push({
+                    type: valueType,
+                    length,
+                    offset,
+                    name,
+                    singleSize,
+                });
+            } else {
+                out.plains.push({
+                    type: valueType,
+                    offset,
+                    name,
+                    singleSize,
+                });
+            }
         }
-        out[propName] = {
-            sign,
-            type,
-            isArray,
-            length,
-            offset,
-        };
     }
 
     return [out, byteLength];
 }
 
-export function generateDefinePrototype(ctr: ComponentConstructor) {
-    for (let [name, define] of Object.entries(ctr.sortedDefinition)) {
-        if (!define.isArray && define.type === DefineValueType.PLAIN) {
-            switch (define.sign) {
-                case Type.i8:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: number
-                    ): void | number {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return view.getInt8(this.offset + define.offset);
-                        } else {
-                            view.setInt8(this.offset + define.offset, val);
-                        }
-                    };
-                    break;
-                case Type.u8:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: number
-                    ): void | number {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return view.getUint8(this.offset + define.offset);
-                        } else {
-                            view.setUint8(this.offset + define.offset, val);
-                        }
-                    };
-                    break;
-                case Type.bool:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: boolean
-                    ): void | boolean {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return !!view.getUint8(this.offset + define.offset);
-                        } else {
-                            view.setUint8(
-                                this.offset + define.offset,
-                                Number(val)
-                            );
-                        }
-                    };
-                    break;
-                case Type.i16:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: number
-                    ): void | number {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return view.getInt16(this.offset + define.offset);
-                        } else {
-                            view.setInt16(this.offset + define.offset, val);
-                        }
-                    };
-                    break;
-                case Type.u16:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: number
-                    ): void | number {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return view.getUint16(this.offset + define.offset);
-                        } else {
-                            view.setUint16(this.offset + define.offset, val);
-                        }
-                    };
-                    break;
-                case Type.i32:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: number
-                    ): void | number {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return view.getInt32(this.offset + define.offset);
-                        } else {
-                            view.setInt32(this.offset + define.offset, val);
-                        }
-                    };
-                    break;
-                case Type.u32:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: number
-                    ): void | number {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return view.getUint32(this.offset + define.offset);
-                        } else {
-                            view.setUint32(this.offset + define.offset, val);
-                        }
-                    };
-                    break;
-                case Type.f32:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: number
-                    ): void | number {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return view.getFloat32(this.offset + define.offset);
-                        } else {
-                            view.setFloat32(this.offset + define.offset, val);
-                        }
-                    };
-                    break;
-                case Type.f64:
-                    ctr.prototype[name] = function (
-                        this: DefineClass,
-                        val?: number
-                    ): void | number {
-                        const arch = this.archetype;
-                        const view = arch.view;
-                        if (val === void 0) {
-                            return view.getFloat64(this.offset + define.offset);
-                        } else {
-                            view.setFloat64(this.offset + define.offset, val);
-                        }
-                    };
-                    break;
-            }
-        }
+export function genPlainAccessFunction(sign: PlainSignature) {
+    switch (sign.type) {
+        case Type.i8:
+            return function (this: Component, val?: number): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getInt8(this.offset + sign.offset);
+                } else {
+                    view.setInt8(this.offset + sign.offset, val);
+                }
+            };
+        case Type.u8:
+            return function (this: Component, val?: number): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getUint8(this.offset + sign.offset);
+                } else {
+                    view.setUint8(this.offset + sign.offset, val);
+                }
+            };
+        case Type.bool:
+            return function (this: Component, val?: boolean): void | boolean {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return !!view.getUint8(this.offset + sign.offset);
+                } else {
+                    view.setUint8(this.offset + sign.offset, Number(val));
+                }
+            };
+        case Type.i16:
+            return function (this: Component, val?: number): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getInt16(this.offset + sign.offset, true);
+                } else {
+                    view.setInt16(this.offset + sign.offset, val, true);
+                }
+            };
+        case Type.u16:
+            return function (this: Component, val?: number): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getUint16(this.offset + sign.offset, true);
+                } else {
+                    view.setUint16(this.offset + sign.offset, val, true);
+                }
+            };
+        case Type.i32:
+            return function (this: Component, val?: number): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getInt32(this.offset + sign.offset, true);
+                } else {
+                    view.setInt32(this.offset + sign.offset, val, true);
+                }
+            };
+        case Type.u32:
+            return function (this: Component, val?: number): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getUint32(this.offset + sign.offset, true);
+                } else {
+                    view.setUint32(this.offset + sign.offset, val, true);
+                }
+            };
+        case Type.f32:
+            return function (this: Component, val?: number): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getFloat32(this.offset + sign.offset, true);
+                } else {
+                    view.setFloat32(this.offset + sign.offset, val, true);
+                }
+            };
+        case Type.f64:
+            return function (this: Component, val?: number): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getFloat64(this.offset + sign.offset, true);
+                } else {
+                    view.setFloat64(this.offset + sign.offset, val, true);
+                }
+            };
+        default:
+            return null;
+    }
+}
+
+export function genPlainArrayAccessFunction(sign: PlainSignature) {
+    switch (sign.type) {
+        case Type.i8:
+            return function (
+                this: Component,
+                index: number,
+                val?: number
+            ): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getInt8(
+                        this.offset + sign.offset + sign.singleSize * index
+                    );
+                } else {
+                    view.setInt8(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        val
+                    );
+                }
+            };
+        case Type.u8:
+            return function (
+                this: Component,
+                index: number,
+                val?: number
+            ): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getUint8(
+                        this.offset + sign.offset + sign.singleSize * index
+                    );
+                } else {
+                    view.setUint8(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        val
+                    );
+                }
+            };
+        case Type.bool:
+            return function (
+                this: Component,
+                index: number,
+                val?: boolean
+            ): void | boolean {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return !!view.getUint8(
+                        this.offset + sign.offset + sign.singleSize * index
+                    );
+                } else {
+                    view.setUint8(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        Number(val)
+                    );
+                }
+            };
+        case Type.i16:
+            return function (
+                this: Component,
+                index: number,
+                val?: number
+            ): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getInt16(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        true
+                    );
+                } else {
+                    view.setInt16(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        val,
+                        true
+                    );
+                }
+            };
+        case Type.u16:
+            return function (
+                this: Component,
+                index: number,
+                val?: number
+            ): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getUint16(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        true
+                    );
+                } else {
+                    view.setUint16(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        val,
+                        true
+                    );
+                }
+            };
+        case Type.i32:
+            return function (
+                this: Component,
+                index: number,
+                val?: number
+            ): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getInt32(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        true
+                    );
+                } else {
+                    view.setInt32(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        val,
+                        true
+                    );
+                }
+            };
+        case Type.u32:
+            return function (
+                this: Component,
+                index: number,
+                val?: number
+            ): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getUint32(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        true
+                    );
+                } else {
+                    view.setUint32(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        val,
+                        true
+                    );
+                }
+            };
+        case Type.f32:
+            return function (
+                this: Component,
+                index: number,
+                val?: number
+            ): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getFloat32(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        true
+                    );
+                } else {
+                    view.setFloat32(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        val,
+                        true
+                    );
+                }
+            };
+        case Type.f64:
+            return function (
+                this: Component,
+                index: number,
+                val?: number
+            ): void | number {
+                const arch = this.archetype;
+                const view = arch.view;
+                if (val === void 0) {
+                    return view.getFloat64(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        true
+                    );
+                } else {
+                    view.setFloat64(
+                        this.offset + sign.offset + sign.singleSize * index,
+                        val,
+                        true
+                    );
+                }
+            };
+        default:
+            return null;
+    }
+}
+
+export function genComplexPrototype(sign: ComplexSignature, prototype: Object) {
+    const sorted = sign.type.sortedDefinition;
+
+    for (let sign of sorted.plains) {
+        prototype[sign.name] = genPlainAccessFunction(sign);
+    }
+    for (let sign of sorted.plainArrays) {
+        prototype[sign.name] = genPlainArrayAccessFunction(sign);
     }
 }

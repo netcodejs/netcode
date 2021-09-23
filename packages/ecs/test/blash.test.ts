@@ -30,9 +30,9 @@ test("component", () => {
     expect(trs.pos.y()).toBe(0);
     expect(trs.pos.z()).toBe(124);
 
-    trs.angles[0] = 123;
-    expect(trs.angles[0]).toBe(123);
-    expect(trs.angles[3]).toBe(0);
+    trs.angles(0, 123);
+    expect(trs.angles(0)).toBe(123);
+    expect(trs.angles(3)).toBe(0);
 
     const pot = trs.pots[0];
     pot.x(111);

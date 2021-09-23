@@ -1,14 +1,13 @@
 import { Archetype } from "./archetype";
 import {
     ComponentConstructor,
-    ComponentDefinition,
-    DefineValueType,
-    SortedComponentdefinition,
-    Type2TypedArray,
+    ComponentSchema,
+    SortedComponentSchema,
 } from "./component";
 import { Entity } from "./entity";
 import {
-    generateDefinePrototype,
+    genPlainAccessFunction,
+    genPlainArrayAccessFunction,
     resetBit,
     setBit,
     sortDefine,
@@ -19,14 +18,14 @@ const MAX_ENTITY = (1 << 16) - 1;
 export class World {
     private static _compCtrs: ComponentConstructor[] = [];
 
-    static define<T extends ComponentDefinition>(
+    static define<T extends ComponentSchema>(
         define?: T
     ): ComponentConstructor<T> {
         const [sorted, byteLength] = sortDefine(define);
         const ctr = class {
             static typeId: number;
-            static definition: ComponentDefinition;
-            static sortedDefinition: SortedComponentdefinition;
+            static definition: ComponentSchema;
+            static sortedDefinition: SortedComponentSchema;
             static isFlag: boolean;
             static byteLength: number;
 
@@ -36,48 +35,16 @@ export class World {
             ) {
                 const view = archetype.view;
                 const buffer = view.buffer;
-                for (let [name, define] of Object.entries(
-                    ctr.sortedDefinition
-                )) {
-                    if (define.isArray) {
-                        if (define.type === DefineValueType.COMPLEX) {
-                            const arr = new Array(define.length);
-                            for (let i = 0, len = define.length; i < len; i++) {
-                                arr[i] = new define.sign(
-                                    archetype,
-                                    offset +
-                                        define.offset +
-                                        define.sign.byteLength * i
-                                );
-                            }
-                            this[name] = arr;
-                        } else if (define.type === DefineValueType.PLAIN) {
-                            this[name] = new Type2TypedArray[define.sign](
-                                buffer,
-                                offset + define.offset,
-                                define.length
-                            );
-                        }
-                    } else {
-                        if (define.type === DefineValueType.COMPLEX) {
-                            this[name] = new define.sign(
-                                archetype,
-                                offset + define.offset
-                            );
-                        }
-                    }
-                }
             }
         };
 
         ctr.typeId = this._compCtrs.length;
-        ctr.sortedDefinition = sorted;
         ctr.definition = define;
+        ctr.sortedDefinition = sorted;
         ctr.isFlag = !define || Object.keys(define).length === 0;
         ctr.byteLength = byteLength;
 
         const readonlyCtr = ctr as ComponentConstructor<T>;
-        generateDefinePrototype(readonlyCtr);
 
         this._compCtrs.push(readonlyCtr);
         return readonlyCtr;

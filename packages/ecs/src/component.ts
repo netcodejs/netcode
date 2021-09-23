@@ -2,14 +2,14 @@ import { Archetype } from "./archetype";
 import { BitArray } from "./custom-typed-array";
 
 export interface ComponentConstructor<
-    Define extends ComponentDefinition = ComponentDefinition
+    Schema extends ComponentSchema = ComponentSchema
 > {
     readonly typeId: number;
-    readonly sortedDefinition: SortedComponentdefinition;
-    readonly definition: ComponentDefinition;
+    readonly sortedDefinition: SortedComponentSchema;
+    readonly definition: ComponentSchema;
     readonly isFlag: boolean;
     readonly byteLength: number;
-    new (archetype: Archetype, offset: number): DefineClass<Define>;
+    new (archetype: Archetype, offset: number): Component<Schema>;
 }
 
 export enum Type {
@@ -68,7 +68,7 @@ export type Type2Primitive = {
 export type ElementType<T extends ReadonlyArray<unknown>> =
     T extends ReadonlyArray<infer ElementType> ? ElementType : never;
 
-export type ComponentDefinition = Record<
+export type ComponentSchema = Record<
     string,
     | Type
     | [def: Type, length: number]
@@ -76,54 +76,61 @@ export type ComponentDefinition = Record<
     | [def: ComponentConstructor, length: number]
 >;
 
-export enum DefineValueType {
-    PLAIN,
-    COMPLEX,
+export type SortedComponentSchema = {
+    plains: PlainSignature[];
+    plainArrays: PlainArraySignature[];
+    complexs: ComplexSignature[];
+    complexArrays: ComplexArraySignature[];
+};
+
+export interface ValueSignature {
+    offset: number;
+    name: string;
 }
 
-export type SortedComponentdefinitionValue = (
-    | {
-          type: DefineValueType.COMPLEX;
-          sign: ComponentConstructor;
-      }
-    | {
-          type: DefineValueType.PLAIN;
-          sign: Type;
-      }
-) & {
+export interface PlainSignature extends ValueSignature {
+    type: Type;
+    singleSize: number;
+}
+
+export interface PlainArraySignature extends PlainSignature {
     length: number;
+}
+
+export interface ComplexSignature extends ValueSignature {
+    type: ComponentConstructor;
+}
+
+export interface ComplexArraySignature extends ComplexSignature {
+    length: number;
+}
+
+// export type ComponentProperty2Primitive<
+//     T extends
+//         | Type
+//         | [def: Type, length: number]
+//         | ComponentConstructor
+//         | [def: ComponentConstructor, length: number],
+//     R = T extends [any, number] ? T[0] : unknown
+// > = T extends Type
+//     ? Type2Primitive[T]
+//     : T extends ComponentConstructor
+//     ? InstanceType<T>
+//     : R extends Type
+//     ? Type2TypedArray[R]
+//     : R extends ComponentConstructor
+//     ? Array<InstanceType<R>>
+//     : unknown;
+
+export type Component<Def extends ComponentSchema = ComponentSchema> = {
+    readonly [key in keyof Def]: Def[key] extends Type
+        ? (() => Type2Primitive[Def[key]]) &
+              ((val: Type2Primitive[Def[key]]) => void)
+        : Def[key] extends [type: Type, length: number]
+        ? ((index: number) => Type2Primitive[Def[key][0]]) &
+              ((index: number, val: Type2Primitive[Def[key][0]]) => void)
+        : unknown;
+} & {
+    archetype: Archetype;
     offset: number;
-    isArray: boolean;
 };
-export type SortedComponentdefinition = Record<
-    string,
-    SortedComponentdefinitionValue
->;
-
-export type ComponentDefinitionValue2Primitive<
-    T extends
-        | Type
-        | [def: Type, length: number]
-        | ComponentConstructor
-        | [def: ComponentConstructor, length: number],
-    R = T extends [any, number] ? T[0] : unknown
-> = T extends Type
-    ? Type2Primitive[T]
-    : T extends ComponentConstructor
-    ? InstanceType<T>
-    : R extends Type
-    ? Type2TypedArray[R]
-    : R extends ComponentConstructor
-    ? Array<InstanceType<R>>
-    : unknown;
-
-export type DefineClass<Def extends ComponentDefinition = ComponentDefinition> =
-    {
-        readonly [key in keyof Def]: Def[key] extends Type
-            ? (() => ComponentDefinitionValue2Primitive<Def[key]>) &
-                  ((val: ComponentDefinitionValue2Primitive<Def[key]>) => void)
-            : ComponentDefinitionValue2Primitive<Def[key]>;
-    } & {
-        archetype: Archetype;
-        offset: number;
-    };
