@@ -6,8 +6,7 @@ import {
 } from "./component";
 import { Entity } from "./entity";
 import {
-    genPlainAccessFunction,
-    genPlainArrayAccessFunction,
+    genComponentPrototype,
     resetBit,
     setBit,
     sortDefine,
@@ -28,13 +27,14 @@ export class World {
             static sortedDefinition: SortedComponentSchema;
             static isFlag: boolean;
             static byteLength: number;
+            static TEMP: any;
 
-            constructor(
-                readonly archetype: Archetype,
-                readonly offset: number
-            ) {
-                const view = archetype.view;
-                const buffer = view.buffer;
+            archetype: Archetype;
+            offset = 0;
+
+            set(archetype: Archetype, offset: number) {
+                this.archetype = archetype;
+                this.offset = offset;
             }
         };
 
@@ -43,8 +43,10 @@ export class World {
         ctr.sortedDefinition = sorted;
         ctr.isFlag = !define || Object.keys(define).length === 0;
         ctr.byteLength = byteLength;
+        ctr.TEMP = new ctr();
 
         const readonlyCtr = ctr as ComponentConstructor<T>;
+        genComponentPrototype(sorted, readonlyCtr.prototype);
 
         this._compCtrs.push(readonlyCtr);
         return readonlyCtr;
@@ -110,7 +112,8 @@ export class World {
         const chunkId = newArchetype.addEntity(entity.index);
         oldArchetype.removeEntity(entity.index);
 
-        const ins = new ctr(newArchetype, chunkId * newArchetype.byteLength);
+        const ins = new ctr();
+        ins.set(newArchetype, chunkId * newArchetype.byteLength);
         return ins as InstanceType<T>;
     }
 
@@ -127,7 +130,8 @@ export class World {
         const mask = this._entityComps[entity.index];
         const arch = this._archetypes.get(mask);
         const chunkId = arch.getChunkId(entity.index);
-        const ins = new ctr(arch, chunkId * arch.byteLength);
+        const ins = new ctr();
+        ins.set(arch, chunkId * arch.byteLength);
         return ins as InstanceType<T>;
     }
 

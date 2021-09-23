@@ -9,7 +9,8 @@ export interface ComponentConstructor<
     readonly definition: ComponentSchema;
     readonly isFlag: boolean;
     readonly byteLength: number;
-    new (archetype: Archetype, offset: number): Component<Schema>;
+    readonly TEMP: Component<Schema>;
+    new (): Component<Schema>;
 }
 
 export enum Type {
@@ -121,7 +122,6 @@ export interface ComplexArraySignature extends ComplexSignature {
 //     : R extends ComponentConstructor
 //     ? Array<InstanceType<R>>
 //     : unknown;
-
 export type Component<Def extends ComponentSchema = ComponentSchema> = {
     readonly [key in keyof Def]: Def[key] extends Type
         ? (() => Type2Primitive[Def[key]]) &
@@ -129,8 +129,22 @@ export type Component<Def extends ComponentSchema = ComponentSchema> = {
         : Def[key] extends [type: Type, length: number]
         ? ((index: number) => Type2Primitive[Def[key][0]]) &
               ((index: number, val: Type2Primitive[Def[key][0]]) => void)
+        : Def[key] extends ComponentConstructor
+        ? (out?: InstanceType<Def[key]>) => InstanceType<Def[key]>
+        : Def[key] extends [type: ComponentConstructor, length: number]
+        ? (
+              index: number,
+              out?: InstanceType<Def[key][0]>
+          ) => InstanceType<Def[key][0]>
         : unknown;
-} & {
-    archetype: Archetype;
-    offset: number;
-};
+} &
+    {
+        readonly [key in keyof Def as `${string &
+            (Def[key] extends [Type, number] | [ComponentConstructor, number]
+                ? key
+                : never)}Length`]: number;
+    } & {
+        archetype: Archetype;
+        offset: number;
+        set(archetype: Archetype, offset: number): void;
+    };

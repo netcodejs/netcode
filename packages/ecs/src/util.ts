@@ -420,13 +420,43 @@ export function genPlainArrayAccessFunction(sign: PlainSignature) {
     }
 }
 
-export function genComplexPrototype(sign: ComplexSignature, prototype: Object) {
-    const sorted = sign.type.sortedDefinition;
+export function genComplexAccessFunction(sign: ComplexSignature) {
+    return function (this: Component, out: Component = sign.type.TEMP) {
+        out.set(this.archetype, this.offset + sign.offset);
+        return out;
+    };
+}
 
+export function genComplexArrayAccessFunction(sign: ComplexSignature) {
+    return function (
+        this: Component,
+        index: number,
+        out: Component = sign.type.TEMP
+    ) {
+        out.set(
+            this.archetype,
+            this.offset + sign.offset + index * sign.type.byteLength
+        );
+        return out;
+    };
+}
+
+export function genComponentPrototype(
+    sorted: SortedComponentSchema,
+    prototype: Object
+) {
     for (let sign of sorted.plains) {
         prototype[sign.name] = genPlainAccessFunction(sign);
     }
     for (let sign of sorted.plainArrays) {
         prototype[sign.name] = genPlainArrayAccessFunction(sign);
+        prototype[`${sign.name}Length`] = sign.length;
+    }
+    for (let sign of sorted.complexs) {
+        prototype[sign.name] = genComplexAccessFunction(sign);
+    }
+    for (let sign of sorted.complexArrays) {
+        prototype[sign.name] = genComplexArrayAccessFunction(sign);
+        prototype[`${sign.name}Length`] = sign.length;
     }
 }
