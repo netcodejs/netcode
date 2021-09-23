@@ -1,5 +1,3 @@
-import { logError } from './log';
-
 const BIG: number = 4294967296;
 
 type RDecodeType = { decode(bytes: ByteArray): void };
@@ -19,11 +17,11 @@ type REleType = ByteType | RVoNewType | RVoCreateType;
 type WEleType = ByteType | WVoType;
 
 export class ByteArray {
-  private _len_ = 0;
+  private _len = 0;
 
-  public _pos_ = 0;
+  private _pos = 0;
 
-  private _byteView_: Uint8Array = null as never;
+  private _byteView: Uint8Array = null as never;
 
   powTwo = false;
 
@@ -42,11 +40,11 @@ export class ByteArray {
   private resizeBuffer(len: number): void {
     try {
       var newByteView: any = new Uint8Array(len);
-      if (this._byteView_ != null) {
-        if (this._byteView_.length <= len) newByteView.setarr(this._byteView_);
-        else newByteView.setarr(this._byteView_.subarray(0, len));
+      if (this._byteView != null) {
+        if (this._byteView.length <= len) newByteView.setarr(this._byteView);
+        else newByteView.setarr(this._byteView.subarray(0, len));
       }
-      this._byteView_ = newByteView;
+      this._byteView = newByteView;
       this._data_ = new DataView(newByteView.buffer);
     } catch (err: any) {
       throw '__resizeBuffer err:' + len;
@@ -54,19 +52,19 @@ export class ByteArray {
   }
 
   setUint8Array(data: Uint8Array): void {
-    this._byteView_ = data;
+    this._byteView = data;
     this._data_ = new DataView(data.buffer);
-    this._len_ = data.byteLength;
-    this._pos_ = 0;
+    this._len = data.byteLength;
+    this._pos = 0;
   }
 
   ensureWrite(lengthToEnsure: number): void {
-    if (this._len_ < lengthToEnsure) this._len_ = lengthToEnsure;
+    if (this._len < lengthToEnsure) this._len = lengthToEnsure;
   }
 
   clear(): void {
-    this._pos_ = 0;
-    this._len_ = 0;
+    this._pos = 0;
+    this._len = 0;
   }
 
   _get(pos: number): number {
@@ -78,12 +76,12 @@ export class ByteArray {
   }
 
   _byteAt_(index: number): number {
-    return this._byteView_[index];
+    return this._byteView[index];
   }
 
   _byteSet_(index: number, value: number): void {
     this.ensureWrite(index + 1);
-    this._byteView_[index] = value;
+    this._byteView[index] = value;
   }
 
   readBoolean(): boolean {
@@ -91,34 +89,34 @@ export class ByteArray {
   }
 
   readUByte(): number {
-    return this._data_.getUint8(this._pos_++);
+    return this._data_.getUint8(this._pos++);
   }
 
   readByte(): number {
-    return this._data_.getInt8(this._pos_++);
+    return this._data_.getInt8(this._pos++);
   }
 
   readUInt(): number {
-    const uInt = this._data_.getUint32(this._pos_);
-    this._pos_ += 4;
+    const uInt = this._data_.getUint32(this._pos);
+    this._pos += 4;
     return Math.floor(uInt);
   }
 
   readInt(): number {
-    const tInt = this._data_.getInt32(this._pos_);
-    this._pos_ += 4;
+    const tInt = this._data_.getInt32(this._pos);
+    this._pos += 4;
     return tInt;
   }
 
   readShort(): number {
-    const short = this._data_.getInt16(this._pos_);
-    this._pos_ += 2;
+    const short = this._data_.getInt16(this._pos);
+    this._pos += 2;
     return short;
   }
 
   readUShort(): number {
-    const value = this._data_.getUint16(this._pos_);
-    this._pos_ += 2;
+    const value = this._data_.getUint16(this._pos);
+    this._pos += 2;
     return value;
   }
 
@@ -129,14 +127,14 @@ export class ByteArray {
   }
 
   readFloat(): number {
-    const float = this._data_.getInt32(this._pos_) / 1000;
-    this._pos_ += 4;
+    const float = this._data_.getInt32(this._pos) / 1000;
+    this._pos += 4;
     return float;
   }
 
   readDouble(): number {
-    const double = this._data_.getFloat64(this._pos_);
-    this._pos_ += 8;
+    const double = this._data_.getFloat64(this._pos);
+    this._pos += 8;
     return double;
   }
 
@@ -150,34 +148,34 @@ export class ByteArray {
 
   readUTFBytes(len = -1): string {
     let value = '';
-    const max: number = this._pos_ + len;
+    const max: number = this._pos + len;
     let c: number, c2: number, c3: number;
     const f = String.fromCharCode;
-    while (this._pos_ < max) {
-      c = this._data_.getUint8(this._pos_++);
+    while (this._pos < max) {
+      c = this._data_.getUint8(this._pos++);
       if (c < 0x80) {
         if (c !== 0) {
           value += f(c);
         }
       } else if (c < 0xe0) {
         value += f(
-          ((c & 0x3f) << 6) | (this._data_.getUint8(this._pos_++) & 0x7f)
+          ((c & 0x3f) << 6) | (this._data_.getUint8(this._pos++) & 0x7f)
         );
       } else if (c < 0xf0) {
-        c2 = this._data_.getUint8(this._pos_++);
+        c2 = this._data_.getUint8(this._pos++);
         value += f(
           ((c & 0x1f) << 12) |
             ((c2 & 0x7f) << 6) |
-            (this._data_.getUint8(this._pos_++) & 0x7f)
+            (this._data_.getUint8(this._pos++) & 0x7f)
         );
       } else {
-        c2 = this._data_.getUint8(this._pos_++);
-        c3 = this._data_.getUint8(this._pos_++);
+        c2 = this._data_.getUint8(this._pos++);
+        c3 = this._data_.getUint8(this._pos++);
         value += f(
           ((c & 0x0f) << 18) |
             ((c2 & 0x7f) << 12) |
             ((c3 << 6) & 0x7f) |
-            (this._data_.getUint8(this._pos_++) & 0x7f)
+            (this._data_.getUint8(this._pos++) & 0x7f)
         );
       }
     }
@@ -190,44 +188,44 @@ export class ByteArray {
   }
 
   writeUByte(value: number): void {
-    this.ensureWrite(this._pos_ + 1);
-    this._data_.setUint8(this._pos_, value);
-    this._pos_ += 1;
+    this.ensureWrite(this._pos + 1);
+    this._data_.setUint8(this._pos, value);
+    this._pos += 1;
   }
 
   writeByte(value: number): void {
-    this.ensureWrite(this._pos_ + 1);
-    this._data_.setInt8(this._pos_, value);
-    this._pos_ += 1;
+    this.ensureWrite(this._pos + 1);
+    this._data_.setInt8(this._pos, value);
+    this._pos += 1;
   }
 
   writeInt(value: number): void {
-    this.ensureWrite(this._pos_ + 4);
-    this._data_.setInt32(this._pos_, value);
-    this._pos_ += 4;
+    this.ensureWrite(this._pos + 4);
+    this._data_.setInt32(this._pos, value);
+    this._pos += 4;
   }
 
   writeUInt(value: number): void {
-    this.ensureWrite(this._pos_ + 4);
-    this._data_.setUint32(this._pos_, value);
-    this._pos_ += 4;
+    this.ensureWrite(this._pos + 4);
+    this._data_.setUint32(this._pos, value);
+    this._pos += 4;
   }
 
   writeShort(value: number): void {
-    this.ensureWrite(this._pos_ + 2);
-    this._data_.setInt16(this._pos_, value);
-    this._pos_ += 2;
+    this.ensureWrite(this._pos + 2);
+    this._data_.setInt16(this._pos, value);
+    this._pos += 2;
   }
 
   writeUShort(value: number): void {
-    this.ensureWrite(this._pos_ + 2);
-    this._data_.setUint16(this._pos_, value);
-    this._pos_ += 2;
+    this.ensureWrite(this._pos + 2);
+    this._data_.setUint16(this._pos, value);
+    this._pos += 2;
   }
 
   writeLong(value: number): void {
     if (value != 0 && (value > Number.MAX_VALUE || value < Number.MIN_VALUE)) {
-      logError('writeLong error -- Out of bounds');
+      console.log('writeLong error -- Out of bounds');
     }
     let head: number;
     let end: number;
@@ -248,16 +246,16 @@ export class ByteArray {
   }
 
   writeFloat(value: number): void {
-    this.ensureWrite(this._pos_ + 4);
+    this.ensureWrite(this._pos + 4);
     value = value * 1000;
-    this._data_.setInt32(this._pos_, value);
-    this._pos_ += 4;
+    this._data_.setInt32(this._pos, value);
+    this._pos += 4;
   }
 
   writeDouble(value: number): void {
-    this.ensureWrite(this._pos_ + 8);
-    this._data_.setFloat64(this._pos_, value);
-    this._pos_ += 8;
+    this.ensureWrite(this._pos + 8);
+    this._data_.setFloat64(this._pos, value);
+    this._pos += 8;
   }
 
   writeString(value: string): void {
@@ -266,7 +264,7 @@ export class ByteArray {
   }
 
   writeUTFBytes(value: string): void {
-    this.ensureWrite(this._pos_ + value.length * 4);
+    this.ensureWrite(this._pos + value.length * 4);
     for (let i = 0, sz: number = value.length; i < sz; i++) {
       const c: number = value.charCodeAt(i);
       if (c <= 0x7f) {
@@ -285,7 +283,7 @@ export class ByteArray {
         this.writeByte(0x80 | (c & 63));
       }
     }
-    this._len_ = this._pos_;
+    this._len = this._pos;
   }
 
   static _getUTFBytesCount(value: string): number {
@@ -401,10 +399,10 @@ export class ByteArray {
   writeArrayBuffer(arraybuffer: ArrayBuffer, offset = 0, length = 0): void {
     if (offset < 0 || length < 0) throw new Error('writeArrayBuffer error');
     const rlen = length === 0 ? arraybuffer.byteLength - offset : length;
-    this.ensureWrite(this._pos_ + rlen);
+    this.ensureWrite(this._pos + rlen);
     const uint8Array = new Uint8Array(arraybuffer);
-    this._byteView_.set(uint8Array.subarray(offset, offset + rlen), this._pos_);
-    this._pos_ += rlen;
+    this._byteView.set(uint8Array.subarray(offset, offset + rlen), this._pos);
+    this._pos += rlen;
   }
 }
 
