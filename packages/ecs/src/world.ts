@@ -1,5 +1,6 @@
 import { Archetype } from "./archetype";
 import {
+    Component,
     ComponentConstructor,
     ComponentSchema,
     SortedComponentSchema,
@@ -95,7 +96,8 @@ export class World {
     //#region component
     addComponent<T extends ComponentConstructor>(
         entity: Entity,
-        ctr: T
+        ctr: T,
+        out?: InstanceType<T>
     ): InstanceType<T> {
         if (!this.validate(entity)) return null;
         const compId = ctr.typeId;
@@ -112,14 +114,17 @@ export class World {
         const chunkId = newArchetype.addEntity(entity.index);
         oldArchetype.removeEntity(entity.index);
 
-        const ins = new ctr();
-        ins.set(newArchetype, chunkId * newArchetype.byteLength);
-        return ins as InstanceType<T>;
+        if (!out) {
+            out = ctr.TEMP as InstanceType<T>;
+        }
+        out.set(newArchetype, chunkId * newArchetype.byteLength);
+        return out;
     }
 
     getComponent<T extends ComponentConstructor>(
         entity: Entity,
-        ctr: T
+        ctr: T,
+        out?: InstanceType<T>
     ): InstanceType<T> | null {
         if (!this.validate(entity)) return null;
         const compId = ctr.typeId;
@@ -130,9 +135,12 @@ export class World {
         const mask = this._entityComps[entity.index];
         const arch = this._archetypes.get(mask);
         const chunkId = arch.getChunkId(entity.index);
-        const ins = new ctr();
-        ins.set(arch, chunkId * arch.byteLength);
-        return ins as InstanceType<T>;
+
+        if (!out) {
+            out = ctr.TEMP as InstanceType<T>;
+        }
+        out.set(arch, chunkId * arch.byteLength);
+        return out;
     }
 
     removeComponent<T extends ComponentConstructor>(
