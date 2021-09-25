@@ -1,6 +1,5 @@
 import { Archetype } from "./archetype";
 import {
-    Component,
     ComponentConstructor,
     ComponentSchema,
     SortedComponentSchema,
@@ -18,9 +17,11 @@ const MAX_ENTITY = (1 << 16) - 1;
 export class World {
     private static _compCtrs: ComponentConstructor[] = [];
 
-    static define<T extends ComponentSchema>(
+    static define<T extends ComponentSchema = undefined>(
         define?: T
-    ): ComponentConstructor<T> {
+    ): T extends undefined
+        ? ComponentConstructor<T, true>
+        : ComponentConstructor<T> {
         const [sorted, byteLength] = sortDefine(define);
         const ctr = class {
             static typeId: number;
@@ -50,7 +51,7 @@ export class World {
         genComponentPrototype(sorted, readonlyCtr.prototype);
 
         this._compCtrs.push(readonlyCtr);
-        return readonlyCtr;
+        return readonlyCtr as any;
     }
 
     private _entityComps = new Uint32Array(MAX_ENTITY);
@@ -94,7 +95,7 @@ export class World {
     //#endregion
 
     //#region component
-    addComponent<T extends ComponentConstructor>(
+    addComponent<T extends ComponentConstructor<ComponentSchema, any>>(
         entity: Entity,
         ctr: T,
         out?: InstanceType<T>
@@ -143,7 +144,7 @@ export class World {
         return out;
     }
 
-    removeComponent<T extends ComponentConstructor>(
+    removeComponent<T extends ComponentConstructor<ComponentSchema, any>>(
         entity: Entity,
         ctr: T
     ): boolean {
@@ -156,6 +157,16 @@ export class World {
             return true;
         }
         return true;
+    }
+
+    hasComponent<T extends ComponentConstructor<ComponentSchema, any>>(
+        entity: Entity,
+        ctr: T
+    ) {
+        if (!this.validate(entity)) return false;
+        const compId = ctr.typeId;
+        const comps = this._entityComps[entity.index];
+        return testBit(comps, compId);
     }
     //#endregion
 

@@ -2,12 +2,13 @@ import { Archetype } from "./archetype";
 import { BitArray } from "./custom-typed-array";
 
 export interface ComponentConstructor<
-    Schema extends ComponentSchema = ComponentSchema
+    Schema extends ComponentSchema = ComponentSchema,
+    IsFlag extends boolean = false
 > {
     readonly typeId: number;
     readonly sortedDefinition: SortedComponentSchema;
     readonly definition: ComponentSchema;
-    readonly isFlag: boolean;
+    readonly isFlag: IsFlag;
     readonly byteLength: number;
     readonly TEMP: Component<Schema>;
     new (): Component<Schema>;
