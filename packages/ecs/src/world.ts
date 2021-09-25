@@ -1,3 +1,4 @@
+import { ISystem, SystemConstructor } from ".";
 import { Archetype } from "./archetype";
 import {
     ComponentConstructor,
@@ -5,6 +6,7 @@ import {
     SortedComponentSchema,
 } from "./component";
 import { Entity } from "./entity";
+import { Matcher } from "./query";
 import {
     genComponentPrototype,
     resetBit,
@@ -16,6 +18,7 @@ import {
 const MAX_ENTITY = (1 << 16) - 1;
 export class World {
     private static _compCtrs: ComponentConstructor[] = [];
+    private _syss: ISystem[] = [];
 
     static define<T extends ComponentSchema = undefined>(
         define?: T
@@ -140,7 +143,10 @@ export class World {
         if (!out) {
             out = ctr.TEMP as InstanceType<T>;
         }
-        out.set(arch, chunkId * arch.byteLength);
+        out.set(
+            arch,
+            arch.compOffsetRecord[ctr.typeId] + chunkId * arch.byteLength
+        );
         return out;
     }
 
@@ -186,6 +192,36 @@ export class World {
 
     getArchetype(mask: number) {
         return this._archetypes.get(mask);
+    }
+
+    addSystem(...syss: ISystem[]) {
+        this._syss.push(...syss);
+    }
+
+    update() {
+        for (let sys of this._syss) {
+            for (let [mask, arch] of Array.from(this._archetypes)) {
+                if (sys.matcher.match(mask)) {
+                    const entities = arch.entities;
+                    for (let i = 0, j = entities.length; i < j; i++) {
+                        const entityIdx = entities[i];
+                        sys.onUpdate(this, {
+                            index: entityIdx,
+                            version: this._entityVersions[entityIdx],
+                            ...arch.ctrs.map((ctr) => {
+                                const t = ctr.TEMP;
+                                t.set(
+                                    arch,
+                                    arch.compOffsetRecord[ctr.typeId] +
+                                        i * arch.byteLength
+                                );
+                                return t;
+                            }),
+                        });
+                    }
+                }
+            }
+        }
     }
     //#endregion
 }

@@ -1,72 +1,88 @@
-import { ComponentConstructor, ComponentSchema, Type } from "./component";
-import { BitArray } from "./custom-typed-array";
+import { setBit } from "./util";
+import { ComponentConstructor, ComponentSchema } from "./component";
 
 export interface IMatcher {
     match(mask: number): boolean;
 }
 
-export interface INoneOfMatcher extends IMatcher {}
+export interface INoneOfMatcher<T extends ComponentConstructor[]>
+    extends IMatcher {}
 
-export interface IAnyOfMatcher extends INoneOfMatcher {
-    noneOf(...compCtrArr: ComponentConstructor[]): INoneOfMatcher;
+export interface IAnyOfMatcher<T extends ComponentConstructor[]>
+    extends INoneOfMatcher<T> {
+    noneOf(...compCtrArr: ComponentConstructor[]): INoneOfMatcher<T>;
 }
 
-export interface IAllOfMatcher extends IAnyOfMatcher {
-    anyOf(...compCtrArr: ComponentConstructor[]): IAnyOfMatcher;
+export interface IAllOfMatcher<T extends ComponentConstructor[]>
+    extends IAnyOfMatcher<T> {
+    anyOf(...compCtrArr: ComponentConstructor[]): IAnyOfMatcher<T>;
 }
 
-export interface IComposedMatcher extends IAllOfMatcher {
-    allOf(...compCtrArr: ComponentConstructor[]): IAnyOfMatcher;
-}
-
-export class Matcher
-    implements IComposedMatcher, IAllOfMatcher, IAnyOfMatcher, INoneOfMatcher
+export class Matcher<AllOf extends ComponentConstructor[]>
+    implements IAllOfMatcher<AllOf>
 {
-    allOfBitset = new BitArray(16);
-    anyOfBitset = new BitArray(16);
-    noneOfBitset = new BitArray(16);
+    allOfBitset = 0;
+    anyOfBitset = 0;
+    noneOfBitset = 0;
 
-    allOf(
-        ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
-    ): IAnyOfMatcher {
-        const bs = this.allOfBitset;
+    private constructor() {}
+
+    static allOf<AllOf extends ComponentConstructor[]>(
+        ...compCtrArr: AllOf
+    ): IAllOfMatcher<AllOf> {
+        const matcher = new Matcher();
         for (let ctr of compCtrArr) {
-            bs.set(ctr.typeId, true);
+            matcher.allOfBitset = setBit(matcher.allOfBitset, ctr.typeId);
         }
-        return this;
+        return matcher;
+    }
+
+    static anyOf(
+        ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
+    ): IAnyOfMatcher<[]> {
+        const matcher = new Matcher();
+        for (let ctr of compCtrArr) {
+            matcher.anyOfBitset = setBit(matcher.anyOfBitset, ctr.typeId);
+        }
+        return matcher;
+    }
+
+    static noneOf(
+        ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
+    ): INoneOfMatcher<[]> {
+        const matcher = new Matcher();
+        for (let ctr of compCtrArr) {
+            matcher.noneOfBitset = setBit(matcher.noneOfBitset, ctr.typeId);
+        }
+        return matcher;
     }
 
     anyOf(
         ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
-    ): IAnyOfMatcher {
-        const bs = this.anyOfBitset;
+    ): IAnyOfMatcher<AllOf> {
         for (let ctr of compCtrArr) {
-            bs.set(ctr.typeId, true);
+            this.anyOfBitset = setBit(this.anyOfBitset, ctr.typeId);
         }
         return this;
     }
 
     noneOf(
         ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
-    ): INoneOfMatcher {
-        const bs = this.noneOfBitset;
+    ): INoneOfMatcher<AllOf> {
         for (let ctr of compCtrArr) {
-            bs.set(ctr.typeId, true);
+            this.noneOfBitset = setBit(this.noneOfBitset, ctr.typeId);
         }
         return this;
     }
 
     match(mask: number): boolean {
-        throw "";
-    }
-
-    static _singleMatcher: Matcher[] = [];
-    static single(compCtr: ComponentConstructor): Matcher {
-        let matcher = this._singleMatcher[compCtr.typeId];
-        if (!matcher) {
-            matcher = this._singleMatcher[compCtr.typeId] = new Matcher();
-            matcher.allOf(compCtr);
-        }
-        return matcher;
+        return (
+            // all of test
+            (this.allOfBitset & mask) === this.allOfBitset &&
+            // any of test
+            !(this.anyOfBitset === 0 || (this.anyOfBitset & mask) === 0) &&
+            // none of test
+            (this.noneOfBitset & mask) === 0
+        );
     }
 }

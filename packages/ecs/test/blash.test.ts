@@ -1,23 +1,37 @@
-import { Type, World } from "../src";
+import {
+    Type,
+    World,
+    System,
+    Matcher,
+    Component,
+    ComponentConstructor,
+    Entity,
+    ComponentType,
+} from "../src";
 
-export const Vector = World.define({
+const Vector = World.define({
     x: Type.i16, // 2
     y: Type.i16, // 2
     z: Type.i16, // 2
 });
-export type Vector = InstanceType<typeof Vector>;
+type Vector = ComponentType<typeof Vector>;
 
-export const NumArr = World.define({
+const NumArr = World.define({
     val: [Type.i16, 2],
 });
-export type NumArr = InstanceType<typeof NumArr>;
+type NumArr = ComponentType<typeof NumArr>;
 
-export const Transform = World.define({
+const Transform = World.define({
     pos: Vector, // 4
     angles: [Type.i16, 10], // 2 * 10
     pots: [Vector, 10], // 4 * 10
 });
-export type Transform = InstanceType<typeof Transform>;
+type Transform = InstanceType<typeof Transform>;
+
+const Speed = World.define({
+    value: Type.i8,
+});
+type Speed = ComponentType<typeof Speed>;
 
 test("first", () => {
     expect(Vector.byteLength).toBe(6);
@@ -59,4 +73,21 @@ test("component", () => {
     expect(trs.pots(1).z()).toBe(0);
 
     trs.pots(1);
+});
+
+test("system", () => {
+    const w = new World();
+    class MovableSystem extends System(Matcher.allOf(Transform, Speed)) {
+        onUpdate(
+            world: World,
+            entity: Entity,
+            trs: Transform,
+            speed: Speed
+        ): void {
+            const p = trs.pos();
+            p.x(p.x() * speed.value());
+        }
+    }
+    w.addSystem(new MovableSystem());
+    w.update();
 });

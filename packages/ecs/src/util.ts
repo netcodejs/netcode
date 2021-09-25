@@ -54,7 +54,7 @@ export function getPlainByteLength(type: Type) {
         case Type.i8:
         case Type.u8:
         case Type.bool:
-            return length;
+            return 1;
         case Type.i16:
         case Type.u16:
             return 2;
@@ -421,7 +421,10 @@ export function genPlainArrayAccessFunction(sign: PlainSignature) {
 }
 
 export function genComplexAccessFunction(sign: ComplexSignature) {
-    return function (this: Component, out: Component = sign.type.TEMP) {
+    return function (
+        this: Component,
+        out: Component = this.temps[sign.type.typeId]
+    ) {
         out.set(this.archetype, this.offset + sign.offset);
         return out;
     };
@@ -431,7 +434,7 @@ export function genComplexArrayAccessFunction(sign: ComplexSignature) {
     return function (
         this: Component,
         index: number,
-        out: Component = sign.type.TEMP
+        out: Component = this.temps[sign.type.typeId]
     ) {
         out.set(
             this.archetype,
@@ -443,8 +446,9 @@ export function genComplexArrayAccessFunction(sign: ComplexSignature) {
 
 export function genComponentPrototype(
     sorted: SortedComponentSchema,
-    prototype: Object
+    prototype: any
 ) {
+    prototype.temps = {};
     for (let sign of sorted.plains) {
         prototype[sign.name] = genPlainAccessFunction(sign);
     }
@@ -454,9 +458,19 @@ export function genComponentPrototype(
     }
     for (let sign of sorted.complexs) {
         prototype[sign.name] = genComplexAccessFunction(sign);
+        const type = sign.type;
+        if (!prototype.temps[type.typeId]) {
+            prototype.temps[type.typeId] = new type();
+        }
     }
     for (let sign of sorted.complexArrays) {
         prototype[sign.name] = genComplexArrayAccessFunction(sign);
         prototype[`${sign.name}Length`] = sign.length;
+        const type = sign.type;
+        if (!prototype.temps[type.typeId]) {
+            prototype.temps[type.typeId] = new type();
+        }
     }
 }
+
+export type ComponentType<T extends ComponentConstructor> = InstanceType<T>;

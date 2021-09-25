@@ -11,14 +11,19 @@ export class Archetype {
     get opacity() {
         return this._opacity;
     }
+    get entities(): ReadonlyArray<number> {
+        return this._entitySet.packed;
+    }
 
     readonly byteLength: number;
     readonly mask: number;
-    constructor(ctrs: ComponentConstructor[]) {
+    readonly compOffsetRecord: Record<number, number> = {};
+    constructor(readonly ctrs: ComponentConstructor[]) {
         let mask = 0;
         let byteLength = 0;
         for (let ctr of ctrs) {
             mask = setBit(mask, ctr.typeId);
+            this.compOffsetRecord[ctr.typeId] = byteLength;
             byteLength += ctr.byteLength;
         }
 

@@ -107,22 +107,6 @@ export interface ComplexArraySignature extends ComplexSignature {
     length: number;
 }
 
-// export type ComponentProperty2Primitive<
-//     T extends
-//         | Type
-//         | [def: Type, length: number]
-//         | ComponentConstructor
-//         | [def: ComponentConstructor, length: number],
-//     R = T extends [any, number] ? T[0] : unknown
-// > = T extends Type
-//     ? Type2Primitive[T]
-//     : T extends ComponentConstructor
-//     ? InstanceType<T>
-//     : R extends Type
-//     ? Type2TypedArray[R]
-//     : R extends ComponentConstructor
-//     ? Array<InstanceType<R>>
-//     : unknown;
 export type Component<Def extends ComponentSchema = ComponentSchema> = {
     readonly [key in keyof Def]: Def[key] extends Type
         ? (() => Type2Primitive[Def[key]]) &
@@ -147,5 +131,6 @@ export type Component<Def extends ComponentSchema = ComponentSchema> = {
     } & {
         archetype: Archetype;
         offset: number;
+        temps: Record<number, Component>;
         set(archetype: Archetype, offset: number): void;
     };
