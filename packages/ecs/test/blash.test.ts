@@ -72,7 +72,8 @@ test("component", () => {
     expect(trs.pots(1).y()).toBe(0);
     expect(trs.pots(1).z()).toBe(0);
 
-    trs.pots(1);
+    expect(trs.pots(0) !== trs.pots(1)).toBe(true);
+    expect(trs.pots(0) !== trs.pos()).toBe(true);
 });
 
 test("system", () => {

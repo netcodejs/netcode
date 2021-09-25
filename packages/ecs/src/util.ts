@@ -421,10 +421,7 @@ export function genPlainArrayAccessFunction(sign: PlainSignature) {
 }
 
 export function genComplexAccessFunction(sign: ComplexSignature) {
-    return function (
-        this: Component,
-        out: Component = this.temps[sign.type.typeId]
-    ) {
+    return function (this: Component, out: Component = this.temps[sign.name]) {
         out.set(this.archetype, this.offset + sign.offset);
         return out;
     };
@@ -434,7 +431,7 @@ export function genComplexArrayAccessFunction(sign: ComplexSignature) {
     return function (
         this: Component,
         index: number,
-        out: Component = this.temps[sign.type.typeId]
+        out: Component = this.temps[sign.name][index]
     ) {
         out.set(
             this.archetype,
@@ -459,16 +456,15 @@ export function genComponentPrototype(
     for (let sign of sorted.complexs) {
         prototype[sign.name] = genComplexAccessFunction(sign);
         const type = sign.type;
-        if (!prototype.temps[type.typeId]) {
-            prototype.temps[type.typeId] = new type();
-        }
+        prototype.temps[sign.name] = new type();
     }
     for (let sign of sorted.complexArrays) {
         prototype[sign.name] = genComplexArrayAccessFunction(sign);
         prototype[`${sign.name}Length`] = sign.length;
         const type = sign.type;
-        if (!prototype.temps[type.typeId]) {
-            prototype.temps[type.typeId] = new type();
+        prototype.temps[sign.name] = [];
+        for (let i = 0; i < sign.length; i++) {
+            prototype.temps[sign.name][i] = new type();
         }
     }
 }
