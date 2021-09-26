@@ -44,4 +44,16 @@ test('blah', () => {
   expect(arr[1]).toBe(1);
 });
 
+test('varint', () => {
+  const writerBuf = new ArrayBuffer(100);
+  const writer = new ByteArray(writerBuf);
+
+  writer.writeVarInt(4);
+
+  const readerBuf = writerBuf;
+  const reader = new ByteArray(readerBuf);
+
+  expect(reader.readVarInt()).toBe(4);
+});
+
 test.todo('support float!');

@@ -1,3 +1,5 @@
+import { VarNumberUtils } from './VarNumberUtils';
+
 const BIG: number = 4294967296;
 
 type RDecodeType = { decode(bytes: ByteArray): void };
@@ -403,6 +405,14 @@ export class ByteArray {
     const uint8Array = new Uint8Array(arraybuffer);
     this._byteView.set(uint8Array.subarray(offset, offset + rlen), this._pos);
     this._pos += rlen;
+  }
+
+  readVarInt(): number {
+    return VarNumberUtils.readInt(this);
+  }
+
+  writeVarInt(value: number): void {
+    VarNumberUtils.writeInt(value, this);
   }
 }
 
