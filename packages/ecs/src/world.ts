@@ -104,7 +104,7 @@ export class World {
     private _archetypeMap = new Map<number, Archetype>();
     private _archetypes: Archetype[] = undefined;
 
-    constructor() {
+    constructor(readonly archetypeOpacity: number = 100) {
         this._entityVersions.fill(0);
     }
 
@@ -153,18 +153,30 @@ export class World {
             return null;
         }
 
+        let newArchetype = this._archetypeMap.get(newMask);
         const oldArchetype = this._archetypeMap.get(oldMask);
-        const oldChunkId = oldArchetype.getChunkId(entity.index);
-        const oldChunk = oldArchetype.getChunk(ctr);
-
-        const newArchetype = this._archetypeMap.get(newMask);
+        if (!newArchetype) {
+            newArchetype = new Archetype(
+                oldArchetype ? [ctr, ...oldArchetype.ctrs] : [ctr],
+                this.archetypeOpacity
+            );
+            this._archetypeMap.set(newArchetype.mask, newArchetype);
+            this._archetypes = undefined;
+        }
         const newChunkId = newArchetype.addEntity(entity.index);
+
+        if (oldArchetype != null) {
+            const oldChunkId = oldArchetype.getChunkId(entity.index);
+
+            for (let oldCtr of oldArchetype.ctrs) {
+                const oldChunk = oldArchetype.getChunk(oldCtr);
+                const newChunk = newArchetype.getChunk(oldCtr);
+                oldChunk.copyTo(newChunk, oldChunkId, newChunkId);
+                oldArchetype.removeEntity(entity.index);
+            }
+        }
+
         const newChunk = newArchetype.getChunk(ctr);
-
-        oldChunk.copyTo(newChunk, oldChunkId, newChunkId);
-
-        oldArchetype.removeEntity(entity.index);
-
         return [
             newArchetype.chunks[
                 newArchetype.chunkTypeIdSet.sparse[ctr.typeId]
@@ -220,7 +232,7 @@ export class World {
 
     //#region archetype
     createArchetype(...ctrs: ChunkConstructor[]): Archetype {
-        const arch = new Archetype(ctrs, 5_000);
+        const arch = new Archetype(ctrs, this.archetypeOpacity);
         this._archetypeMap.set(arch.mask, arch);
         this._archetypes = undefined;
         return arch;

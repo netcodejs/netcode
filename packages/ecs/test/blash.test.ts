@@ -104,6 +104,15 @@ test("system", () => {
 test("addCOmp", () => {
     const w = new World();
     const e = w.createEntity();
-    w.addComponent(e, Transform);
-    w.addComponent(e, Speed);
+    {
+        const [trs, id] = w.addComponent(e, Transform);
+        trs.pos.x[id] = 13;
+        w.addComponent(e, Speed);
+    }
+
+    {
+        const [trs, id] = w.getComponent(e, Transform);
+        expect(trs.pos.x[id]).toBe(13);
+        expect(w.hasComponent(e, Speed)).toBeTruthy();
+    }
 });
