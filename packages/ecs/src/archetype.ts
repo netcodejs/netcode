@@ -1,13 +1,15 @@
-import { Component, ComponentConstructor } from "./component";
+import { Chunk, ChunkConstructor } from "./chunk";
 import { setBit } from "./util";
 
 export class Archetype {
-    static readonly INITIAL_OPCAITY = 100;
-    private _entitySet: SparseSet;
+    _entitySet: SparseSet;
     private _opacity: number;
     private _length: number;
-    private _buffer: ArrayBuffer;
     readonly view: DataView;
+
+    readonly chunkTypeIdSet: SparseSet;
+    readonly chunks: Chunk[];
+
     get opacity() {
         return this._opacity;
     }
@@ -17,33 +19,26 @@ export class Archetype {
 
     readonly byteLength: number;
     readonly mask: number;
-    readonly compOffsetRecord: Record<number, number> = {};
-    readonly compOffsetArr: number[];
-    readonly compTemp: Component[];
-    constructor(readonly ctrs: ComponentConstructor[]) {
+    constructor(readonly ctrs: ChunkConstructor[], opcaity = 100) {
         let mask = 0;
         let byteLength = 0;
-        this.compTemp = new Array(ctrs.length);
-        this.compOffsetArr = new Array(ctrs.length);
+
+        this.chunkTypeIdSet = new SparseSet();
+        this.chunks = new Array(ctrs.length);
         for (let i = 0, j = ctrs.length; i < j; i++) {
             const ctr = ctrs[i];
             mask = setBit(mask, ctr.typeId);
-            this.compOffsetRecord[ctr.typeId] = byteLength;
-            this.compOffsetArr[i] = byteLength;
-            this.compTemp[i] = ctr.TEMP;
             byteLength += ctr.byteLength;
+
+            const idx = this.chunkTypeIdSet.add(ctr.typeId);
+            this.chunks[idx] = new ctr(opcaity);
         }
 
         this.mask = mask;
         this.byteLength = byteLength;
 
-        this._opacity = Archetype.INITIAL_OPCAITY;
+        this._opacity = opcaity;
         this._length = 0;
-        this._buffer = new ArrayBuffer(
-            this.byteLength * Archetype.INITIAL_OPCAITY
-        );
-        this.view = new DataView(this._buffer);
-
         this._entitySet = new SparseSet();
     }
 
@@ -59,6 +54,11 @@ export class Archetype {
         return this._entitySet.remove(index);
     }
 
+    getChunk<T extends ChunkConstructor>(ctr: T): InstanceType<T> {
+        const idx = this.chunkTypeIdSet.sparse[ctr.typeId];
+        return this.chunks[idx] as InstanceType<T>;
+    }
+
     getChunkId(index: number) {
         if (!this._entitySet.has(index)) return -1;
         return this._entitySet.sparse[index];
@@ -69,12 +69,7 @@ export class Archetype {
     }
 
     resize(length: number = this._getNewSize()) {
-        const newBuffer = new ArrayBuffer(length);
-        new Uint8Array(newBuffer).set(new Uint8Array(this._buffer));
-
-        this._buffer = newBuffer;
-        this._opacity = length;
-        (this.view as DataView) = new DataView(this._buffer);
+        throw "Not support resize";
     }
 
     protected _getNewSize() {

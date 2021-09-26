@@ -9,5 +9,11 @@
     "test": "jest",
     "test-debug": "jest -i",
     "build": "node build.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
   }
 }

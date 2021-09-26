@@ -1,24 +1,24 @@
 import { setBit } from "./util";
-import { ComponentConstructor, ComponentSchema } from "./component";
+import { ChunkConstructor, ChunkSchema } from "./chunk";
 
 export interface IMatcher {
     match(mask: number): boolean;
 }
 
-export interface INoneOfMatcher<T extends ComponentConstructor[]>
+export interface INoneOfMatcher<T extends ChunkConstructor[]>
     extends IMatcher {}
 
-export interface IAnyOfMatcher<T extends ComponentConstructor[]>
+export interface IAnyOfMatcher<T extends ChunkConstructor[]>
     extends INoneOfMatcher<T> {
-    noneOf(...compCtrArr: ComponentConstructor[]): INoneOfMatcher<T>;
+    noneOf(...compCtrArr: ChunkConstructor[]): INoneOfMatcher<T>;
 }
 
-export interface IAllOfMatcher<T extends ComponentConstructor[]>
+export interface IAllOfMatcher<T extends ChunkConstructor[]>
     extends IAnyOfMatcher<T> {
-    anyOf(...compCtrArr: ComponentConstructor[]): IAnyOfMatcher<T>;
+    anyOf(...compCtrArr: ChunkConstructor[]): IAnyOfMatcher<T>;
 }
 
-export class Matcher<AllOf extends ComponentConstructor[]>
+export class Matcher<AllOf extends ChunkConstructor[]>
     implements IAllOfMatcher<AllOf>
 {
     allOfBitset = 0;
@@ -27,7 +27,7 @@ export class Matcher<AllOf extends ComponentConstructor[]>
 
     private constructor() {}
 
-    static allOf<AllOf extends ComponentConstructor[]>(
+    static allOf<AllOf extends ChunkConstructor[]>(
         ...compCtrArr: AllOf
     ): IAllOfMatcher<AllOf> {
         const matcher = new Matcher();
@@ -38,7 +38,7 @@ export class Matcher<AllOf extends ComponentConstructor[]>
     }
 
     static anyOf(
-        ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
+        ...compCtrArr: ChunkConstructor<ChunkSchema, any>[]
     ): IAnyOfMatcher<[]> {
         const matcher = new Matcher();
         for (let ctr of compCtrArr) {
@@ -48,7 +48,7 @@ export class Matcher<AllOf extends ComponentConstructor[]>
     }
 
     static noneOf(
-        ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
+        ...compCtrArr: ChunkConstructor<ChunkSchema, any>[]
     ): INoneOfMatcher<[]> {
         const matcher = new Matcher();
         for (let ctr of compCtrArr) {
@@ -58,7 +58,7 @@ export class Matcher<AllOf extends ComponentConstructor[]>
     }
 
     anyOf(
-        ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
+        ...compCtrArr: ChunkConstructor<ChunkSchema, any>[]
     ): IAnyOfMatcher<AllOf> {
         for (let ctr of compCtrArr) {
             this.anyOfBitset = setBit(this.anyOfBitset, ctr.typeId);
@@ -67,7 +67,7 @@ export class Matcher<AllOf extends ComponentConstructor[]>
     }
 
     noneOf(
-        ...compCtrArr: ComponentConstructor<ComponentSchema, any>[]
+        ...compCtrArr: ChunkConstructor<ChunkSchema, any>[]
     ): INoneOfMatcher<AllOf> {
         for (let ctr of compCtrArr) {
             this.noneOfBitset = setBit(this.noneOfBitset, ctr.typeId);

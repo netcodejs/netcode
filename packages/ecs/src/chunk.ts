@@ -1,17 +1,15 @@
-import { Archetype } from "./archetype";
 import { BitArray } from "./custom-typed-array";
 
-export interface ComponentConstructor<
-    Schema extends ComponentSchema = ComponentSchema,
+export interface ChunkConstructor<
+    Schema extends ChunkSchema = ChunkSchema,
     IsFlag extends boolean = false
 > {
     readonly typeId: number;
-    readonly sortedDefinition: SortedComponentSchema;
-    readonly definition: ComponentSchema;
+    readonly sortedDefinition: SortedChunkSchema;
+    readonly definition: ChunkSchema;
     readonly isFlag: IsFlag;
     readonly byteLength: number;
-    readonly TEMP: Component<Schema>;
-    new (): Component<Schema>;
+    new (instanceLength: number): Chunk<Schema>;
 }
 
 export enum Type {
@@ -36,9 +34,11 @@ export const Type2TypedArray = {
     [Type.u32]: Uint32Array,
     [Type.f32]: Float32Array,
     [Type.f64]: Float64Array,
-    // [Type.bool]: BitArray,
-    // [Type.native]: Array,
+    [Type.bool]: BitArray,
+    [Type.native]: Array,
 };
+
+export type TypedArray = [Type2TypedArray[keyof Type2TypedArray]];
 
 export interface Type2TypedArray {
     [Type.i8]: Int8Array;
@@ -70,15 +70,15 @@ export type Type2Primitive = {
 export type ElementType<T extends ReadonlyArray<unknown>> =
     T extends ReadonlyArray<infer ElementType> ? ElementType : never;
 
-export type ComponentSchema = Record<
+export type ChunkSchema = Record<
     string,
     | Type
     | [def: Type, length: number]
-    | ComponentConstructor
-    | [def: ComponentConstructor, length: number]
+    | ChunkConstructor
+    | [def: ChunkConstructor, length: number]
 >;
 
-export type SortedComponentSchema = {
+export type SortedChunkSchema = {
     plains: PlainSignature[];
     plainArrays: PlainArraySignature[];
     complexs: ComplexSignature[];
@@ -100,37 +100,21 @@ export interface PlainArraySignature extends PlainSignature {
 }
 
 export interface ComplexSignature extends ValueSignature {
-    type: ComponentConstructor;
+    type: ChunkConstructor;
 }
 
 export interface ComplexArraySignature extends ComplexSignature {
     length: number;
 }
 
-export type Component<Def extends ComponentSchema = ComponentSchema> = {
+export type Chunk<Def extends ChunkSchema = ChunkSchema> = {
     readonly [key in keyof Def]: Def[key] extends Type
-        ? (() => Type2Primitive[Def[key]]) &
-              ((val: Type2Primitive[Def[key]]) => void)
+        ? Type2TypedArray[Def[key]]
         : Def[key] extends [type: Type, length: number]
-        ? ((index: number) => Type2Primitive[Def[key][0]]) &
-              ((index: number, val: Type2Primitive[Def[key][0]]) => void)
-        : Def[key] extends ComponentConstructor
-        ? (out?: InstanceType<Def[key]>) => InstanceType<Def[key]>
-        : Def[key] extends [type: ComponentConstructor, length: number]
-        ? (
-              index: number,
-              out?: InstanceType<Def[key][0]>
-          ) => InstanceType<Def[key][0]>
+        ? Type2TypedArray[Def[key][0]]
+        : Def[key] extends ChunkConstructor
+        ? InstanceType<Def[key]>
+        : Def[key] extends [type: ChunkConstructor, length: number]
+        ? Array<InstanceType<Def[key][0]>>
         : unknown;
-} &
-    {
-        readonly [key in keyof Def as `${string &
-            (Def[key] extends [Type, number] | [ComponentConstructor, number]
-                ? key
-                : never)}Length`]: number;
-    } & {
-        archetype: Archetype;
-        offset: number;
-        temps: Record<number, Component>;
-        set(archetype: Archetype, offset: number): void;
-    };
+};

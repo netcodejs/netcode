@@ -1,45 +1,55 @@
-import { ISystem, SystemConstructor } from ".";
+import { ISystem } from ".";
 import { Archetype } from "./archetype";
 import {
-    ComponentConstructor,
-    ComponentSchema,
-    SortedComponentSchema,
-} from "./component";
+    ChunkConstructor,
+    ChunkSchema,
+    SortedChunkSchema,
+    Type2TypedArray,
+} from "./chunk";
 import { Entity } from "./entity";
-import { Matcher } from "./query";
-import {
-    genComponentPrototype,
-    resetBit,
-    setBit,
-    sortDefine,
-    testBit,
-} from "./util";
+import { resetBit, setBit, sortDefine, testBit } from "./util";
 
 const MAX_ENTITY = (1 << 16) - 1;
 export class World {
-    private static _compCtrs: ComponentConstructor[] = [];
+    private static _compCtrs: ChunkConstructor[] = [];
     private _syss: ISystem[] = [];
 
-    static define<T extends ComponentSchema = undefined>(
+    static define<T extends ChunkSchema = undefined>(
         define?: T
-    ): T extends undefined
-        ? ComponentConstructor<T, true>
-        : ComponentConstructor<T> {
+    ): T extends undefined ? ChunkConstructor<T, true> : ChunkConstructor<T> {
         const [sorted, byteLength] = sortDefine(define);
         const ctr = class {
             static typeId: number;
-            static definition: ComponentSchema;
-            static sortedDefinition: SortedComponentSchema;
+            static definition: ChunkSchema;
+            static sortedDefinition: SortedChunkSchema;
             static isFlag: boolean;
             static byteLength: number;
             static TEMP: any;
 
-            archetype: Archetype;
-            offset = 0;
-
-            set(archetype: Archetype, offset: number) {
-                this.archetype = archetype;
-                this.offset = offset;
+            constructor(insLen: number) {
+                if (ctr.isFlag) return;
+                for (let i = 0, j = sorted.plains.length; i < j; i++) {
+                    const sign = sorted.plains[i];
+                    this[sign.name] = new Type2TypedArray[sign.type](insLen);
+                }
+                for (let i = 0, j = sorted.plainArrays.length; i < j; i++) {
+                    const sign = sorted.plainArrays[i];
+                    const arr = (this[sign.name] = new Array(sign.length));
+                    for (let k = 0; k < sign.length; k++) {
+                        arr[k] = new Type2TypedArray[sign.type](insLen);
+                    }
+                }
+                for (let i = 0, j = sorted.complexs.length; i < j; i++) {
+                    const sign = sorted.complexs[i];
+                    this[sign.name] = new sign.type(insLen);
+                }
+                for (let i = 0, j = sorted.complexArrays.length; i < j; i++) {
+                    const sign = sorted.complexArrays[i];
+                    const arr = (this[sign.name] = new Array(sign.length));
+                    for (let k = 0; k < sign.length; k++) {
+                        arr[k] = new sign.type(insLen);
+                    }
+                }
             }
         };
 
@@ -48,20 +58,17 @@ export class World {
         ctr.sortedDefinition = sorted;
         ctr.isFlag = !define || Object.keys(define).length === 0;
         ctr.byteLength = byteLength;
-        ctr.TEMP = new ctr();
 
-        const readonlyCtr = ctr as ComponentConstructor<T>;
-        genComponentPrototype(sorted, readonlyCtr.prototype);
-
-        this._compCtrs.push(readonlyCtr);
-        return readonlyCtr as any;
+        this._compCtrs.push(ctr as any);
+        return ctr as any;
     }
 
     private _entityComps = new Uint32Array(MAX_ENTITY);
     private _entityIdxEnd = 0;
     private _entityVersions = new Uint8Array(MAX_ENTITY);
     private _removalEntityIdx: number[] = [];
-    private _archetypes = new Map<number, Archetype>();
+    private _archetypeMap = new Map<number, Archetype>();
+    private _archetypes: Archetype[] = undefined;
 
     constructor() {
         this._entityVersions.fill(0);
@@ -98,11 +105,10 @@ export class World {
     //#endregion
 
     //#region component
-    addComponent<T extends ComponentConstructor<ComponentSchema, any>>(
+    addComponent<T extends ChunkConstructor<ChunkSchema, any>>(
         entity: Entity,
-        ctr: T,
-        out?: InstanceType<T>
-    ): InstanceType<T> {
+        ctr: T
+    ): [chunk: InstanceType<T>, chunkId: number] {
         if (!this.validate(entity)) return null;
         const compId = ctr.typeId;
         const oldMask = this._entityComps[entity.index];
@@ -113,44 +119,39 @@ export class World {
             return null;
         }
 
-        const oldArchetype = this._archetypes.get(oldMask);
-        const newArchetype = this._archetypes.get(newMask);
+        const oldArchetype = this._archetypeMap.get(oldMask);
+        const newArchetype = this._archetypeMap.get(newMask);
         const chunkId = newArchetype.addEntity(entity.index);
         oldArchetype.removeEntity(entity.index);
 
-        if (!out) {
-            out = ctr.TEMP as InstanceType<T>;
-        }
-        out.set(newArchetype, chunkId * newArchetype.byteLength);
-        return out;
+        return [
+            newArchetype.chunks[
+                newArchetype.chunkTypeIdSet.sparse[ctr.typeId]
+            ] as InstanceType<T>,
+            chunkId,
+        ];
     }
 
-    getComponent<T extends ComponentConstructor>(
+    getComponent<T extends ChunkConstructor>(
         entity: Entity,
-        ctr: T,
-        out?: InstanceType<T>
-    ): InstanceType<T> | null {
+        ctr: T
+    ): [chunk: InstanceType<T>, chunkId: number] {
         if (!this.validate(entity)) return null;
         const compId = ctr.typeId;
         const comps = this._entityComps[entity.index];
         if (!testBit(comps, compId)) return null;
-        this._entityComps[entity.index] = setBit(comps, compId);
 
         const mask = this._entityComps[entity.index];
-        const arch = this._archetypes.get(mask);
+        const arch = this._archetypeMap.get(mask);
         const chunkId = arch.getChunkId(entity.index);
 
-        if (!out) {
-            out = ctr.TEMP as InstanceType<T>;
-        }
-        out.set(
-            arch,
-            arch.compOffsetRecord[ctr.typeId] + chunkId * arch.byteLength
-        );
-        return out;
+        return [
+            arch.chunks[arch.chunkTypeIdSet.sparse[compId]] as InstanceType<T>,
+            chunkId,
+        ];
     }
 
-    removeComponent<T extends ComponentConstructor<ComponentSchema, any>>(
+    removeComponent<T extends ChunkConstructor<ChunkSchema, any>>(
         entity: Entity,
         ctr: T
     ): boolean {
@@ -165,7 +166,7 @@ export class World {
         return true;
     }
 
-    hasComponent<T extends ComponentConstructor<ComponentSchema, any>>(
+    hasComponent<T extends ChunkConstructor<ChunkSchema, any>>(
         entity: Entity,
         ctr: T
     ) {
@@ -177,9 +178,10 @@ export class World {
     //#endregion
 
     //#region archetype
-    createArchetype(...ctrs: ComponentConstructor[]): Archetype {
-        const arch = new Archetype(ctrs);
-        this._archetypes.set(arch.mask, arch);
+    createArchetype(...ctrs: ChunkConstructor[]): Archetype {
+        const arch = new Archetype(ctrs, 5_000);
+        this._archetypeMap.set(arch.mask, arch);
+        this._archetypes = undefined;
         return arch;
     }
 
@@ -191,47 +193,44 @@ export class World {
     }
 
     getArchetype(mask: number) {
-        return this._archetypes.get(mask);
+        return this._archetypeMap.get(mask);
     }
 
     addSystem(...syss: ISystem[]) {
         this._syss.push(...syss);
+        return this;
+    }
+
+    finishAddSystem(): void {
+        for (let i = 0; i < this._syss.length; i++) {
+            const sys = this._syss[i];
+            sys.onCreate && sys.onCreate(this);
+        }
+    }
+
+    destroySystems() {
+        for (let i = 0; i < this._syss.length; i++) {
+            const sys = this._syss[i];
+            sys.onDestroy && sys.onDestroy(this);
+        }
+        this._syss.length = 0;
     }
 
     update() {
-        const archArr = Array.from(this._archetypes);
-        for (let sys of this._syss) {
-            for (let [mask, arch] of archArr) {
-                if (!sys.matcher.match(mask)) continue;
-                const entities = arch.entities;
-                for (
-                    let chunkId = 0, j = entities.length;
-                    chunkId < j;
-                    chunkId++
-                ) {
-                    const entityIdx = entities[chunkId];
-                    for (
-                        let compIdx = 0;
-                        compIdx < arch.compTemp.length;
-                        compIdx++
-                    ) {
-                        const temp = arch.compTemp[compIdx];
-                        temp.set(
-                            arch,
-                            arch.byteLength * chunkId +
-                                arch.compOffsetArr[compIdx]
-                        );
-                    }
-                    sys.onUpdate(
-                        this,
-                        {
-                            index: entityIdx,
-                            version: this._entityVersions[entityIdx],
-                        },
-                        ...arch.compTemp
-                    );
-                }
-            }
+        for (let i = 0, j = this._syss.length; i < j; i++) {
+            const sys = this._syss[i];
+            this.updateSystem(sys);
+        }
+    }
+
+    updateSystem(sys: ISystem) {
+        if (!this._archetypes) {
+            this._archetypes = Array.from(this._archetypeMap.values());
+        }
+        for (let i = 0, j = this._archetypes.length; i < j; i++) {
+            const arch = this._archetypes[i];
+            if (!sys.matcher.match(arch.mask)) continue;
+            sys.onUpdate(this, arch);
         }
     }
     //#endregion

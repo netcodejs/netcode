@@ -1,13 +1,4 @@
-import {
-    Type,
-    World,
-    System,
-    Matcher,
-    Component,
-    ComponentConstructor,
-    Entity,
-    ComponentType,
-} from "../src";
+import { Type, World, System, Matcher, ComponentType, Archetype } from "../src";
 
 const Vector = World.define({
     x: Type.i16, // 2
@@ -42,38 +33,33 @@ test("component", () => {
     const w = new World();
     const arch = w.createArchetype(Transform);
     const e = w.createEntityByArchetype(arch);
-    const trs = w.getComponent(e, Transform);
-    trs.pos().x(123);
-    trs.pos().z(124);
-    expect(trs.pos().x()).toBe(123);
-    expect(trs.pos().y()).toBe(0);
-    expect(trs.pos().z()).toBe(124);
+    const [trs, trsId] = w.getComponent(e, Transform);
+    trs.pos.x[trsId] = 123;
+    trs.pos.z[trsId] = 124;
+    expect(trs.pos.x[trsId]).toBe(123);
+    expect(trs.pos.y[trsId]).toBe(0);
+    expect(trs.pos.z[trsId]).toBe(124);
 
-    trs.angles(0, 123);
-    expect(trs.angles(0)).toBe(123);
-    expect(trs.angles(3)).toBe(0);
+    trs.angles[0][trsId] = 123;
+    expect(trs.angles[0][trsId]).toBe(123);
+    expect(trs.angles[3][trsId]).toBe(0);
 
-    const pot = trs.pots(0);
-    pot.x(111);
-    pot.y(112);
+    const pot = trs.pots[0];
+    pot.x[trsId] = 111;
+    pot.y[trsId] = 112;
 
-    expect(pot.x()).toBe(111);
-    expect(pot.y()).toBe(112);
-    expect(pot.z()).toBe(0);
+    expect(pot.x[trsId]).toBe(111);
+    expect(pot.y[trsId]).toBe(112);
+    expect(pot.z[trsId]).toBe(0);
 
-    expect(trs.potsLength).toBe(10);
+    expect(trs.pots[0].x[trsId]).toBe(111);
+    expect(trs.pots[0].y[trsId]).toBe(112);
+    expect(trs.pots[0].z[trsId]).toBe(0);
 
-    expect(trs.pots(0).x()).toBe(111);
-    expect(trs.pots(0).y()).toBe(112);
-    expect(trs.pots(0).z()).toBe(0);
-
-    trs.pots(0).x(123);
-    expect(trs.pots(1).x()).toBe(0);
-    expect(trs.pots(1).y()).toBe(0);
-    expect(trs.pots(1).z()).toBe(0);
-
-    expect(trs.pots(0) !== trs.pots(1)).toBe(true);
-    expect(trs.pots(0) !== trs.pos()).toBe(true);
+    trs.pots[0].x[trsId] = 123;
+    expect(trs.pots[1].x[trsId]).toBe(0);
+    expect(trs.pots[1].y[trsId]).toBe(0);
+    expect(trs.pots[1].z[trsId]).toBe(0);
 });
 
 test("system", () => {
@@ -83,35 +69,34 @@ test("system", () => {
     const e = w.createEntityByArchetype(arch);
     const e1 = w.createEntityByArchetype(arch1);
     class MovableSystem extends System(Matcher.allOf(Transform, Speed)) {
-        onUpdate(
-            world: World,
-            entity: Entity,
-            trs: Transform,
-            speed: Speed
-        ): void {
-            const p = trs.pos();
-            p.x(p.x() + speed.value());
+        onUpdate(world: World, arch: Archetype): void {
+            const trs = arch.getChunk(Transform);
+            const speed = arch.getChunk(Speed);
+            for (let id = 0; id < arch.entities.length; id++) {
+                const p = trs.pos;
+                p.x[id] += speed.value[id];
+            }
         }
     }
-    w.addSystem(new MovableSystem());
+    w.addSystem(new MovableSystem()).finishAddSystem();
     {
-        const trs1 = w.getComponent(e1, Transform);
-        const speed1 = w.getComponent(e1, Speed);
+        const [trs1, id] = w.getComponent(e1, Transform);
+        const [speed1] = w.getComponent(e1, Speed);
 
-        expect(trs1.pos().x()).toBe(0);
-        expect(trs1.pos().y()).toBe(0);
-        speed1.value(1);
+        expect(trs1.pos.x[id]).toBe(0);
+        expect(trs1.pos.y[id]).toBe(0);
+        speed1.value[id] = 1;
     }
 
     {
         w.update();
-        const trs1 = w.getComponent(e1, Transform);
-        expect(trs1.pos().x()).toBe(1);
+        const [trs1, id] = w.getComponent(e1, Transform);
+        expect(trs1.pos.x[id]).toBe(1);
     }
 
     {
         w.update();
-        const trs1 = w.getComponent(e1, Transform);
-        expect(trs1.pos().x()).toBe(2);
+        const [trs1, id] = w.getComponent(e1, Transform);
+        expect(trs1.pos.x[id]).toBe(2);
     }
 });
