@@ -1,4 +1,4 @@
-import { ComponentConstructor } from "./component";
+import { Component, ComponentConstructor } from "./component";
 import { setBit } from "./util";
 
 export class Archetype {
@@ -18,12 +18,19 @@ export class Archetype {
     readonly byteLength: number;
     readonly mask: number;
     readonly compOffsetRecord: Record<number, number> = {};
+    readonly compOffsetArr: number[];
+    readonly compTemp: Component[];
     constructor(readonly ctrs: ComponentConstructor[]) {
         let mask = 0;
         let byteLength = 0;
-        for (let ctr of ctrs) {
+        this.compTemp = new Array(ctrs.length);
+        this.compOffsetArr = new Array(ctrs.length);
+        for (let i = 0, j = ctrs.length; i < j; i++) {
+            const ctr = ctrs[i];
             mask = setBit(mask, ctr.typeId);
             this.compOffsetRecord[ctr.typeId] = byteLength;
+            this.compOffsetArr[i] = byteLength;
+            this.compTemp[i] = ctr.TEMP;
             byteLength += ctr.byteLength;
         }
 

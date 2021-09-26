@@ -80,7 +80,7 @@ export class Matcher<AllOf extends ComponentConstructor[]>
             // all of test
             (this.allOfBitset & mask) === this.allOfBitset &&
             // any of test
-            !(this.anyOfBitset === 0 || (this.anyOfBitset & mask) === 0) &&
+            !(this.anyOfBitset !== 0 && (this.anyOfBitset & mask) === 0) &&
             // none of test
             (this.noneOfBitset & mask) === 0
         );

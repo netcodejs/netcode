@@ -78,6 +78,10 @@ test("component", () => {
 
 test("system", () => {
     const w = new World();
+    const arch = w.createArchetype(Transform);
+    const arch1 = w.createArchetype(Transform, Speed);
+    const e = w.createEntityByArchetype(arch);
+    const e1 = w.createEntityByArchetype(arch1);
     class MovableSystem extends System(Matcher.allOf(Transform, Speed)) {
         onUpdate(
             world: World,
@@ -86,9 +90,28 @@ test("system", () => {
             speed: Speed
         ): void {
             const p = trs.pos();
-            p.x(p.x() * speed.value());
+            p.x(p.x() + speed.value());
         }
     }
     w.addSystem(new MovableSystem());
-    w.update();
+    {
+        const trs1 = w.getComponent(e1, Transform);
+        const speed1 = w.getComponent(e1, Speed);
+
+        expect(trs1.pos().x()).toBe(0);
+        expect(trs1.pos().y()).toBe(0);
+        speed1.value(1);
+    }
+
+    {
+        w.update();
+        const trs1 = w.getComponent(e1, Transform);
+        expect(trs1.pos().x()).toBe(1);
+    }
+
+    {
+        w.update();
+        const trs1 = w.getComponent(e1, Transform);
+        expect(trs1.pos().x()).toBe(2);
+    }
 });

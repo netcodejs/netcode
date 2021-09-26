@@ -199,26 +199,37 @@ export class World {
     }
 
     update() {
+        const archArr = Array.from(this._archetypes);
         for (let sys of this._syss) {
-            for (let [mask, arch] of Array.from(this._archetypes)) {
-                if (sys.matcher.match(mask)) {
-                    const entities = arch.entities;
-                    for (let i = 0, j = entities.length; i < j; i++) {
-                        const entityIdx = entities[i];
-                        sys.onUpdate(this, {
+            for (let [mask, arch] of archArr) {
+                if (!sys.matcher.match(mask)) continue;
+                const entities = arch.entities;
+                for (
+                    let chunkId = 0, j = entities.length;
+                    chunkId < j;
+                    chunkId++
+                ) {
+                    const entityIdx = entities[chunkId];
+                    for (
+                        let compIdx = 0;
+                        compIdx < arch.compTemp.length;
+                        compIdx++
+                    ) {
+                        const temp = arch.compTemp[compIdx];
+                        temp.set(
+                            arch,
+                            arch.byteLength * chunkId +
+                                arch.compOffsetArr[compIdx]
+                        );
+                    }
+                    sys.onUpdate(
+                        this,
+                        {
                             index: entityIdx,
                             version: this._entityVersions[entityIdx],
-                            ...arch.ctrs.map((ctr) => {
-                                const t = ctr.TEMP;
-                                t.set(
-                                    arch,
-                                    arch.compOffsetRecord[ctr.typeId] +
-                                        i * arch.byteLength
-                                );
-                                return t;
-                            }),
-                        });
-                    }
+                        },
+                        ...arch.compTemp
+                    );
                 }
             }
         }
