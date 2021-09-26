@@ -30,12 +30,14 @@ export class World {
                 if (ctr.isFlag) return;
                 for (let i = 0, j = sorted.plains.length; i < j; i++) {
                     const sign = sorted.plains[i];
+                    // @ts-ignore
                     this[sign.name] = new Type2TypedArray[sign.type](insLen);
                 }
                 for (let i = 0, j = sorted.plainArrays.length; i < j; i++) {
                     const sign = sorted.plainArrays[i];
                     const arr = (this[sign.name] = new Array(sign.length));
                     for (let k = 0; k < sign.length; k++) {
+                        // @ts-ignore
                         arr[k] = new Type2TypedArray[sign.type](insLen);
                     }
                 }
@@ -48,6 +50,38 @@ export class World {
                     const arr = (this[sign.name] = new Array(sign.length));
                     for (let k = 0; k < sign.length; k++) {
                         arr[k] = new sign.type(insLen);
+                    }
+                }
+            }
+
+            copyTo(other: this, srcIdx: number, dstIdx: number) {
+                if (ctr.isFlag) return;
+                for (let i = 0, j = sorted.plains.length; i < j; i++) {
+                    const sign = sorted.plains[i];
+                    const src = this[sign.name] as any;
+                    const dst = other[sign.name] as any;
+                    dst[dstIdx] = src[srcIdx];
+                }
+                for (let i = 0, j = sorted.plainArrays.length; i < j; i++) {
+                    const sign = sorted.plainArrays[i];
+                    const srcArr = this[sign.name];
+                    const dstArr = other[sign.name];
+                    for (let k = 0; k < sign.length; k++) {
+                        const src = srcArr[k];
+                        const dst = dstArr[k];
+                        dst[dstIdx] = src[srcIdx];
+                    }
+                }
+                for (let i = 0, j = sorted.complexs.length; i < j; i++) {
+                    const sign = sorted.complexs[i];
+                    this[sign.name].copyTo(other[sign.name], srcIdx, dstIdx);
+                }
+                for (let i = 0, j = sorted.complexArrays.length; i < j; i++) {
+                    const sign = sorted.complexArrays[i];
+                    const srcArr = this[sign.name];
+                    const dstArr = other[sign.name];
+                    for (let k = 0; k < sign.length; k++) {
+                        srcArr[k].copyTo(dstArr[k], srcIdx, dstIdx);
                     }
                 }
             }
@@ -120,15 +154,22 @@ export class World {
         }
 
         const oldArchetype = this._archetypeMap.get(oldMask);
+        const oldChunkId = oldArchetype.getChunkId(entity.index);
+        const oldChunk = oldArchetype.getChunk(ctr);
+
         const newArchetype = this._archetypeMap.get(newMask);
-        const chunkId = newArchetype.addEntity(entity.index);
+        const newChunkId = newArchetype.addEntity(entity.index);
+        const newChunk = newArchetype.getChunk(ctr);
+
+        oldChunk.copyTo(newChunk, oldChunkId, newChunkId);
+
         oldArchetype.removeEntity(entity.index);
 
         return [
             newArchetype.chunks[
                 newArchetype.chunkTypeIdSet.sparse[ctr.typeId]
             ] as InstanceType<T>,
-            chunkId,
+            newChunkId,
         ];
     }
 

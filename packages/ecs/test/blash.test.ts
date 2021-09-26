@@ -100,3 +100,10 @@ test("system", () => {
         expect(trs1.pos.x[id]).toBe(2);
     }
 });
+
+test("addCOmp", () => {
+    const w = new World();
+    const e = w.createEntity();
+    w.addComponent(e, Transform);
+    w.addComponent(e, Speed);
+});

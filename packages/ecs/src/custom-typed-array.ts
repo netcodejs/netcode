@@ -1,6 +1,6 @@
 export interface CustomTypedArray<T> {
-    get(index: number): T;
-    set(index: number, value: T): void;
+    getData(index: number): T;
+    setData(index: number, value: T): void;
     length: number;
 }
 
@@ -14,13 +14,13 @@ export class BitArray implements CustomTypedArray<boolean> {
         this._arr = new Uint32Array(Math.ceil(this._fixedLength));
     }
 
-    get(index: number): boolean {
+    getData(index: number): boolean {
         const arrIdx = (index / BitArray.BYTE_LENGTH_PRE_ELEMENT) >> 0;
         const bitIdx = index % BitArray.BYTE_LENGTH_PRE_ELEMENT;
         return (this._arr[arrIdx] & (1 << bitIdx)) != 0;
     }
 
-    set(index: number, value: boolean) {
+    setData(index: number, value: boolean) {
         const arrIdx = (index / BitArray.BYTE_LENGTH_PRE_ELEMENT) >> 0;
         const bitIdx = index % BitArray.BYTE_LENGTH_PRE_ELEMENT;
         const src = this._arr[arrIdx];
@@ -35,16 +35,13 @@ export class BitArray implements CustomTypedArray<boolean> {
         return cloned;
     }
 
-    or(other: BitArray) {
-        const aLen = this.length;
-        const bLen = other.length;
-        const len = Math.min(aLen, bLen);
+    set(other: this) {
+        other._arr.set(this._arr);
+    }
+}
 
-        const aArr = this._arr;
-        const bArr = other._arr;
-
-        for (let i = 0; i < len; i++) {
-            aArr;
-        }
+export class NativeArray<T> extends Array<T> {
+    set(other: this) {
+        other.push(...this);
     }
 }

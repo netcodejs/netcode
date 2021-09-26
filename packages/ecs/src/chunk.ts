@@ -1,4 +1,4 @@
-import { BitArray } from "./custom-typed-array";
+import { BitArray, NativeArray } from "./custom-typed-array";
 
 export interface ChunkConstructor<
     Schema extends ChunkSchema = ChunkSchema,
@@ -11,6 +11,8 @@ export interface ChunkConstructor<
     readonly byteLength: number;
     new (instanceLength: number): Chunk<Schema>;
 }
+
+export declare var Chunk: ChunkConstructor;
 
 export enum Type {
     i8,
@@ -35,10 +37,10 @@ export const Type2TypedArray = {
     [Type.f32]: Float32Array,
     [Type.f64]: Float64Array,
     [Type.bool]: BitArray,
-    [Type.native]: Array,
+    [Type.native]: NativeArray,
 };
 
-export type TypedArray = [Type2TypedArray[keyof Type2TypedArray]];
+export type TypedArray = Type2TypedArray[keyof Type2TypedArray];
 
 export interface Type2TypedArray {
     [Type.i8]: Int8Array;
@@ -50,7 +52,7 @@ export interface Type2TypedArray {
     [Type.f32]: Float32Array;
     [Type.f64]: Float64Array;
     [Type.bool]: BitArray;
-    [Type.native]: Array<any>;
+    [Type.native]: NativeArray<any>;
 }
 
 export type Type2Primitive = {
@@ -117,4 +119,6 @@ export type Chunk<Def extends ChunkSchema = ChunkSchema> = {
         : Def[key] extends [type: ChunkConstructor, length: number]
         ? Array<InstanceType<Def[key][0]>>
         : unknown;
+} & {
+    copyTo(dst: Chunk<Def>, srcIdx: number, dstIdx: number): void;
 };
