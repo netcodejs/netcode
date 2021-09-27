@@ -1,12 +1,14 @@
 import { setBit } from "./util";
-import { ChunkConstructor, ChunkSchema } from "./chunk";
+import { Chunk, ChunkConstructor, ChunkSchema } from "./chunk";
 
 export interface IMatcher {
     match(mask: number): boolean;
+    ctrs: ChunkConstructor[];
 }
 
 export interface INoneOfMatcher<T extends ChunkConstructor[]>
-    extends IMatcher {}
+    extends IMatcher,
+        IMatcher {}
 
 export interface IAnyOfMatcher<T extends ChunkConstructor[]>
     extends INoneOfMatcher<T> {
@@ -24,6 +26,7 @@ export class Matcher<AllOf extends ChunkConstructor[]>
     allOfBitset = 0;
     anyOfBitset = 0;
     noneOfBitset = 0;
+    ctrs: ChunkConstructor[] = [];
 
     private constructor() {}
 
@@ -33,7 +36,9 @@ export class Matcher<AllOf extends ChunkConstructor[]>
         const matcher = new Matcher();
         for (let ctr of compCtrArr) {
             matcher.allOfBitset = setBit(matcher.allOfBitset, ctr.typeId);
+            matcher.ctrs.push(ctr);
         }
+
         return matcher;
     }
 

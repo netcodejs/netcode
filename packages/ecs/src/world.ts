@@ -7,8 +7,16 @@ import {
     Type2TypedArray,
 } from "./chunk";
 import { Entity } from "./entity";
-import { resetBit, setBit, sortDefine, testBit } from "./util";
+import { IAllOfMatcher, IAnyOfMatcher, INoneOfMatcher } from "./query";
+import {
+    InstanceTypeTuple,
+    resetBit,
+    setBit,
+    sortDefine,
+    testBit,
+} from "./util";
 
+const TEMP_ARR = [];
 const MAX_ENTITY = (1 << 16) - 1;
 export class World {
     private static _compCtrs: ChunkConstructor[] = [];
@@ -176,7 +184,6 @@ export class World {
             }
         }
 
-        const newChunk = newArchetype.getChunk(ctr);
         return [
             newArchetype.chunks[
                 newArchetype.chunkTypeIdSet.sparse[ctr.typeId]
@@ -277,14 +284,25 @@ export class World {
     }
 
     updateSystem(sys: ISystem) {
+        sys.onUpdate(this);
+    }
+
+    query<T extends ChunkConstructor[]>(
+        matcher: IAllOfMatcher<T> | IAnyOfMatcher<T> | INoneOfMatcher<T>
+    ): [number[], InstanceTypeTuple<T>][] {
         if (!this._archetypes) {
             this._archetypes = Array.from(this._archetypeMap.values());
         }
-        for (let i = 0, j = this._archetypes.length; i < j; i++) {
+        const len = this._archetypes.length;
+        const out = [];
+        for (let i = 0; i < len; i++) {
             const arch = this._archetypes[i];
-            if (!sys.matcher.match(arch.mask)) continue;
-            sys.onUpdate(this, arch);
+            if (!matcher.match(arch.mask)) continue;
+            const chunks = arch.getChunksByMatcher(matcher);
+            const entities = arch.entities;
+            out.push([entities, chunks]);
         }
+        return out as any;
     }
     //#endregion
 }

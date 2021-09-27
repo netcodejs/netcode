@@ -130,5 +130,11 @@ export function sortDefine(define: ChunkSchema): [SortedChunkSchema, number] {
 
     return [out, byteLength];
 }
-
 export type ComponentType<T extends ChunkConstructor> = InstanceType<T>;
+export type InstanceTypeTuple<
+    T extends (abstract new (...args: any[]) => any)[]
+> = {
+    [key in keyof T]: T[key] extends abstract new (...args: any[]) => any
+        ? InstanceType<T[key]>
+        : unknown;
+};

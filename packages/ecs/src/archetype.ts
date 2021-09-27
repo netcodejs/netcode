@@ -1,10 +1,18 @@
 import { Chunk, ChunkConstructor } from "./chunk";
-import { setBit } from "./util";
+import {
+    IAllOfMatcher,
+    IAnyOfMatcher,
+    IMatcher,
+    INoneOfMatcher,
+} from "./query";
+import { InstanceTypeTuple, setBit } from "./util";
 
 export class Archetype {
     _entitySet: SparseSet;
     private _opacity: number;
     private _length: number;
+    private _queryCache = new Map<IMatcher, Chunk[]>();
+
     readonly view: DataView;
 
     readonly chunkTypeIdSet: SparseSet;
@@ -59,6 +67,36 @@ export class Archetype {
         return this.chunks[idx] as InstanceType<T>;
     }
 
+    getChunks<T extends ChunkConstructor[]>(ctrs: T): InstanceTypeTuple<T> {
+        const out: Chunk[] = new Array(ctrs.length);
+        const sparse = this.chunkTypeIdSet.sparse;
+        for (let i = 0, len = ctrs.length; i < len; i++) {
+            const ctr = ctrs[i];
+            const idx = sparse[ctr.typeId];
+            out[i] = this.chunks[idx];
+        }
+        return out as InstanceTypeTuple<T>;
+    }
+
+    getChunksByMatcher<T extends ChunkConstructor[]>(
+        matcher: IAllOfMatcher<T> | IAnyOfMatcher<T> | INoneOfMatcher<T>
+    ): InstanceTypeTuple<T> {
+        let out = this._queryCache.get(matcher);
+        if (!out) {
+            const ctrs = matcher.ctrs;
+            out = new Array(ctrs.length);
+            const sparse = this.chunkTypeIdSet.sparse;
+            for (let i = 0, len = ctrs.length; i < len; i++) {
+                const ctr = ctrs[i];
+                const idx = sparse[ctr.typeId];
+                out[i] = this.chunks[idx];
+            }
+
+            this._queryCache.set(matcher, out);
+        }
+        return out as InstanceTypeTuple<T>;
+    }
+
     getChunkId(index: number) {
         if (!this._entitySet.has(index)) return -1;
         return this._entitySet.sparse[index];
@@ -70,6 +108,7 @@ export class Archetype {
 
     resize(length: number = this._getNewSize()) {
         throw "Not support resize";
+        this._queryCache.clear();
     }
 
     protected _getNewSize() {

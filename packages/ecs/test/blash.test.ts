@@ -1,4 +1,4 @@
-import { Type, World, System, Matcher, ComponentType, Archetype } from "../src";
+import { Type, World, Matcher, ComponentType, ISystem } from "../src";
 
 const Vector = World.define({
     x: Type.i16, // 2
@@ -62,22 +62,25 @@ test("component", () => {
     expect(trs.pots[1].z[trsId]).toBe(0);
 });
 
+class MovableSystem implements ISystem {
+    matcher = Matcher.allOf(Transform, Speed);
+    onUpdate(world: World): void {
+        const queries = world.query(this.matcher);
+        for (const [entities, [trs, speed]] of queries) {
+            for (let id = 0; id < entities.length; id++) {
+                const p = trs.pos;
+                p.x[id] += speed.value[id];
+            }
+        }
+    }
+}
+
 test("system", () => {
     const w = new World();
     const arch = w.createArchetype(Transform);
     const arch1 = w.createArchetype(Transform, Speed);
     const e = w.createEntityByArchetype(arch);
     const e1 = w.createEntityByArchetype(arch1);
-    class MovableSystem extends System(Matcher.allOf(Transform, Speed)) {
-        onUpdate(world: World, arch: Archetype): void {
-            const trs = arch.getChunk(Transform);
-            const speed = arch.getChunk(Speed);
-            for (let id = 0; id < arch.entities.length; id++) {
-                const p = trs.pos;
-                p.x[id] += speed.value[id];
-            }
-        }
-    }
     w.addSystem(new MovableSystem()).finishAddSystem();
     {
         const [trs1, id] = w.getComponent(e1, Transform);
@@ -101,18 +104,16 @@ test("system", () => {
     }
 });
 
-test("addCOmp", () => {
+test("addComp", () => {
     const w = new World();
     const e = w.createEntity();
-    {
-        const [trs, id] = w.addComponent(e, Transform);
-        trs.pos.x[id] = 13;
-        w.addComponent(e, Speed);
-    }
+    const [trs1, id1] = w.addComponent(e, Transform);
+    trs1.pos.x[id1] = 13;
+    w.addComponent(e, Speed);
 
-    {
-        const [trs, id] = w.getComponent(e, Transform);
-        expect(trs.pos.x[id]).toBe(13);
-        expect(w.hasComponent(e, Speed)).toBeTruthy();
-    }
+    const [trs2, id2] = w.getComponent(e, Transform);
+    expect(trs2.pos.x[id2]).toBe(13);
+    expect(w.hasComponent(e, Speed)).toBeTruthy();
+
+    expect(trs1 === trs2).toBeFalsy();
 });
