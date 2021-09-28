@@ -109,16 +109,37 @@ export interface ComplexArraySignature extends ComplexSignature {
     length: number;
 }
 
-export type Chunk<Def extends ChunkSchema = ChunkSchema> = {
-    readonly [key in keyof Def]: Def[key] extends Type
-        ? Type2TypedArray[Def[key]]
-        : Def[key] extends [type: Type, length: number]
-        ? Type2TypedArray[Def[key][0]]
-        : Def[key] extends ChunkConstructor
-        ? InstanceType<Def[key]>
-        : Def[key] extends [type: ChunkConstructor, length: number]
-        ? Array<InstanceType<Def[key][0]>>
+export type Chunk<Schema extends ChunkSchema = ChunkSchema> = {
+    readonly [key in keyof Schema]: Schema[key] extends Type
+        ? Type2TypedArray[Schema[key]]
+        : Schema[key] extends [type: Type, length: number]
+        ? Type2TypedArray[Schema[key][0]]
+        : Schema[key] extends ChunkConstructor
+        ? Chunk<ChunkConstructorSchema<Schema[key]>>
+        : Schema[key] extends [type: ChunkConstructor, length: number]
+        ? Array<Chunk<ChunkConstructorSchema<Schema[key][0]>>>
         : unknown;
 } & {
-    copyTo(dst: Chunk<Def>, srcIdx: number, dstIdx: number): void;
+    copyTo(dst: Chunk<Schema>, srcIdx: number, dstIdx: number): void;
+};
+
+export type ComponentTuple<T extends ChunkConstructor[]> = {
+    [key in keyof T]: T[key] extends ChunkConstructor
+        ? Component<ChunkConstructorSchema<T[key]>>
+        : T[key];
+};
+
+export type ChunkConstructorSchema<T extends ChunkConstructor> =
+    T extends ChunkConstructor<infer R> ? R : unknown;
+
+export type Component<Schema extends ChunkSchema> = {
+    [key in keyof Schema]: Schema[key] extends Type
+        ? Type2Primitive[Schema[key]]
+        : Schema[key] extends [Type, number]
+        ? Array<Type2Primitive[Schema[key][0]]>
+        : Schema[key] extends ChunkConstructor
+        ? Component<ChunkConstructorSchema<Schema[key]>>
+        : Schema[key] extends [type: ChunkConstructor, length: number]
+        ? ReadonlyArray<Component<ChunkConstructorSchema<Schema[key][0]>>>
+        : unknown;
 };

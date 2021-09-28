@@ -1,4 +1,9 @@
-import { ISystem } from ".";
+import {
+    ComponentTuple,
+    ComponentType,
+    ISystem,
+    MatchTyple as IMatchUnion,
+} from ".";
 import { Archetype } from "./archetype";
 import {
     ChunkConstructor,
@@ -7,7 +12,6 @@ import {
     Type2TypedArray,
 } from "./chunk";
 import { Entity } from "./entity";
-import { IAllOfMatcher, IAnyOfMatcher, INoneOfMatcher } from "./query";
 import {
     InstanceTypeTuple,
     resetBit,
@@ -16,7 +20,6 @@ import {
     testBit,
 } from "./util";
 
-const TEMP_ARR = [];
 const MAX_ENTITY = (1 << 16) - 1;
 export class World {
     private static _compCtrs: ChunkConstructor[] = [];
@@ -288,7 +291,7 @@ export class World {
     }
 
     query<T extends ChunkConstructor[]>(
-        matcher: IAllOfMatcher<T> | IAnyOfMatcher<T> | INoneOfMatcher<T>
+        matcher: IMatchUnion<T>
     ): [number[], InstanceTypeTuple<T>][] {
         if (!this._archetypes) {
             this._archetypes = Array.from(this._archetypeMap.values());
@@ -303,6 +306,34 @@ export class World {
             out.push([entities, chunks]);
         }
         return out as any;
+    }
+
+    forEach<T extends ChunkConstructor[]>(
+        matcher: IMatchUnion<T>,
+        cb: (entity: Entity, ...comp: ComponentTuple<T>) => void
+    ) {
+        if (!this._archetypes) {
+            this._archetypes = Array.from(this._archetypeMap.values());
+        }
+        const len = this._archetypes.length;
+        const versions = this._entityVersions;
+        for (let i = 0; i < len; i++) {
+            const arch = this._archetypes[i];
+            if (!matcher.match(arch.mask)) continue;
+            const chunks = arch.getChunksByMatcher(matcher);
+            const entities = arch.entities;
+            for (let id = 0, len = entities.length; id < len; id++) {
+                const index = entities[id];
+                const version = versions[index];
+                cb(
+                    {
+                        index,
+                        version,
+                    },
+                    ...chunks
+                );
+            }
+        }
     }
     //#endregion
 }

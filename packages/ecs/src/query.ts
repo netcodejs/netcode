@@ -6,6 +6,11 @@ export interface IMatcher {
     ctrs: ChunkConstructor[];
 }
 
+export type MatchTyple<T extends ChunkConstructor[]> =
+    | INoneOfMatcher<T>
+    | IAnyOfMatcher<T>
+    | IAllOfMatcher<T>;
+
 export interface INoneOfMatcher<T extends ChunkConstructor[]>
     extends IMatcher,
         IMatcher {}

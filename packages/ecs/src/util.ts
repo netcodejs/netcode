@@ -1,11 +1,8 @@
 import {
     ChunkConstructor,
     ChunkSchema,
-    Chunk,
-    PlainSignature,
     SortedChunkSchema,
     Type,
-    ComplexSignature,
 } from "./chunk";
 import { Entity } from "./entity";
 
