@@ -1,4 +1,5 @@
-import { Serable, Var } from "./comp.dec";
+import { DataType } from "./comp-schema";
+import { NetSerable, NetVar } from "./comp-decorator";
 
 export abstract class ADirty<T> {
     abstract get value(): T;
@@ -12,12 +13,12 @@ export abstract class ADirty<T> {
     }
 }
 
-@Serable
+@NetSerable("Int", false)
 export class Int extends ADirty<number> implements ISerable {
-    @Var
+    @NetVar(DataType.BOOL)
     dirty: boolean = true;
     private _value: number = 0;
-    @Var
+    @NetVar(DataType.INT)
     get value() {
         return this._value;
     }
@@ -50,13 +51,13 @@ export class Int extends ADirty<number> implements ISerable {
     }
 }
 
-@Serable
+@NetSerable("Float", false)
 export class Float extends ADirty<number> implements ISerable {
-    @Var
+    @NetVar(DataType.BOOL)
     dirty: boolean = true;
 
     private _value: number = 0;
-    @Var
+    @NetVar(DataType.FLOAT)
     get value() {
         return this._value;
     }
@@ -88,13 +89,13 @@ export class Float extends ADirty<number> implements ISerable {
     }
 }
 
-@Serable
+@NetSerable("Long", false)
 export class Long extends ADirty<number> implements ISerable {
-    @Var
+    @NetVar(DataType.BOOL)
     dirty: boolean = true;
 
     private _value: number = 0;
-    @Var
+    @NetVar(DataType.LONG)
     get value() {
         return this._value;
     }
@@ -126,12 +127,12 @@ export class Long extends ADirty<number> implements ISerable {
     }
 }
 
-@Serable
+@NetSerable("Uint", false)
 export class Uint extends ADirty<number> implements ISerable {
-    @Var
+    @NetVar(DataType.BOOL)
     dirty: boolean = true;
     private _value: number = 0;
-    @Var
+    @NetVar(DataType.uint)
     get value() {
         return this._value;
     }
@@ -164,14 +165,14 @@ export class Uint extends ADirty<number> implements ISerable {
     }
 }
 
-@Serable
+@NetSerable("Double", false)
 export class Double extends ADirty<number> implements ISerable {
-    @Var
+    @NetVar(DataType.BOOL)
     dirty: boolean = true;
 
     private _value: number = 0;
-    @Var
-    get value(): u32 {
+    @NetVar(DataType.DOUBLE)
+    get value() {
         return this._value;
     }
     set value(inValue) {
@@ -202,13 +203,13 @@ export class Double extends ADirty<number> implements ISerable {
     }
 }
 
-@Serable
+@NetSerable("Ulong", false)
 export class Ulong extends ADirty<number> implements ISerable {
-    @Var
+    @NetVar(DataType.BOOL)
     dirty: boolean = true;
 
     private _value: number = 0;
-    @Var
+    @NetVar(DataType.ulong)
     get value() {
         return this._value;
     }
@@ -240,13 +241,13 @@ export class Ulong extends ADirty<number> implements ISerable {
     }
 }
 
-@Serable
+@NetSerable("Short", false)
 export class Short extends ADirty<number> implements ISerable {
-    @Var
+    @NetVar(DataType.BOOL)
     dirty: boolean = true;
 
     private _value: number = 0;
-    @Var
+    @NetVar(DataType.SHORT)
     get value() {
         return this._value;
     }
@@ -278,17 +279,17 @@ export class Short extends ADirty<number> implements ISerable {
     }
 }
 
-@Serable
+@NetSerable("Ulong", false)
 export class Ushort extends ADirty<number> implements ISerable {
-    @Var
+    @NetVar(DataType.BOOL)
     dirty: boolean = true;
 
     private _value: number = 0;
-    @Var
-    get value(): short {
+    @NetVar(DataType.ushort)
+    get value() {
         return this._value;
     }
-    set value(inValue: short) {
+    set value(inValue) {
         if (this._value !== inValue) {
             this._value = inValue;
             this.dirty = true;

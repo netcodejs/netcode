@@ -1,18 +1,27 @@
-import { Float, IComp, Role, Rpc, Serable, Var } from "netcodejs";
+import {
+    Float,
+    IComp,
+    Role,
+    Rpc,
+    NetSerable,
+    NetVar,
+    DataType,
+    NetArr,
+} from "netcodejs";
 
-@Serable
+@NetSerable("Vector")
 export class Vector {
-    @Var
+    @NetVar(DataType.INT)
     x: int = 0;
-    @Var
+    @NetVar(DataType.INT)
     y: int = 0;
-    @Var
+    @NetArr(Float)
     z: Float[] = [];
 }
 
-@Serable
+@NetSerable("Transform")
 export class Transform extends IComp {
-    @Var
+    @NetVar(Vector)
     pos = new Vector();
 
     @Rpc(Role.AUTHORITY)
@@ -27,9 +36,9 @@ export class Transform extends IComp {
     }
 }
 
-@Serable
+@NetSerable("View")
 export class View extends IComp {
-    @Var
+    @NetVar(DataType.INT)
     color: int = 0xffffff;
 
     @Rpc(Role.AUTHORITY)
@@ -73,7 +82,7 @@ export interface UserInput {
     isRight: boolean;
 }
 
-@Serable
+@NetSerable("Controller")
 export class Controller extends IComp {
     private _input: UserInput = { isLeft: false, isRight: false };
     private _onKeyDownDel: any;

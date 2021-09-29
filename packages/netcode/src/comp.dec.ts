@@ -28,7 +28,7 @@ export function Var<VarName extends string>(
 type RpcDecorator = <
     PropertyName extends string,
     T extends Record<string, any> &
-        Record<PropertyName, (...args) => Promise<any> | void>
+        Record<PropertyName, (...args: any[]) => Promise<any> | void>
 >(
     _prototype: T & Record<`${PropertyName}_impl`, T[PropertyName]>,
     _propertyName: PropertyName

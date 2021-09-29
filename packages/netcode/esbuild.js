@@ -2,7 +2,6 @@ const builder = require("esbuild");
 const rimarf = require("rimraf");
 
 const timeRecord = Date.now();
-const pkg = require("./package.json");
 
 rimarf("dist/", (err) => {
     if (err) {
@@ -28,9 +27,8 @@ const commonOption = {
         "process.env.NODE_ENV": "production",
     },
     sourcemap: true,
-    external: Object.keys(pkg.dependencies),
-    // minify: true,
-    plugins: [],
+    external: ["@netcodejs/util"],
+    minify: true,
 };
 
 function run() {
@@ -46,26 +44,21 @@ function run() {
         //     },
         //     sourcemap: true,
         // }),
-        builder.build({
+        builder.buildSync({
             ...commonOption,
             format: "cjs",
             outfile: "dist/netcodejs.prod.cjs.js",
         }),
-        builder.build({
+        builder.buildSync({
             ...commonOption,
             format: "esm",
             outfile: "dist/netcodejs.esm.js",
         }),
     ];
 
-    Promise.all(prom)
-        .then(() => {
-            console.log(
-                `Build finish! The time used is  ${Date.now() - timeRecord}ms`
-            );
-        })
-        .catch((e) => {
-            console.error(e);
-            process.exit(1);
-        });
+    Promise.all(prom).then(() => {
+        console.log(
+            `Build finish! The time used is  ${Date.now() - timeRecord}ms`
+        );
+    });
 }

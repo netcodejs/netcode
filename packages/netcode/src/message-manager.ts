@@ -1,5 +1,5 @@
 import { composeVersion, decomposeVersion } from "./misc";
-import { ISchema } from "./comp-schema";
+import { DataTypeVoid, ISchema } from "./comp-schema";
 import { RPC_MAX_UUID } from "./builtin";
 import { IComp } from "./comp-interface";
 import { Deferred } from "@netcodejs/util";
@@ -135,7 +135,7 @@ export class MessageManager<T extends SupportNetDataType> {
         // comp index
         buf.writeInt(compIdx);
         // comp hash
-        buf.writeLong(comp.__hash__);
+        buf.writeLong(comp.__schema__.hash);
         // ser comp
         comp.ser(buf);
 
@@ -195,7 +195,7 @@ export class MessageManager<T extends SupportNetDataType> {
     }
 
     sendRpc(
-        methodHash: number,
+        methodName: string,
         component: IComp & ISchema & Record<string, Function>,
         params: any[],
         timestamp: number
@@ -209,22 +209,28 @@ export class MessageManager<T extends SupportNetDataType> {
         const entity = comp.entity;
         const compIdx = entity.indexOf(component);
         const buf = this.rpcbufferWriter;
+        // schema
+        const s = comp.__schema__;
+        // method schema
+        const ms = s.methods[methodName];
         // entity id
         buf.writeInt(entity.id);
         // comp index
         buf.writeUshort(compIdx);
         // method hash
-        buf.writeLong(methodHash);
+        buf.writeLong(ms.hash);
         // timestamp
         buf.writeLong(timestamp);
         // uuid
         buf.writeUint(uuid);
         // param
-        const hasReturnValue = component.__serRpc(buf, methodHash, params);
-        if (hasReturnValue) {
+        component["ser" + ms.hash](buf, params);
+        if (ms.returnType == DataTypeVoid) {
+            return;
+        } else {
             const deferred = new Deferred();
             this._rpcDeferred.set(
-                `${entity.id}|${compIdx}|${methodHash}|${uuid}`,
+                `${entity.id}|${compIdx}|${ms.hash}|${uuid}`,
                 {
                     deferred,
                     timestamp,
@@ -232,7 +238,6 @@ export class MessageManager<T extends SupportNetDataType> {
             );
             return deferred.promise;
         }
-        return void 0;
     }
 
     endSendRpc() {
