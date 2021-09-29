@@ -5526,7 +5526,7 @@ log-update@^4.0.0:
     wrap-ansi "^6.2.0"
 
 "loki-buffer@file:packages/loki-buffer":
-  version "0.1.0"
+  version "0.0.0"
 
 lru-cache@^6.0.0:
   version "6.0.0"
@@ -5933,6 +5933,11 @@ neo-async@^2.6.0:
   version "2.6.2"
   resolved "https://registry.nlark.com/neo-async/download/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha1-tKr7k+OustgXTKU88WOrfXMIMF8=
+
+"netcodejs@file:packages/netcode":
+  version "0.0.12"
+  dependencies:
+    "@netcodejs/util" "^0.0.0"
 
 nice-try@^1.0.4:
   version "1.0.5"
