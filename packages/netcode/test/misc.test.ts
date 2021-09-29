@@ -1,4 +1,4 @@
-import { asSerable, assert, isPrimitive } from "../src";
+import { asSerable, assert, DomainOption, isPrimitive, RpcType } from "../src";
 
 test("isPrimitive", () => {
     expect(isPrimitive(true)).toBe(true);
@@ -27,4 +27,23 @@ test("asSerable", () => {
     expect(s).toBe(s);
     expect(asSerable(null!)).toBe(null);
     expect(asSerable(false!)).toBe(null);
+});
+
+test("DomainOption", () => {
+    const option = new DomainOption(
+        {
+            newBufferWriter() {
+                throw "";
+            },
+            newBufferReader() {
+                throw "";
+            },
+        },
+        RpcType.CLIENT
+    );
+
+    expect(option.capacity).toBe(50);
+    expect(option.autoResize).toBe(true);
+    expect(option.fixedTimeSec).toBe(0.2);
+    expect(option.type).toBe(RpcType.CLIENT);
 });
