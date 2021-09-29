@@ -13,6 +13,8 @@ import {
 } from "./chunk";
 import { Entity } from "./entity";
 import {
+    defineInitJit,
+    defineCopyToJit,
     InstanceTypeTuple,
     resetBit,
     setBit,
@@ -23,7 +25,11 @@ import {
 const MAX_ENTITY = (1 << 16) - 1;
 export class World {
     private static _compCtrs: ChunkConstructor[] = [];
+    public static get chunkDefines(): ReadonlyArray<ChunkConstructor> {
+        return this._compCtrs;
+    }
     private _syss: ISystem[] = [];
+    public static readonly SUPPORT_JIT = typeof eval !== null;
 
     static define<T extends ChunkSchema = undefined>(
         define?: T
@@ -38,6 +44,10 @@ export class World {
             static TEMP: any;
 
             constructor(insLen: number) {
+                this.init(insLen, World._compCtrs);
+            }
+
+            init(insLen: number, _ctrs: ChunkConstructor[]): void {
                 if (ctr.isFlag) return;
                 for (let i = 0, j = sorted.plains.length; i < j; i++) {
                     const sign = sorted.plains[i];
@@ -103,6 +113,11 @@ export class World {
         ctr.sortedDefinition = sorted;
         ctr.isFlag = !define || Object.keys(define).length === 0;
         ctr.byteLength = byteLength;
+
+        if (World.SUPPORT_JIT) {
+            ctr.prototype.init = defineInitJit(ctr as any);
+            ctr.prototype.copyTo = defineCopyToJit(ctr as any);
+        }
 
         this._compCtrs.push(ctr as any);
         return ctr as any;

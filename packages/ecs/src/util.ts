@@ -1,4 +1,5 @@
 import {
+    Chunk,
     ChunkConstructor,
     ChunkSchema,
     SortedChunkSchema,
@@ -135,3 +136,102 @@ export type InstanceTypeTuple<
         ? InstanceType<T[key]>
         : unknown;
 };
+export const Type2TypedArrayString = {
+    [Type.i8]: "Int8Array",
+    [Type.u8]: "Uint8Array",
+    [Type.i16]: "Int16Array",
+    [Type.u16]: "Uint16Array",
+    [Type.i32]: "Int32Array",
+    [Type.u32]: "Uint32Array",
+    [Type.f32]: "Float32Array",
+    [Type.f64]: "Float64Array",
+    [Type.bool]: "BitArray",
+    [Type.native]: "NativeArray",
+};
+
+type InitJit = (insLen: number, ctrs: ChunkConstructor[]) => void;
+export function defineInitJit(ctr: ChunkConstructor) {
+    if (ctr.isFlag) return Function() as InitJit;
+    let str = "";
+    const sorted = ctr.sortedDefinition;
+    for (let i = 0, j = sorted.plains.length; i < j; i++) {
+        const sign = sorted.plains[i];
+        // @ts-ignore
+        str += `this.${sign.name} = new ${
+            Type2TypedArrayString[sign.type]
+        }(insLen);\n`;
+    }
+    for (let i = 0, j = sorted.plainArrays.length; i < j; i++) {
+        const sign = sorted.plainArrays[i];
+        str += `
+{
+    const arr = (this.${sign.name} = new Array(${sign.length}));
+    for (let k = 0; k < ${sign.length}; k++) {
+        arr[k] = new ${Type2TypedArrayString[sign.type]}(insLen);
+    }
+}`;
+    }
+    for (let i = 0, j = sorted.complexs.length; i < j; i++) {
+        const sign = sorted.complexs[i];
+        str += `
+this.${sign.name} = new ctrs[${sign.type.typeId}](insLen);`;
+    }
+    for (let i = 0, j = sorted.complexArrays.length; i < j; i++) {
+        const sign = sorted.complexArrays[i];
+        str += `
+{
+    const arr = (this.${sign.name} = new Array(${sign.length}));
+    for (let k = 0; k < ${sign.length}; k++) {
+        arr[k] = new ctrs[${sign.type.typeId}](insLen);
+    }
+}`;
+    }
+    return Function("insLen", "ctrs", str) as InitJit;
+}
+
+type CopyJit = (other: any, srcIdx: number, dstIdx: number) => void;
+export function defineCopyToJit(ctr: ChunkConstructor) {
+    if (ctr.isFlag) return Function() as CopyJit;
+    let str = "";
+    const sorted = ctr.sortedDefinition;
+    for (let i = 0, j = sorted.plains.length; i < j; i++) {
+        const sign = sorted.plains[i];
+        str += `
+{
+    const src = this.${sign.name};
+    const dst = other.${sign.name};
+    dst[dstIdx] = src[srcIdx];
+}`;
+    }
+    for (let i = 0, j = sorted.plainArrays.length; i < j; i++) {
+        const sign = sorted.plainArrays[i];
+        str += `
+{
+    const srcArr = this.${sign.name};
+    const dstArr = other.${sign.name};
+    for (let k = 0; k < ${sign.length}; k++) {
+        const src = srcArr[k];
+        const dst = dstArr[k];
+        dst[dstIdx] = src[srcIdx];
+    }
+}`;
+    }
+    for (let i = 0, j = sorted.complexs.length; i < j; i++) {
+        const sign = sorted.complexs[i];
+        str += `
+this.${sign.name}.copyTo(other.${sign.name}, srcIdx, dstIdx);`;
+    }
+    for (let i = 0, j = sorted.complexArrays.length; i < j; i++) {
+        const sign = sorted.complexArrays[i];
+        str += `
+{
+    const srcArr = this.${sign.name};
+    const dstArr = other.${sign.name};
+    for (let k = 0; k < ${sign.length}; k++) {
+        srcArr[k].copyTo(dstArr[k], srcIdx, dstIdx);
+    }
+}`;
+    }
+
+    return Function("other", "srcIdx", "dstIdx", str) as CopyJit;
+}
