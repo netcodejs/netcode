@@ -9,7 +9,7 @@
   "author": "mooooooi",
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "build:fast": "node esbuild.js",
+    "build:fast": "node esbuild.mjs",
     "build": "yarn build:fast && tsc --emitDeclarationOnly --outdir dist",
     "test": "jest",
     "test:coverage": "jest --ci --coverage",

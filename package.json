@@ -43,5 +43,9 @@
   },
   "lint-staged": {
     "*.{ts,js,css,md}": "prettier --write"
+  },
+  "dependencies": {
+    "loki-buffer": "file:packages\\loki-buffer",
+    "netcodejs": "file:packages\\netcode"
   }
 }

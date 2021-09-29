@@ -1,5 +1,5 @@
-const builder = require("esbuild");
-const rimarf = require("rimraf");
+import builder from "esbuild";
+import rimarf from "rimraf";
 
 const timeRecord = Date.now();
 
