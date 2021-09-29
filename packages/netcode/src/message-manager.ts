@@ -1,10 +1,4 @@
 import { composeVersion, decomposeVersion } from "./misc";
-import {
-    IDataBufferReader,
-    IDataBufferWriter,
-    ISerable,
-    SupportNetDataType,
-} from "./data/serializable";
 import { DataTypeVoid, ISchema } from "./comp-schema";
 import { RPC_MAX_UUID } from "./builtin";
 import { IComp } from "./comp-interface";

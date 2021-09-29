@@ -1,0 +1,62 @@
+{
+  "name": "@netcodejs/cli",
+  "version": "0.0.1",
+  "author": "moruiyi @mooooooi",
+  "bin": {
+    "netcode-cli": "./bin/run"
+  },
+  "bugs": "https://github.com/netcodejs/netcode/issues",
+  "dependencies": {
+    "@netcodejs/util": "^0.0.0",
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^3",
+    "chalk": "^4.1.2",
+    "esbuild": "^0.12.22",
+    "fast-glob": "^3.2.7",
+    "hash-wasm": "^4.9.0",
+    "normalize-path": "^3.0.0",
+    "ts-morph": "^11.0.3",
+    "tslib": "^1"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "@types/netcodejs__iser": "^0.0.1",
+    "@types/node": "^10",
+    "@types/normalize-path": "^3.0.0",
+    "globby": "^10",
+    "rimraf": "^3.0.2",
+    "ts-node": "^8",
+    "typescript": "^3.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/lib",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/netcodejs/netcode",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "netcode-cli",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "netcodejs/netcode",
+  "scripts": {
+    "postpack": "rimraf oclif.manifest.json",
+    "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "test": "./bin/run build test/index.ts",
+    "version": "oclif-dev readme && git add README.md"
+  },
+  "types": "lib/index.d.ts"
+}

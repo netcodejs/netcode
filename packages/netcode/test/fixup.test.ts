@@ -6,9 +6,9 @@ import {
     NetSerable,
     NetVar,
     RpcType,
-    StringDomainOption,
 } from "../src";
 import { genLoop } from "./util";
+import { StringDomainOption } from "@netcodejs/string-data-buffer";
 
 beforeEach(() => {
     Domain.Clear();

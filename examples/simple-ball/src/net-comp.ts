@@ -1,32 +1,33 @@
 import {
-    DataType,
+    Float,
     IComp,
-    NetSerable,
-    NetVar,
     Role,
     Rpc,
-    RpcType,
-    RpcVar,
-} from "../src";
+    NetSerable,
+    NetVar,
+    DataType,
+    NetArr,
+} from "netcodejs";
 
-@NetSerable("vec")
+@NetSerable("Vector")
 export class Vector {
     @NetVar(DataType.INT)
-    x: number = 0;
+    x: int = 0;
     @NetVar(DataType.INT)
-    y: number = 0;
+    y: int = 0;
+    @NetArr(Float)
+    z: Float[] = [];
 }
 
-@NetSerable("trans")
+@NetSerable("Transform")
 export class Transform extends IComp {
     @NetVar(Vector)
     pos = new Vector();
 
     @Rpc(Role.AUTHORITY)
-    serverMove(
-        @RpcVar(DataType.FLOAT) x: number,
-        @RpcVar(DataType.FLOAT) y: number
-    ) {
+    serverMove!: (x: float, y: float) => void;
+
+    serverMove_impl(x: float, y: float) {
         if (x != 0 || y != 0) {
             console.log(`${x} : ${y}`);
         }
@@ -35,13 +36,14 @@ export class Transform extends IComp {
     }
 }
 
-@NetSerable("view")
+@NetSerable("View")
 export class View extends IComp {
     @NetVar(DataType.INT)
-    color = 0xffffff;
+    color: int = 0xffffff;
 
     @Rpc(Role.AUTHORITY)
-    changeColor(@RpcVar(DataType.INT) inColor: number) {
+    changeColor!: (inColor: int) => void;
+    changeColor_impl(inColor: int) {
         this.color = inColor;
     }
 
@@ -80,7 +82,7 @@ export interface UserInput {
     isRight: boolean;
 }
 
-@NetSerable("controller")
+@NetSerable("Controller")
 export class Controller extends IComp {
     private _input: UserInput = { isLeft: false, isRight: false };
     private _onKeyDownDel: any;

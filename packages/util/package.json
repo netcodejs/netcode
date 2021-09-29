@@ -11,10 +11,8 @@
   "scripts": {
     "build:fast": "node esbuild.mjs",
     "build": "yarn build:fast && tsc --emitDeclarationOnly --outdir dist",
-    
     "test": "jest",
     "test:coverage": "jest --ci --coverage",
-
     "build:nojit": "cross-env ENSURE_JIT=false yarn build",
     "build:jit": "cross-env ENSURE_JIT=true yarn build"
   },

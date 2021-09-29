@@ -1,10 +1,5 @@
 import { DataType } from "./comp-schema";
 import { NetSerable, NetVar } from "./comp-decorator";
-import {
-    IDataBufferReader,
-    IDataBufferWriter,
-    ISerable,
-} from "./data/serializable";
 
 export abstract class ADirty<T> {
     abstract get value(): T;

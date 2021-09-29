@@ -7,5 +7,5 @@ export * from "./comp-decorator";
 export * from "./entity";
 export * from "./domain";
 export * from "./base-dirty-data";
-export * from "./data/";
 export * from "./builtin-comp/";
+export * from "./message-manager";

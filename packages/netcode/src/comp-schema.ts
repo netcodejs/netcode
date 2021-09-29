@@ -77,13 +77,6 @@ export function genMethodSchema(o = Object.create(null)): MethodSchema {
 export const SCHEME_KEY = "__schema__";
 export type ISchema = { [SCHEME_KEY]: Schema };
 
-export function getSchemaByPrototype(prototype: any): Schema | null {
-    if (prototype.hasOwnProperty(SCHEME_KEY)) {
-        return (prototype as any)[SCHEME_KEY];
-    }
-    return null;
-}
-
 export function getOrCreateScheme(prototype: any): Schema {
     if (prototype.hasOwnProperty(SCHEME_KEY)) {
         return (prototype as any)[SCHEME_KEY];

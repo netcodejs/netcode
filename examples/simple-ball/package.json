@@ -1,0 +1,14 @@
+{
+  "name": "simple-ball",
+  "version": "1.0.0",
+  "main": "dist/index.html",
+  "author": "mooooooi <emwings@outlook.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@netcodejs/string-data-buffer": "^0.0.1",
+    "netcodejs": "^0.0.12"
+  },
+  "scripts": {
+    "build": "node esbuild.js"
+  }
+}

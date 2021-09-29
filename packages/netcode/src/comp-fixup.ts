@@ -6,7 +6,6 @@ import {
     Schema,
     SCHEME_KEY,
 } from "./comp-schema";
-import { IDataBufferWriter, IDataBufferReader } from "./data/serializable";
 import { NONE_CONTAINER } from "./builtin";
 
 export function serValue(

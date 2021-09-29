@@ -1,7 +1,8 @@
 {
   "tagVersionPrefix": "",
   "packages": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "version": "independent",
   "npmClient": "yarn",
