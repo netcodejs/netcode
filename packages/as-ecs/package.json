@@ -1,0 +1,17 @@
+{
+  "name": "@netcodejs/as-ecs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "mooooooi<emwings@outlook.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@assemblyscript/loader": "^0.19.17"
+  },
+  "scripts": {
+    "asbuild:untouched": "asc assembly/index.ts --target debug",
+    "asbuild:optimized": "asc assembly/index.ts --target release",
+    "asbuild": "yarn asbuild:untouched && yarn asbuild:optimized",
+    "example": "node example/esbuild.js",
+    "test": "yarn asp"
+  }
+}
