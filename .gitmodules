@@ -1,0 +1,4 @@
+[submodule "packages/assemblyscript"]
+	path = packages/assemblyscript
+	url = git@github.com:mooooooi/assemblyscript.git
+	branch = dev
