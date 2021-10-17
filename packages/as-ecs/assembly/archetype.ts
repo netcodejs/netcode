@@ -1,7 +1,7 @@
 import { Chunk } from "./chunk";
 import { ComponentType } from "./component";
 import { Entity, EntityId } from "./entity";
-import { fastRemove } from "./utility";
+import { fastRemove, SparseSet } from "./utility";
 import { EntityMask } from "./world";
 
 @final
@@ -10,8 +10,7 @@ export class Archetype {
     size: usize;
     chunks: Chunk[];
 
-    entityIds: EntityId[] = [];
-    entityId2UniqueIdInChunkMap: Map<EntityId, i32> = new Map();
+    entityIds: SparseSet<EntityId> = new SparseSet();
 
     familyId2offsetMap: Map<u32, usize> = new Map();
     constructor(
@@ -32,7 +31,7 @@ export class Archetype {
     }
 
     getDataViewPtr(entity: Entity, componentType: ComponentType): usize {
-        const uniqueId = this.entityId2UniqueIdInChunkMap.get(entity.id);
+        const uniqueId = this.entityIds.getIndex(entity.id);
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
         const idxInChunk = uniqueId % this.elementLengthPerChunk;
         return this.chunks[chunkIdx].getDataViewPtr(
@@ -41,72 +40,81 @@ export class Archetype {
         );
     }
 
-    addEntity(e: Entity): void {
+    addEntity(e: Entity): usize {
         const uniqueId = this.entityIds.length - 1;
-        this.entityIds.push(e.id);
-        this.entityId2UniqueIdInChunkMap.set(e.id, uniqueId);
-
+        this.entityIds.add(e.id);
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
-
+        const idxInChunk = uniqueId % this.elementLengthPerChunk;
         if (chunkIdx >= this.chunks.length) {
             this.chunks.push(new Chunk(this.size, this.elementLengthPerChunk));
         }
+        const chunk = this.chunks[chunkIdx];
+        assert(chunk != null);
+        return chunk.getBasePtr(idxInChunk);
     }
 
     removeEntity(e: Entity): void {
-        assert(this.entityId2UniqueIdInChunkMap.has(e.id));
-        const uniqueId = this.entityId2UniqueIdInChunkMap.get(e.id);
+        const uniqueId = this.entityIds.getIndex(e.id);
+        const replaceUniqueId = this.entityIds.remove(e.id);
+
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
         const idxInChunk = uniqueId % this.elementLengthPerChunk;
+        const ptrInchunk = this.chunks[chunkIdx].getBasePtr(idxInChunk);
+        if (replaceUniqueId > -1) {
+            const replaceChunkIdx =
+                replaceUniqueId / this.elementLengthPerChunk;
+            const replaceIdxInChunk =
+                replaceUniqueId % this.elementLengthPerChunk;
+            const replacePtrInChunk =
+                this.chunks[replaceChunkIdx].getBasePtr(replaceIdxInChunk);
 
-        const replaceIndexInChunk = fastRemove(this.entityIds, idxInChunk);
-        assert(replaceIndexInChunk > -1);
-
-        this.entityId2UniqueIdInChunkMap.delete(e.id);
-
-        const chunk = this.chunks[chunkIdx];
-        const ptrInChunk = chunk.getPtr(idxInChunk);
-        const replacePtrInChunk = chunk.getPtr(replaceIndexInChunk);
-        if (replaceIndexInChunk != idxInChunk) {
-            this.entityId2UniqueIdInChunkMap.set(
-                this.entityIds[replaceIndexInChunk],
-                replaceIndexInChunk
-            );
-            memory.copy(ptrInChunk, replacePtrInChunk, chunk.elementSize);
+            memory.copy(ptrInchunk, replacePtrInChunk, this.size);
+            memory.fill(replacePtrInChunk, 0, this.size);
+        } else {
+            memory.fill(ptrInchunk, 0, this.size);
         }
-        memory.fill(replacePtrInChunk, 0, chunk.elementLength);
     }
 
-    transferAndRemoveEntity(dst: Archetype, e: Entity): void {
-        assert(this.entityId2UniqueIdInChunkMap.has(e.id));
-        const uniqueId = this.entityId2UniqueIdInChunkMap.get(e.id);
+    transferAndRemoveEntity(
+        dst: Archetype,
+        dstBasePtr: usize,
+        e: Entity
+    ): void {
+        const uniqueId = this.entityIds.getIndex(e.id);
+        const replaceUniqueId = this.entityIds.remove(e.id);
+
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
         const idxInChunk = uniqueId % this.elementLengthPerChunk;
+        const ptrInchunk = this.chunks[chunkIdx].getBasePtr(idxInChunk);
 
-        const replaceIndexInChunk = fastRemove(this.entityIds, idxInChunk);
-        assert(replaceIndexInChunk > -1);
+        const dstTypeMap = dst.familyId2offsetMap;
+        const srcTypeMap = this.familyId2offsetMap;
+        for (let i = 0, len = dst.componentTypes.length; i < len; i++) {
+            const type = dst.componentTypes[i];
+            const typeId = type.id;
+            if (!srcTypeMap.has(typeId)) continue;
 
-        this.entityId2UniqueIdInChunkMap.delete(e.id);
-
-        const chunk = this.chunks[chunkIdx];
-        const ptrInChunk = chunk.getPtr(idxInChunk);
-        const replacePtrInChunk = chunk.getPtr(replaceIndexInChunk);
-        if (replaceIndexInChunk != idxInChunk) {
-            this.entityId2UniqueIdInChunkMap.set(
-                this.entityIds[replaceIndexInChunk],
-                replaceIndexInChunk
+            const dstOffset = dstTypeMap.get(typeId);
+            const srcOffset = srcTypeMap.get(typeId);
+            memory.copy(
+                dstBasePtr + dstOffset,
+                ptrInchunk + srcOffset,
+                type.size
             );
-            memory.copy(ptrInChunk, replacePtrInChunk, chunk.elementSize);
         }
-        memory.fill(replacePtrInChunk, 0, chunk.elementLength);
 
-        const srcMap = this.familyId2offsetMap;
-        const dstMap = dst.familyId2offsetMap;
-        for (let i = 0; i < this.componentTypes.length; i++) {
-            const componentType = this.componentTypes[i];
-            if (!dstMap.has(componentType.id)) continue;
-            const dstOffset = dstMap.get(componentType.id);
-            const srcOffset = srcMap.get(componentType.id);
+        if (replaceUniqueId > -1) {
+            const replaceChunkIdx =
+                replaceUniqueId / this.elementLengthPerChunk;
+            const replaceIdxInChunk =
+                replaceUniqueId % this.elementLengthPerChunk;
+            const replacePtrInChunk =
+                this.chunks[replaceChunkIdx].getBasePtr(replaceIdxInChunk);
+
+            memory.copy(ptrInchunk, replacePtrInChunk, this.size);
+            memory.fill(replacePtrInChunk, 0, this.size);
+        } else {
+            memory.fill(ptrInchunk, 0, this.size);
         }
     }
 }

@@ -37,7 +37,7 @@ export class StructUtil {
 
 // @ts-ignore: decorator
 @inline 
-export function fastRemove<T>(arr: T[], index: number): i32 {
+export function fastRemove<T>(arr: T[], index: i32): i32 {
     if (index == 0) return -1;
     const replaceIndex = arr.length - 1;
     if (index == 1 || index == replaceIndex) {
@@ -49,31 +49,60 @@ export function fastRemove<T>(arr: T[], index: number): i32 {
     arr.length--;
     return replaceIndex;
 }
-Array
+
 export class SparseSet<V> {
-    protected payloads: V[] = [];
+    [key: i32]: V;
+    protected payloads: Array<V> = [];
     protected map: Map<V, i32> = new Map();
 
     @inline
     has(val: V): bool {
-        if (this.map.has(val)) return true;
+        if (!this.map.has(val)) return false;
         const index = this.map.get(val);
         return index < this.payloads.length && this.payloads[index] === val
     }
 
+    @inline
     add(val: V): void {
         if (this.has(val)) return;
         this.map.set(val, this.payloads.length);
         this.payloads.push(val);
     }
 
-    remove(val: V): void {
-        if (!this.has(val)) return;
+    @inline
+    getIndex(val: V): i32 {
+        if (!this.has(val)) return -1;
+        return this.map.get(val);
+    }
+
+    @inline
+    @operator("[]")
+    get(index: i32): V {
+        assert(index < this.payloads.length);
+        return this.payloads[index];
+    }
+
+    @inline
+    @operator("[]=")
+    set(index: i32, val: V): void {
+        assert(index < this.payloads.length);
+        this.payloads[index] = val;
+    }
+
+    @inline
+    get length(): i32 {
+        return this.payloads.length;
+    }
+
+    remove(val: V): i32 {
+        if (!this.has(val)) return -1;
         const last = this.payloads.pop();
         if (val !== last) {
             const index = this.map.get(val);
             this.map.set(last, index);
             this.payloads[index] = last;
+            return index;
         }
+        return -1;
     }
 }

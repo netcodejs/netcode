@@ -55,10 +55,7 @@ export default class World {
         this.entityMasks.length = newLen;
     }
 
-    private _addComponent(
-        entity: Entity,
-        componentType: ComponentType
-    ): Archetype {
+    private _addComponent(entity: Entity, componentType: ComponentType): usize {
         const fid = componentType.id;
         const oldMask = this.entityMasks[entity.id];
         const newMask = (this.entityMasks[entity.id] = oldMask | (1 << fid));
@@ -88,12 +85,12 @@ export default class World {
             this.mask2archetypeMap.set(newMask, newArche);
         }
 
-        newArche.addEntity(entity);
+        const ptr = newArche.addEntity(entity);
         if (oldArche != null) {
-            oldArche.transferAndRemoveEntity(newArche, entity);
+            oldArche.transferAndRemoveEntity(newArche, ptr, entity);
         }
 
-        return newArche;
+        return ptr + newArche.familyId2offsetMap.get(componentType.id);
     }
 
     addComponent<T extends IComponentData>(entity: Entity): void {
@@ -105,11 +102,10 @@ export default class World {
     addAndGetComponent<T extends IComponentData>(entity: Entity): T {
         this.valiateOrThrow(entity);
         const componentType = ComponentType.Get<T>();
-        const newArche = this._addComponent(entity, componentType);
-        const ref = newArche.getDataViewPtr(entity, componentType);
-        const copy = heap.alloc(componentType.size);
-        memory.copy(copy, ref, componentType.size);
-        return changetype<T>(copy);
+        const ptr = this._addComponent(entity, componentType);
+        const clonedPtr = heap.alloc(componentType.size);
+        memory.copy(clonedPtr, ptr, componentType.size);
+        return changetype<T>(clonedPtr);
     }
 
     @inline
@@ -158,8 +154,8 @@ export default class World {
             this.mask2archetypeMap.set(newMask, newArche);
         }
 
-        newArche.addEntity(entity);
-        oldArche.transferAndRemoveEntity(newArche, entity);
+        const ptr = newArche.addEntity(entity);
+        oldArche.transferAndRemoveEntity(newArche, ptr, entity);
     }
 
     getComponent<T extends IComponentData>(entity: Entity): T {
@@ -168,7 +164,9 @@ export default class World {
         const arche = this.mask2archetypeMap.get(mask);
         const componentType = ComponentType.Get<T>();
         const ptr = arche.getDataViewPtr(entity, componentType);
-        return changetype<T>(ptr);
+        const clonedPtr = heap.alloc(componentType.size);
+        memory.copy(clonedPtr, ptr, componentType.size);
+        return changetype<T>(clonedPtr);
     }
 
     setComponent<T extends IComponentData>(entity: Entity, data: T): void {
@@ -176,9 +174,10 @@ export default class World {
         const mask = this.entityMasks[entity.id];
         const arche = this.mask2archetypeMap.get(mask);
         const componentType = ComponentType.Get<T>();
+        const offset = arche.familyId2offsetMap.get(familyof<T>());
         const ptr = arche.getDataViewPtr(entity, componentType);
 
         const srcPtr = changetype<usize>(data);
-        memory.copy(ptr, srcPtr, componentType.size);
+        memory.copy(ptr + offset, srcPtr + offset, componentType.size);
     }
 }

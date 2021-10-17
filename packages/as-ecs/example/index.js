@@ -1,7 +1,7 @@
 const loader = require("@assemblyscript/loader");
 const imports = {};
-const wasmUrl = require("../build/untouched.wasm");
-const wasmMapUrl = require("../build/untouched.wasm.map");
+const wasmUrl = require("../build/example.wasm");
+const wasmMapUrl = require("../build/example.wasm.map");
 console.log(wasmMapUrl);
 
 async function main() {

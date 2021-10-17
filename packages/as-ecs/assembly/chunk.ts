@@ -17,7 +17,16 @@ export class Chunk {
         );
         const targetPtr =
             this.ptr + <usize>elementIndex * this.elementSize + offset;
-        __stack_pointer;
+        return targetPtr;
+    }
+
+    @inline
+    getBasePtr(elementIndex: i32): usize {
+        assert(
+            elementIndex < this.elementLength,
+            `elementIndex${elementIndex} < this.elementLength${this.elementLength} is not truth!`
+        );
+        const targetPtr = this.ptr + <usize>elementIndex * this.elementSize;
         return targetPtr;
     }
 

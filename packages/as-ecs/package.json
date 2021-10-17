@@ -11,7 +11,9 @@
     "asbuild:untouched": "asc assembly/index.ts --target debug",
     "asbuild:optimized": "asc assembly/index.ts --target release",
     "asbuild": "yarn asbuild:untouched && yarn asbuild:optimized",
-    "example": "node example/esbuild.js",
+    "example:run": "node example/esbuild.js",
+    "example:build": "asc assembly/example.ts --target example",
+    "example": "yarn example:build && yarn example:run",
     "test": "yarn asp"
   }
 }

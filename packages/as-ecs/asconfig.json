@@ -15,9 +15,9 @@
       "converge": false,
       "noAssert": false
     },
-    "test": {
-      "binaryFile": "build/test.wasm",
-      "textFile": "build/test.wat",
+    "example": {
+      "binaryFile": "build/example.wasm",
+      "textFile": "build/example.wat",
       "sourceMap": true,
       "debug": true
     }
