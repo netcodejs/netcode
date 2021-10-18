@@ -1,5 +1,5 @@
 // The entry file of your WebAssembly module.
-
+import "wasi";
 import { IComponentData } from "./component";
 import World from "./world";
 export function add(a: i32, b: i32): i32 {
@@ -9,12 +9,16 @@ export function add(a: i32, b: i32): i32 {
 @unmanaged
 export class Abc extends IComponentData {
     x: u32;
-    onDispose(): void {}
+    onDispose(): usize {
+        return offsetof<Abc>();
+    }
 }
 @unmanaged
 export class Cde extends IComponentData {
     c: u32;
-    onDispose(): void {}
+    onDispose(): usize {
+        return offsetof<Cde>();
+    }
 }
 
 export function ecsTest(): u32 {
@@ -39,11 +43,11 @@ export function ecsTest(): u32 {
     assert(w.hasComponent<Abc>(e));
 
     const abc3 = w.getComponent<Abc>(e);
-    // assert(abc3.x == 123, "hhh");
+    assert(abc3.x == 123);
 
-    // ~abc;
-    // ~abc1;
-    // ~abc2;
-    // ~abc3;
+    ~abc;
+    ~abc1;
+    ~abc2;
+    ~abc3;
     return abc3.x;
 }

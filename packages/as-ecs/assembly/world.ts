@@ -176,7 +176,6 @@ export default class World {
         const componentType = ComponentType.Get<T>();
         const offset = arche.familyId2offsetMap.get(familyof<T>());
         const ptr = arche.getDataViewPtr(entity, componentType);
-
         const srcPtr = changetype<usize>(data);
         memory.copy(ptr + offset, srcPtr + offset, componentType.size);
     }

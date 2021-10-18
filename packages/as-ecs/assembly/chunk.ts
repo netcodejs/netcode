@@ -12,7 +12,7 @@ export class Chunk {
     @inline
     getDataViewPtr(elementIndex: i32, offset: usize): usize {
         assert(
-            elementIndex < this.elementLength,
+            elementIndex >= 0 && elementIndex < this.elementLength,
             `elementIndex${elementIndex} < this.elementLength${this.elementLength} is not truth!`
         );
         const targetPtr =
@@ -23,17 +23,7 @@ export class Chunk {
     @inline
     getBasePtr(elementIndex: i32): usize {
         assert(
-            elementIndex < this.elementLength,
-            `elementIndex${elementIndex} < this.elementLength${this.elementLength} is not truth!`
-        );
-        const targetPtr = this.ptr + <usize>elementIndex * this.elementSize;
-        return targetPtr;
-    }
-
-    @inline
-    getPtr(elementIndex: i32): usize {
-        assert(
-            elementIndex < this.elementLength,
+            elementIndex >= 0 && elementIndex < this.elementLength,
             `elementIndex${elementIndex} < this.elementLength${this.elementLength} is not truth!`
         );
         return this.ptr + <usize>elementIndex * this.elementSize;

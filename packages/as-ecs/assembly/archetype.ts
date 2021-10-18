@@ -32,16 +32,18 @@ export class Archetype {
 
     getDataViewPtr(entity: Entity, componentType: ComponentType): usize {
         const uniqueId = this.entityIds.getIndex(entity.id);
+        assert(uniqueId > -1);
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
         const idxInChunk = uniqueId % this.elementLengthPerChunk;
         return this.chunks[chunkIdx].getDataViewPtr(
             idxInChunk,
-            componentType.size
+            this.familyId2offsetMap.get(componentType.id)
         );
     }
 
     addEntity(e: Entity): usize {
-        const uniqueId = this.entityIds.length - 1;
+        const uniqueId = this.entityIds.length;
+        assert(uniqueId > -1);
         this.entityIds.add(e.id);
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
         const idxInChunk = uniqueId % this.elementLengthPerChunk;
@@ -55,6 +57,7 @@ export class Archetype {
 
     removeEntity(e: Entity): void {
         const uniqueId = this.entityIds.getIndex(e.id);
+        assert(uniqueId > -1);
         const replaceUniqueId = this.entityIds.remove(e.id);
 
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
@@ -81,6 +84,7 @@ export class Archetype {
         e: Entity
     ): void {
         const uniqueId = this.entityIds.getIndex(e.id);
+        assert(uniqueId > -1);
         const replaceUniqueId = this.entityIds.remove(e.id);
 
         const chunkIdx = uniqueId / this.elementLengthPerChunk;

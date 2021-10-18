@@ -2,17 +2,20 @@
  (type $i32_i32_=>_none (func (param i32 i32)))
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (type $i32_i32_i32_=>_none (func (param i32 i32 i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
+ (type $i32_i32_i32_=>_none (func (param i32 i32 i32)))
  (type $i32_=>_none (func (param i32)))
  (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
- (type $i32_i32_i32_i32_=>_none (func (param i32 i32 i32 i32)))
  (type $i32_i32_i32_i32_=>_i32 (func (param i32 i32 i32 i32) (result i32)))
+ (type $i32_i32_i32_i32_=>_none (func (param i32 i32 i32 i32)))
+ (type $i32_i32_i32_i32_i32_=>_i32 (func (param i32 i32 i32 i32 i32) (result i32)))
  (type $i32_i64_i32_=>_none (func (param i32 i64 i32)))
  (type $i64_i32_=>_i32 (func (param i64 i32) (result i32)))
  (type $i32_i64_i32_i32_=>_none (func (param i32 i64 i32 i32)))
- (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
+ (import "wasi_snapshot_preview1" "fd_write" (func $~lib/bindings/wasi_snapshot_preview1/fd_write (param i32 i32 i32 i32) (result i32)))
+ (import "wasi_snapshot_preview1" "proc_exit" (func $~lib/bindings/wasi_snapshot_preview1/proc_exit (param i32)))
+ (global $~argumentsLength (mut i32) (i32.const 0))
  (global $~lib/rt/itcms/total (mut i32) (i32.const 0))
  (global $~lib/rt/itcms/threshold (mut i32) (i32.const 0))
  (global $~lib/rt/itcms/state (mut i32) (i32.const 0))
@@ -26,52 +29,55 @@
  (global $~lib/ASC_LOW_MEMORY_LIMIT i32 (i32.const 0))
  (global $~lib/ASC_SHRINK_LEVEL i32 (i32.const 0))
  (global $assembly/component/ComponentType.map (mut i32) (i32.const 0))
- (global $~lib/rt/__rtti_base i32 (i32.const 3616))
- (global $~lib/memory/__data_end i32 (i32.const 3764))
- (global $~lib/memory/__stack_pointer (mut i32) (i32.const 20148))
- (global $~lib/memory/__heap_base i32 (i32.const 20148))
+ (global $~lib/rt/__rtti_base i32 (i32.const 3728))
+ (global $~lib/memory/__data_end i32 (i32.const 3876))
+ (global $~lib/memory/__stack_pointer (mut i32) (i32.const 20260))
+ (global $~lib/memory/__heap_base i32 (i32.const 20260))
+ (global $~started (mut i32) (i32.const 0))
  (memory $0 1)
- (data (i32.const 12) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00A\00l\00l\00o\00c\00a\00t\00i\00o\00n\00 \00t\00o\00o\00 \00l\00a\00r\00g\00e\00\00\00\00\00")
- (data (i32.const 76) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00 \00\00\00~\00l\00i\00b\00/\00r\00t\00/\00i\00t\00c\00m\00s\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 144) "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 176) "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 204) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00$\00\00\00I\00n\00d\00e\00x\00 \00o\00u\00t\00 \00o\00f\00 \00r\00a\00n\00g\00e\00\00\00\00\00\00\00\00\00")
- (data (i32.const 268) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\14\00\00\00~\00l\00i\00b\00/\00r\00t\00.\00t\00s\00\00\00\00\00\00\00\00\00")
- (data (i32.const 320) "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 348) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1e\00\00\00~\00l\00i\00b\00/\00r\00t\00/\00t\00l\00s\00f\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 412) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1c\00\00\00I\00n\00v\00a\00l\00i\00d\00 \00l\00e\00n\00g\00t\00h\00")
- (data (i32.const 460) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00~\00l\00i\00b\00/\00a\00r\00r\00a\00y\00b\00u\00f\00f\00e\00r\00.\00t\00s\00\00\00\00\00\00\00")
- (data (i32.const 524) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1a\00\00\00~\00l\00i\00b\00/\00a\00r\00r\00a\00y\00.\00t\00s\00\00\00")
- (data (i32.const 572) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 604) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1c\00\00\00A\00r\00r\00a\00y\00 \00i\00s\00 \00e\00m\00p\00t\00y\00")
- (data (i32.const 652) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00E\00n\00t\00i\00t\00y\00 \00i\00s\00 \00n\00o\00t\00 \00v\00a\00l\00i\00d\00!\00\00\00\00\00")
- (data (i32.const 716) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\"\00\00\00a\00s\00s\00e\00m\00b\00l\00y\00/\00w\00o\00r\00l\00d\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 780) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00$\00\00\00K\00e\00y\00 \00d\00o\00e\00s\00 \00n\00o\00t\00 \00e\00x\00i\00s\00t\00\00\00\00\00\00\00\00\00")
- (data (i32.const 844) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\16\00\00\00~\00l\00i\00b\00/\00m\00a\00p\00.\00t\00s\00\00\00\00\00\00\00")
- (data (i32.const 892) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00~\00l\00i\00b\00/\00s\00t\00a\00t\00i\00c\00a\00r\00r\00a\00y\00.\00t\00s\00\00\00\00\00\00\00")
- (data (i32.const 956) "|\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00^\00\00\00E\00l\00e\00m\00e\00n\00t\00 \00t\00y\00p\00e\00 \00m\00u\00s\00t\00 \00b\00e\00 \00n\00u\00l\00l\00a\00b\00l\00e\00 \00i\00f\00 \00a\00r\00r\00a\00y\00 \00i\00s\00 \00h\00o\00l\00e\00y\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 1084) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 1116) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00*\00\00\00a\00s\00s\00e\00m\00b\00l\00y\00/\00a\00r\00c\00h\00e\00t\00y\00p\00e\00.\00t\00s\00\00\00")
- (data (i32.const 1180) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\18\00\00\00e\00l\00e\00m\00e\00n\00t\00I\00n\00d\00e\00x\00\00\00\00\00")
- (data (i32.const 1228) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00*\00\00\00 \00<\00 \00t\00h\00i\00s\00.\00e\00l\00e\00m\00e\00n\00t\00L\00e\00n\00g\00t\00h\00\00\00")
- (data (i32.const 1292) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1c\00\00\00 \00i\00s\00 \00n\00o\00t\00 \00t\00r\00u\00t\00h\00!\00")
- (data (i32.const 1340) ",\00\00\00\00\00\00\00\00\00\00\00\11\00\00\00\14\00\00\00\b0\04\00\00\00\00\00\00\e0\04\00\00\00\00\00\00 \05\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 1388) "|\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00d\00\00\00t\00o\00S\00t\00r\00i\00n\00g\00(\00)\00 \00r\00a\00d\00i\00x\00 \00a\00r\00g\00u\00m\00e\00n\00t\00 \00m\00u\00s\00t\00 \00b\00e\00 \00b\00e\00t\00w\00e\00e\00n\00 \002\00 \00a\00n\00d\00 \003\006\00\00\00\00\00\00\00\00\00")
- (data (i32.const 1516) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00~\00l\00i\00b\00/\00u\00t\00i\00l\00/\00n\00u\00m\00b\00e\00r\00.\00t\00s\00\00\00\00\00\00\00")
- (data (i32.const 1580) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\02\00\00\000\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 1612) "0\000\000\001\000\002\000\003\000\004\000\005\000\006\000\007\000\008\000\009\001\000\001\001\001\002\001\003\001\004\001\005\001\006\001\007\001\008\001\009\002\000\002\001\002\002\002\003\002\004\002\005\002\006\002\007\002\008\002\009\003\000\003\001\003\002\003\003\003\004\003\005\003\006\003\007\003\008\003\009\004\000\004\001\004\002\004\003\004\004\004\005\004\006\004\007\004\008\004\009\005\000\005\001\005\002\005\003\005\004\005\005\005\006\005\007\005\008\005\009\006\000\006\001\006\002\006\003\006\004\006\005\006\006\006\007\006\008\006\009\007\000\007\001\007\002\007\003\007\004\007\005\007\006\007\007\007\008\007\009\008\000\008\001\008\002\008\003\008\004\008\005\008\006\008\007\008\008\008\009\009\000\009\001\009\002\009\003\009\004\009\005\009\006\009\007\009\008\009\009\00")
- (data (i32.const 2012) "\1c\04\00\00\00\00\00\00\00\00\00\00\01\00\00\00\00\04\00\000\000\000\001\000\002\000\003\000\004\000\005\000\006\000\007\000\008\000\009\000\00a\000\00b\000\00c\000\00d\000\00e\000\00f\001\000\001\001\001\002\001\003\001\004\001\005\001\006\001\007\001\008\001\009\001\00a\001\00b\001\00c\001\00d\001\00e\001\00f\002\000\002\001\002\002\002\003\002\004\002\005\002\006\002\007\002\008\002\009\002\00a\002\00b\002\00c\002\00d\002\00e\002\00f\003\000\003\001\003\002\003\003\003\004\003\005\003\006\003\007\003\008\003\009\003\00a\003\00b\003\00c\003\00d\003\00e\003\00f\004\000\004\001\004\002\004\003\004\004\004\005\004\006\004\007\004\008\004\009\004\00a\004\00b\004\00c\004\00d\004\00e\004\00f\005\000\005\001\005\002\005\003\005\004\005\005\005\006\005\007\005\008\005\009\005\00a\005\00b\005\00c\005\00d\005\00e\005\00f\006\000\006\001\006\002\006\003\006\004\006\005\006\006\006\007\006\008\006\009\006\00a\006\00b\006\00c\006\00d\006\00e\006\00f\007\000\007\001\007\002\007\003\007\004\007\005\007\006\007\007\007\008\007\009\007\00a\007\00b\007\00c\007\00d\007\00e\007\00f\008\000\008\001\008\002\008\003\008\004\008\005\008\006\008\007\008\008\008\009\008\00a\008\00b\008\00c\008\00d\008\00e\008\00f\009\000\009\001\009\002\009\003\009\004\009\005\009\006\009\007\009\008\009\009\009\00a\009\00b\009\00c\009\00d\009\00e\009\00f\00a\000\00a\001\00a\002\00a\003\00a\004\00a\005\00a\006\00a\007\00a\008\00a\009\00a\00a\00a\00b\00a\00c\00a\00d\00a\00e\00a\00f\00b\000\00b\001\00b\002\00b\003\00b\004\00b\005\00b\006\00b\007\00b\008\00b\009\00b\00a\00b\00b\00b\00c\00b\00d\00b\00e\00b\00f\00c\000\00c\001\00c\002\00c\003\00c\004\00c\005\00c\006\00c\007\00c\008\00c\009\00c\00a\00c\00b\00c\00c\00c\00d\00c\00e\00c\00f\00d\000\00d\001\00d\002\00d\003\00d\004\00d\005\00d\006\00d\007\00d\008\00d\009\00d\00a\00d\00b\00d\00c\00d\00d\00d\00e\00d\00f\00e\000\00e\001\00e\002\00e\003\00e\004\00e\005\00e\006\00e\007\00e\008\00e\009\00e\00a\00e\00b\00e\00c\00e\00d\00e\00e\00e\00f\00f\000\00f\001\00f\002\00f\003\00f\004\00f\005\00f\006\00f\007\00f\008\00f\009\00f\00a\00f\00b\00f\00c\00f\00d\00f\00e\00f\00f\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 3068) "\\\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00H\00\00\000\001\002\003\004\005\006\007\008\009\00a\00b\00c\00d\00e\00f\00g\00h\00i\00j\00k\00l\00m\00n\00o\00p\00q\00r\00s\00t\00u\00v\00w\00x\00y\00z\00\00\00\00\00")
- (data (i32.const 3164) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 3196) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\"\00\00\00a\00s\00s\00e\00m\00b\00l\00y\00/\00c\00h\00u\00n\00k\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 3260) ",\00\00\00\00\00\00\00\00\00\00\00\11\00\00\00\14\00\00\00\b0\04\00\00\00\00\00\00\e0\04\00\00\00\00\00\00 \05\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 3308) ",\00\00\00\00\00\00\00\00\00\00\00\11\00\00\00\14\00\00\00\b0\04\00\00\00\00\00\00\e0\04\00\00\00\00\00\00 \05\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 3356) "L\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00<\00\00\00E\00n\00t\00i\00t\00y\00 \00d\00o\00e\00s\00n\00\'\00t\00 \00h\00a\00s\00 \00c\00o\00m\00p\00o\00n\00e\00n\00t\00:\00 \00")
- (data (i32.const 3436) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\06\00\00\00A\00b\00c\00\00\00\00\00\00\00")
- (data (i32.const 3468) ",\00\00\00\00\00\00\00\00\00\00\00\11\00\00\00\14\00\00\00\b0\04\00\00\00\00\00\00\e0\04\00\00\00\00\00\00 \05\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 3516) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00a\00s\00s\00e\00m\00b\00l\00y\00/\00e\00x\00a\00m\00p\00l\00e\00.\00t\00s\00\00\00\00\00\00\00")
- (data (i32.const 3580) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\06\00\00\00C\00d\00e\00\00\00\00\00\00\00")
- (data (i32.const 3616) "\12\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00\00\00\00\00\00\00\00\00 \00\00\00\00\00\00\00\10A\02\00\00\00\00\00\00\00\00\00\00\00\00\00\02\t\00\00\00\00\00\00\02\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00 \00\00\00\00\00\00\00\02A\00\00\00\00\00\00\00\00\00\00\00\00\00\00\10\t\12\00\00\00\00\00\10\01\02\00\00\00\00\00\04A\00\00\00\00\00\00\10A\02\00\00\00\00\00 \00\00\00\00\00\00\00\04A\00\00\00\00\00\00")
+ (data (i32.const 12) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00$\00\00\00U\00n\00p\00a\00i\00r\00e\00d\00 \00s\00u\00r\00r\00o\00g\00a\00t\00e\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 76) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1c\00\00\00~\00l\00i\00b\00/\00s\00t\00r\00i\00n\00g\00.\00t\00s\00")
+ (data (i32.const 124) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00A\00l\00l\00o\00c\00a\00t\00i\00o\00n\00 \00t\00o\00o\00 \00l\00a\00r\00g\00e\00\00\00\00\00")
+ (data (i32.const 188) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00 \00\00\00~\00l\00i\00b\00/\00r\00t\00/\00i\00t\00c\00m\00s\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 256) "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 288) "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 316) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00$\00\00\00I\00n\00d\00e\00x\00 \00o\00u\00t\00 \00o\00f\00 \00r\00a\00n\00g\00e\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 380) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\14\00\00\00~\00l\00i\00b\00/\00r\00t\00.\00t\00s\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 432) "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 460) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1e\00\00\00~\00l\00i\00b\00/\00r\00t\00/\00t\00l\00s\00f\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 524) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1c\00\00\00I\00n\00v\00a\00l\00i\00d\00 \00l\00e\00n\00g\00t\00h\00")
+ (data (i32.const 572) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00~\00l\00i\00b\00/\00a\00r\00r\00a\00y\00b\00u\00f\00f\00e\00r\00.\00t\00s\00\00\00\00\00\00\00")
+ (data (i32.const 636) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1a\00\00\00~\00l\00i\00b\00/\00a\00r\00r\00a\00y\00.\00t\00s\00\00\00")
+ (data (i32.const 684) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 716) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1c\00\00\00A\00r\00r\00a\00y\00 \00i\00s\00 \00e\00m\00p\00t\00y\00")
+ (data (i32.const 764) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00E\00n\00t\00i\00t\00y\00 \00i\00s\00 \00n\00o\00t\00 \00v\00a\00l\00i\00d\00!\00\00\00\00\00")
+ (data (i32.const 828) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\"\00\00\00a\00s\00s\00e\00m\00b\00l\00y\00/\00w\00o\00r\00l\00d\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 892) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00$\00\00\00K\00e\00y\00 \00d\00o\00e\00s\00 \00n\00o\00t\00 \00e\00x\00i\00s\00t\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 956) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\16\00\00\00~\00l\00i\00b\00/\00m\00a\00p\00.\00t\00s\00\00\00\00\00\00\00")
+ (data (i32.const 1004) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00~\00l\00i\00b\00/\00s\00t\00a\00t\00i\00c\00a\00r\00r\00a\00y\00.\00t\00s\00\00\00\00\00\00\00")
+ (data (i32.const 1068) "|\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00^\00\00\00E\00l\00e\00m\00e\00n\00t\00 \00t\00y\00p\00e\00 \00m\00u\00s\00t\00 \00b\00e\00 \00n\00u\00l\00l\00a\00b\00l\00e\00 \00i\00f\00 \00a\00r\00r\00a\00y\00 \00i\00s\00 \00h\00o\00l\00e\00y\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 1196) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 1228) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00*\00\00\00a\00s\00s\00e\00m\00b\00l\00y\00/\00a\00r\00c\00h\00e\00t\00y\00p\00e\00.\00t\00s\00\00\00")
+ (data (i32.const 1292) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\18\00\00\00e\00l\00e\00m\00e\00n\00t\00I\00n\00d\00e\00x\00\00\00\00\00")
+ (data (i32.const 1340) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00*\00\00\00 \00<\00 \00t\00h\00i\00s\00.\00e\00l\00e\00m\00e\00n\00t\00L\00e\00n\00g\00t\00h\00\00\00")
+ (data (i32.const 1404) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1c\00\00\00 \00i\00s\00 \00n\00o\00t\00 \00t\00r\00u\00t\00h\00!\00")
+ (data (i32.const 1452) ",\00\00\00\00\00\00\00\00\00\00\00\11\00\00\00\14\00\00\00 \05\00\00\00\00\00\00P\05\00\00\00\00\00\00\90\05\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 1500) "|\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00d\00\00\00t\00o\00S\00t\00r\00i\00n\00g\00(\00)\00 \00r\00a\00d\00i\00x\00 \00a\00r\00g\00u\00m\00e\00n\00t\00 \00m\00u\00s\00t\00 \00b\00e\00 \00b\00e\00t\00w\00e\00e\00n\00 \002\00 \00a\00n\00d\00 \003\006\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 1628) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00~\00l\00i\00b\00/\00u\00t\00i\00l\00/\00n\00u\00m\00b\00e\00r\00.\00t\00s\00\00\00\00\00\00\00")
+ (data (i32.const 1692) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\02\00\00\000\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 1724) "0\000\000\001\000\002\000\003\000\004\000\005\000\006\000\007\000\008\000\009\001\000\001\001\001\002\001\003\001\004\001\005\001\006\001\007\001\008\001\009\002\000\002\001\002\002\002\003\002\004\002\005\002\006\002\007\002\008\002\009\003\000\003\001\003\002\003\003\003\004\003\005\003\006\003\007\003\008\003\009\004\000\004\001\004\002\004\003\004\004\004\005\004\006\004\007\004\008\004\009\005\000\005\001\005\002\005\003\005\004\005\005\005\006\005\007\005\008\005\009\006\000\006\001\006\002\006\003\006\004\006\005\006\006\006\007\006\008\006\009\007\000\007\001\007\002\007\003\007\004\007\005\007\006\007\007\007\008\007\009\008\000\008\001\008\002\008\003\008\004\008\005\008\006\008\007\008\008\008\009\009\000\009\001\009\002\009\003\009\004\009\005\009\006\009\007\009\008\009\009\00")
+ (data (i32.const 2124) "\1c\04\00\00\00\00\00\00\00\00\00\00\01\00\00\00\00\04\00\000\000\000\001\000\002\000\003\000\004\000\005\000\006\000\007\000\008\000\009\000\00a\000\00b\000\00c\000\00d\000\00e\000\00f\001\000\001\001\001\002\001\003\001\004\001\005\001\006\001\007\001\008\001\009\001\00a\001\00b\001\00c\001\00d\001\00e\001\00f\002\000\002\001\002\002\002\003\002\004\002\005\002\006\002\007\002\008\002\009\002\00a\002\00b\002\00c\002\00d\002\00e\002\00f\003\000\003\001\003\002\003\003\003\004\003\005\003\006\003\007\003\008\003\009\003\00a\003\00b\003\00c\003\00d\003\00e\003\00f\004\000\004\001\004\002\004\003\004\004\004\005\004\006\004\007\004\008\004\009\004\00a\004\00b\004\00c\004\00d\004\00e\004\00f\005\000\005\001\005\002\005\003\005\004\005\005\005\006\005\007\005\008\005\009\005\00a\005\00b\005\00c\005\00d\005\00e\005\00f\006\000\006\001\006\002\006\003\006\004\006\005\006\006\006\007\006\008\006\009\006\00a\006\00b\006\00c\006\00d\006\00e\006\00f\007\000\007\001\007\002\007\003\007\004\007\005\007\006\007\007\007\008\007\009\007\00a\007\00b\007\00c\007\00d\007\00e\007\00f\008\000\008\001\008\002\008\003\008\004\008\005\008\006\008\007\008\008\008\009\008\00a\008\00b\008\00c\008\00d\008\00e\008\00f\009\000\009\001\009\002\009\003\009\004\009\005\009\006\009\007\009\008\009\009\009\00a\009\00b\009\00c\009\00d\009\00e\009\00f\00a\000\00a\001\00a\002\00a\003\00a\004\00a\005\00a\006\00a\007\00a\008\00a\009\00a\00a\00a\00b\00a\00c\00a\00d\00a\00e\00a\00f\00b\000\00b\001\00b\002\00b\003\00b\004\00b\005\00b\006\00b\007\00b\008\00b\009\00b\00a\00b\00b\00b\00c\00b\00d\00b\00e\00b\00f\00c\000\00c\001\00c\002\00c\003\00c\004\00c\005\00c\006\00c\007\00c\008\00c\009\00c\00a\00c\00b\00c\00c\00c\00d\00c\00e\00c\00f\00d\000\00d\001\00d\002\00d\003\00d\004\00d\005\00d\006\00d\007\00d\008\00d\009\00d\00a\00d\00b\00d\00c\00d\00d\00d\00e\00d\00f\00e\000\00e\001\00e\002\00e\003\00e\004\00e\005\00e\006\00e\007\00e\008\00e\009\00e\00a\00e\00b\00e\00c\00e\00d\00e\00e\00e\00f\00f\000\00f\001\00f\002\00f\003\00f\004\00f\005\00f\006\00f\007\00f\008\00f\009\00f\00a\00f\00b\00f\00c\00f\00d\00f\00e\00f\00f\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 3180) "\\\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00H\00\00\000\001\002\003\004\005\006\007\008\009\00a\00b\00c\00d\00e\00f\00g\00h\00i\00j\00k\00l\00m\00n\00o\00p\00q\00r\00s\00t\00u\00v\00w\00x\00y\00z\00\00\00\00\00")
+ (data (i32.const 3276) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 3308) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\"\00\00\00a\00s\00s\00e\00m\00b\00l\00y\00/\00c\00h\00u\00n\00k\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 3372) ",\00\00\00\00\00\00\00\00\00\00\00\11\00\00\00\14\00\00\00 \05\00\00\00\00\00\00P\05\00\00\00\00\00\00\90\05\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 3420) ",\00\00\00\00\00\00\00\00\00\00\00\11\00\00\00\14\00\00\00 \05\00\00\00\00\00\00P\05\00\00\00\00\00\00\90\05\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 3468) "L\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00<\00\00\00E\00n\00t\00i\00t\00y\00 \00d\00o\00e\00s\00n\00\'\00t\00 \00h\00a\00s\00 \00c\00o\00m\00p\00o\00n\00e\00n\00t\00:\00 \00")
+ (data (i32.const 3548) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\06\00\00\00A\00b\00c\00\00\00\00\00\00\00")
+ (data (i32.const 3580) ",\00\00\00\00\00\00\00\00\00\00\00\11\00\00\00\14\00\00\00 \05\00\00\00\00\00\00P\05\00\00\00\00\00\00\90\05\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 3628) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00a\00s\00s\00e\00m\00b\00l\00y\00/\00e\00x\00a\00m\00p\00l\00e\00.\00t\00s\00\00\00\00\00\00\00")
+ (data (i32.const 3692) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\06\00\00\00C\00d\00e\00\00\00\00\00\00\00")
+ (data (i32.const 3728) "\12\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00\00\00\00\00\00\00\00\00 \00\00\00\00\00\00\00\10A\02\00\00\00\00\00\00\00\00\00\00\00\00\00\02\t\00\00\00\00\00\00\02\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00 \00\00\00\00\00\00\00\02A\00\00\00\00\00\00\00\00\00\00\00\00\00\00\10\t\12\00\00\00\00\00\10\01\02\00\00\00\00\00\04A\00\00\00\00\00\00\10A\02\00\00\00\00\00 \00\00\00\00\00\00\00\04A\00\00\00\00\00\00")
  (table $0 1 funcref)
  (elem $0 (i32.const 1))
  (export "add" (func $assembly/example/add))
@@ -87,7 +93,501 @@
  (export "Cde#set:c" (func $assembly/example/Cde#set:c))
  (export "ecsTest" (func $assembly/example/ecsTest))
  (export "memory" (memory $0))
- (start $~start)
+ (export "_start" (func $~start))
+ (func $~lib/bindings/wasi_snapshot_preview1/iovec#set:buf (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store
+ )
+ (func $~lib/string/String#get:length (param $0 i32) (result i32)
+  local.get $0
+  i32.const 20
+  i32.sub
+  i32.load offset=16
+  i32.const 1
+  i32.shr_u
+ )
+ (func $~lib/string/String.UTF8.encodeUnsafe (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
+  (local $5 i32)
+  (local $6 i32)
+  (local $7 i32)
+  (local $8 i32)
+  (local $9 i32)
+  (local $10 i32)
+  (local $11 i32)
+  (local $12 i32)
+  (local $13 i32)
+  local.get $0
+  local.get $1
+  i32.const 1
+  i32.shl
+  i32.add
+  local.set $5
+  local.get $2
+  local.set $6
+  loop $while-continue|0
+   local.get $0
+   local.get $5
+   i32.lt_u
+   local.set $7
+   local.get $7
+   if
+    local.get $0
+    i32.load16_u
+    local.set $8
+    local.get $8
+    i32.const 128
+    i32.lt_u
+    if
+     local.get $6
+     local.get $8
+     i32.store8
+     local.get $6
+     i32.const 1
+     i32.add
+     local.set $6
+    else
+     local.get $8
+     i32.const 2048
+     i32.lt_u
+     if
+      local.get $8
+      i32.const 6
+      i32.shr_u
+      i32.const 192
+      i32.or
+      local.set $9
+      local.get $8
+      i32.const 63
+      i32.and
+      i32.const 128
+      i32.or
+      local.set $10
+      local.get $6
+      local.get $10
+      i32.const 8
+      i32.shl
+      local.get $9
+      i32.or
+      i32.store16
+      local.get $6
+      i32.const 2
+      i32.add
+      local.set $6
+     else
+      local.get $8
+      i32.const 63488
+      i32.and
+      i32.const 55296
+      i32.eq
+      if
+       local.get $8
+       i32.const 56320
+       i32.lt_u
+       if (result i32)
+        local.get $0
+        i32.const 2
+        i32.add
+        local.get $5
+        i32.lt_u
+       else
+        i32.const 0
+       end
+       if
+        local.get $0
+        i32.load16_u offset=2
+        local.set $10
+        local.get $10
+        i32.const 64512
+        i32.and
+        i32.const 56320
+        i32.eq
+        if
+         i32.const 65536
+         local.get $8
+         i32.const 1023
+         i32.and
+         i32.const 10
+         i32.shl
+         i32.add
+         local.get $10
+         i32.const 1023
+         i32.and
+         i32.or
+         local.set $8
+         local.get $8
+         i32.const 18
+         i32.shr_u
+         i32.const 240
+         i32.or
+         local.set $9
+         local.get $8
+         i32.const 12
+         i32.shr_u
+         i32.const 63
+         i32.and
+         i32.const 128
+         i32.or
+         local.set $11
+         local.get $8
+         i32.const 6
+         i32.shr_u
+         i32.const 63
+         i32.and
+         i32.const 128
+         i32.or
+         local.set $12
+         local.get $8
+         i32.const 63
+         i32.and
+         i32.const 128
+         i32.or
+         local.set $13
+         local.get $6
+         local.get $13
+         i32.const 24
+         i32.shl
+         local.get $12
+         i32.const 16
+         i32.shl
+         i32.or
+         local.get $11
+         i32.const 8
+         i32.shl
+         i32.or
+         local.get $9
+         i32.or
+         i32.store
+         local.get $6
+         i32.const 4
+         i32.add
+         local.set $6
+         local.get $0
+         i32.const 4
+         i32.add
+         local.set $0
+         br $while-continue|0
+        end
+       end
+       local.get $4
+       i32.const 0
+       i32.ne
+       if
+        local.get $4
+        i32.const 2
+        i32.eq
+        if
+         i32.const 32
+         i32.const 96
+         i32.const 739
+         i32.const 49
+         call $~lib/wasi/index/abort
+         unreachable
+        end
+        i32.const 65533
+        local.set $8
+       end
+      end
+      local.get $8
+      i32.const 12
+      i32.shr_u
+      i32.const 224
+      i32.or
+      local.set $10
+      local.get $8
+      i32.const 6
+      i32.shr_u
+      i32.const 63
+      i32.and
+      i32.const 128
+      i32.or
+      local.set $13
+      local.get $8
+      i32.const 63
+      i32.and
+      i32.const 128
+      i32.or
+      local.set $12
+      local.get $6
+      local.get $13
+      i32.const 8
+      i32.shl
+      local.get $10
+      i32.or
+      i32.store16
+      local.get $6
+      local.get $12
+      i32.store8 offset=2
+      local.get $6
+      i32.const 3
+      i32.add
+      local.set $6
+     end
+    end
+    local.get $0
+    i32.const 2
+    i32.add
+    local.set $0
+    br $while-continue|0
+   end
+  end
+  local.get $3
+  if
+   local.get $6
+   local.tee $7
+   i32.const 1
+   i32.add
+   local.set $6
+   local.get $7
+   i32.const 0
+   i32.store8
+  end
+  local.get $6
+  local.get $2
+  i32.sub
+ )
+ (func $~lib/string/String.UTF8.encodeUnsafe@varargs (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (result i32)
+  block $2of2
+   block $1of2
+    block $0of2
+     block $outOfRange
+      global.get $~argumentsLength
+      i32.const 3
+      i32.sub
+      br_table $0of2 $1of2 $2of2 $outOfRange
+     end
+     unreachable
+    end
+    i32.const 0
+    local.set $3
+   end
+   i32.const 0
+   local.set $4
+  end
+  local.get $0
+  local.get $1
+  local.get $2
+  local.get $3
+  local.get $4
+  call $~lib/string/String.UTF8.encodeUnsafe
+ )
+ (func $~lib/util/number/decimalCount32 (param $0 i32) (result i32)
+  local.get $0
+  i32.const 100000
+  i32.lt_u
+  if
+   local.get $0
+   i32.const 100
+   i32.lt_u
+   if
+    i32.const 1
+    local.get $0
+    i32.const 10
+    i32.ge_u
+    i32.add
+    return
+   else
+    i32.const 3
+    local.get $0
+    i32.const 10000
+    i32.ge_u
+    i32.add
+    local.get $0
+    i32.const 1000
+    i32.ge_u
+    i32.add
+    return
+   end
+   unreachable
+  else
+   local.get $0
+   i32.const 10000000
+   i32.lt_u
+   if
+    i32.const 6
+    local.get $0
+    i32.const 1000000
+    i32.ge_u
+    i32.add
+    return
+   else
+    i32.const 8
+    local.get $0
+    i32.const 1000000000
+    i32.ge_u
+    i32.add
+    local.get $0
+    i32.const 100000000
+    i32.ge_u
+    i32.add
+    return
+   end
+   unreachable
+  end
+  unreachable
+ )
+ (func $~lib/bindings/wasi_snapshot_preview1/iovec#set:buf_len (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=4
+ )
+ (func $~lib/wasi/index/abort (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32)
+  (local $4 i32)
+  (local $5 i32)
+  (local $6 i32)
+  (local $7 i32)
+  i32.const 0
+  i32.const 12
+  call $~lib/bindings/wasi_snapshot_preview1/iovec#set:buf
+  i32.const 12
+  local.set $4
+  local.get $4
+  i64.const 9071471065260641
+  i64.store
+  local.get $4
+  i32.const 7
+  i32.add
+  local.set $4
+  local.get $0
+  i32.const 0
+  i32.ne
+  if
+   local.get $4
+   local.get $0
+   local.get $0
+   call $~lib/string/String#get:length
+   local.get $4
+   i32.const 0
+   i32.const 3
+   global.set $~argumentsLength
+   i32.const 0
+   call $~lib/string/String.UTF8.encodeUnsafe@varargs
+   i32.add
+   local.set $4
+  end
+  local.get $4
+  i32.const 544106784
+  i32.store
+  local.get $4
+  i32.const 4
+  i32.add
+  local.set $4
+  local.get $1
+  i32.const 0
+  i32.ne
+  if
+   local.get $4
+   local.get $1
+   local.get $1
+   call $~lib/string/String#get:length
+   local.get $4
+   i32.const 0
+   i32.const 3
+   global.set $~argumentsLength
+   i32.const 0
+   call $~lib/string/String.UTF8.encodeUnsafe@varargs
+   i32.add
+   local.set $4
+  end
+  local.get $4
+  local.tee $5
+  i32.const 1
+  i32.add
+  local.set $4
+  local.get $5
+  i32.const 40
+  i32.store8
+  local.get $2
+  call $~lib/util/number/decimalCount32
+  local.set $6
+  local.get $4
+  local.get $6
+  i32.add
+  local.set $4
+  loop $do-loop|0
+   local.get $2
+   i32.const 10
+   i32.div_u
+   local.set $5
+   local.get $4
+   i32.const 1
+   i32.sub
+   local.tee $4
+   i32.const 48
+   local.get $2
+   i32.const 10
+   i32.rem_u
+   i32.add
+   i32.store8
+   local.get $5
+   local.set $2
+   local.get $2
+   br_if $do-loop|0
+  end
+  local.get $4
+  local.get $6
+  i32.add
+  local.set $4
+  local.get $4
+  local.tee $7
+  i32.const 1
+  i32.add
+  local.set $4
+  local.get $7
+  i32.const 58
+  i32.store8
+  local.get $3
+  call $~lib/util/number/decimalCount32
+  local.set $6
+  local.get $4
+  local.get $6
+  i32.add
+  local.set $4
+  loop $do-loop|1
+   local.get $3
+   i32.const 10
+   i32.div_u
+   local.set $7
+   local.get $4
+   i32.const 1
+   i32.sub
+   local.tee $4
+   i32.const 48
+   local.get $3
+   i32.const 10
+   i32.rem_u
+   i32.add
+   i32.store8
+   local.get $7
+   local.set $3
+   local.get $3
+   br_if $do-loop|1
+  end
+  local.get $4
+  local.get $6
+  i32.add
+  local.set $4
+  local.get $4
+  i32.const 2601
+  i32.store16
+  local.get $4
+  i32.const 2
+  i32.add
+  local.set $4
+  i32.const 0
+  local.get $4
+  i32.const 12
+  i32.sub
+  call $~lib/bindings/wasi_snapshot_preview1/iovec#set:buf_len
+  i32.const 2
+  i32.const 0
+  i32.const 1
+  i32.const 8
+  call $~lib/bindings/wasi_snapshot_preview1/fd_write
+  drop
+  i32.const 255
+  call $~lib/bindings/wasi_snapshot_preview1/proc_exit
+ )
  (func $~lib/rt/itcms/Object#set:nextWithColor (param $0 i32) (param $1 i32)
   local.get $0
   local.get $1
@@ -148,10 +648,10 @@
     i32.eqz
     if
      i32.const 0
-     i32.const 96
+     i32.const 208
      i32.const 159
      i32.const 16
-     call $~lib/builtins/abort
+     call $~lib/wasi/index/abort
      unreachable
     end
     local.get $2
@@ -214,10 +714,10 @@
    i32.eqz
    if
     i32.const 0
-    i32.const 96
+    i32.const 208
     i32.const 127
     i32.const 18
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
    return
@@ -231,10 +731,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 96
+   i32.const 208
    i32.const 131
    i32.const 16
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -253,11 +753,11 @@
   i32.load
   i32.gt_u
   if
-   i32.const 224
-   i32.const 288
+   i32.const 336
+   i32.const 400
    i32.const 22
    i32.const 28
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -320,10 +820,10 @@
    i32.eqz
    if (result i32)
     i32.const 0
-    i32.const 96
+    i32.const 208
     i32.const 147
     i32.const 30
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    else
     local.get $1
@@ -446,10 +946,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 268
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -466,10 +966,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 270
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $3
@@ -529,10 +1029,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 284
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -661,10 +1161,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 201
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -678,10 +1178,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 203
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -758,10 +1258,10 @@
    i32.eqz
    if
     i32.const 0
-    i32.const 368
+    i32.const 480
     i32.const 221
     i32.const 16
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
    local.get $0
@@ -801,10 +1301,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 233
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   i32.const 1
@@ -819,10 +1319,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 234
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $4
@@ -887,10 +1387,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 251
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -992,10 +1492,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 377
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -1035,10 +1535,10 @@
    i32.eqz
    if
     i32.const 0
-    i32.const 368
+    i32.const 480
     i32.const 384
     i32.const 16
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
    local.get $1
@@ -1068,10 +1568,10 @@
    i32.eqz
    if
     i32.const 0
-    i32.const 368
+    i32.const 480
     i32.const 397
     i32.const 5
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
   end
@@ -1311,10 +1811,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 559
    i32.const 3
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -1533,10 +2033,10 @@
     i32.eqz
     if
      i32.const 0
-     i32.const 96
+     i32.const 208
      i32.const 228
      i32.const 20
-     call $~lib/builtins/abort
+     call $~lib/wasi/index/abort
      unreachable
     end
     local.get $0
@@ -1638,11 +2138,11 @@
   i32.const 1073741820
   i32.gt_u
   if
-   i32.const 32
-   i32.const 368
+   i32.const 144
+   i32.const 480
    i32.const 458
    i32.const 29
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -1723,10 +2223,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 330
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -1788,10 +2288,10 @@
     i32.eqz
     if
      i32.const 0
-     i32.const 368
+     i32.const 480
      i32.const 343
      i32.const 18
-     call $~lib/builtins/abort
+     call $~lib/wasi/index/abort
      unreachable
     end
     local.get $0
@@ -1939,10 +2439,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 357
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $3
@@ -2048,10 +2548,10 @@
    i32.eqz
    if
     i32.const 0
-    i32.const 368
+    i32.const 480
     i32.const 496
     i32.const 16
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
   end
@@ -2068,10 +2568,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 368
+   i32.const 480
    i32.const 498
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -2345,11 +2845,11 @@
   i32.const 1073741804
   i32.ge_u
   if
-   i32.const 32
-   i32.const 96
+   i32.const 144
+   i32.const 208
    i32.const 260
    i32.const 31
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   global.get $~lib/rt/itcms/total
@@ -2405,10 +2905,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 96
+   i32.const 208
    i32.const 294
    i32.const 14
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -2505,13 +3005,13 @@
   i32.const 1
   i32.shr_u
   global.set $~lib/rt/itcms/threshold
-  i32.const 144
+  i32.const 256
   call $~lib/rt/itcms/initLazy
   global.set $~lib/rt/itcms/pinSpace
-  i32.const 176
+  i32.const 288
   call $~lib/rt/itcms/initLazy
   global.set $~lib/rt/itcms/toSpace
-  i32.const 320
+  i32.const 432
   call $~lib/rt/itcms/initLazy
   global.set $~lib/rt/itcms/fromSpace
   i32.const 0
@@ -2557,142 +3057,11 @@
   call $assembly/example/Abc#set:x
   local.get $0
  )
- (func $assembly/example/Abc#onDispose (param $0 i32)
-  nop
+ (func $assembly/example/Abc#onDispose (param $0 i32) (result i32)
+  i32.const 4
  )
- (func $assembly/component/IComponentData#onDispose (param $0 i32)
+ (func $assembly/component/IComponentData#onDispose (param $0 i32) (result i32)
   unreachable
- )
- (func $~lib/memory/heap.free (param $0 i32)
-  local.get $0
-  call $~lib/rt/tlsf/__free
- )
- (func $assembly/component/IComponentData#dispose (param $0 i32)
-  local.get $0
-  call $assembly/component/IComponentData#onDispose@virtual
-  local.get $0
-  call $~lib/memory/heap.free
- )
- (func $assembly/example/Abc#get:x (param $0 i32) (result i32)
-  local.get $0
-  i32.load
- )
- (func $assembly/example/Cde#set:c (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store
- )
- (func $assembly/example/Cde#constructor (param $0 i32) (result i32)
-  local.get $0
-  i32.eqz
-  if
-   i32.const 4
-   call $~lib/rt/tlsf/__alloc
-   local.set $0
-  end
-  local.get $0
-  call $assembly/component/IComponentData#constructor
-  local.set $0
-  local.get $0
-  i32.const 0
-  call $assembly/example/Cde#set:c
-  local.get $0
- )
- (func $assembly/example/Cde#onDispose (param $0 i32)
-  nop
- )
- (func $assembly/example/Cde#get:c (param $0 i32) (result i32)
-  local.get $0
-  i32.load
- )
- (func $assembly/world/World#set:destroyEntityIdStack (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store
-  local.get $0
-  local.get $1
-  i32.const 0
-  call $~lib/rt/itcms/__link
- )
- (func $~lib/array/Array<i32>#set:buffer (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store
-  local.get $0
-  local.get $1
-  i32.const 0
-  call $~lib/rt/itcms/__link
- )
- (func $~lib/array/Array<i32>#set:dataStart (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=4
- )
- (func $~lib/array/Array<i32>#set:byteLength (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=8
- )
- (func $~lib/array/Array<i32>#set:length_ (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=12
- )
- (func $assembly/world/World#set:entityCount (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=4
- )
- (func $assembly/world/World#set:entityVersions (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=8
-  local.get $0
-  local.get $1
-  i32.const 0
-  call $~lib/rt/itcms/__link
- )
- (func $~lib/array/Array<u32>#set:buffer (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store
-  local.get $0
-  local.get $1
-  i32.const 0
-  call $~lib/rt/itcms/__link
- )
- (func $~lib/array/Array<u32>#set:dataStart (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=4
- )
- (func $~lib/array/Array<u32>#set:byteLength (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=8
- )
- (func $~lib/array/Array<u32>#set:length_ (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=12
- )
- (func $assembly/world/World#set:entityMasks (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=12
-  local.get $0
-  local.get $1
-  i32.const 0
-  call $~lib/rt/itcms/__link
- )
- (func $assembly/world/World#set:archetypeMasks (param $0 i32) (param $1 i32)
-  local.get $0
-  local.get $1
-  i32.store offset=16
-  local.get $0
-  local.get $1
-  i32.const 0
-  call $~lib/rt/itcms/__link
  )
  (func $~lib/util/memory/memcpy (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
@@ -3947,6 +4316,286 @@
    end
   end
  )
+ (func $~lib/rt/tlsf/moveBlock (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+  (local $3 i32)
+  local.get $0
+  local.get $2
+  call $~lib/rt/tlsf/allocateBlock
+  local.set $3
+  local.get $3
+  i32.const 4
+  i32.add
+  local.get $1
+  i32.const 4
+  i32.add
+  local.get $1
+  i32.load
+  i32.const 3
+  i32.const -1
+  i32.xor
+  i32.and
+  call $~lib/memory/memory.copy
+  local.get $1
+  global.get $~lib/memory/__heap_base
+  i32.ge_u
+  if
+   i32.const 0
+   drop
+   local.get $0
+   local.get $1
+   call $~lib/rt/tlsf/freeBlock
+  end
+  local.get $3
+ )
+ (func $~lib/rt/tlsf/reallocateBlock (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+  (local $3 i32)
+  (local $4 i32)
+  (local $5 i32)
+  (local $6 i32)
+  (local $7 i32)
+  (local $8 i32)
+  local.get $2
+  call $~lib/rt/tlsf/prepareSize
+  local.set $3
+  local.get $1
+  i32.load
+  local.set $4
+  local.get $4
+  i32.const 3
+  i32.const -1
+  i32.xor
+  i32.and
+  local.set $5
+  local.get $3
+  local.get $5
+  i32.le_u
+  if
+   local.get $0
+   local.get $1
+   local.get $3
+   call $~lib/rt/tlsf/prepareBlock
+   i32.const 0
+   drop
+   local.get $1
+   return
+  end
+  local.get $1
+  local.set $6
+  local.get $6
+  i32.const 4
+  i32.add
+  local.get $6
+  i32.load
+  i32.const 3
+  i32.const -1
+  i32.xor
+  i32.and
+  i32.add
+  local.set $7
+  local.get $7
+  i32.load
+  local.set $8
+  local.get $8
+  i32.const 1
+  i32.and
+  if
+   local.get $5
+   i32.const 4
+   i32.add
+   local.get $8
+   i32.const 3
+   i32.const -1
+   i32.xor
+   i32.and
+   i32.add
+   local.set $6
+   local.get $6
+   local.get $3
+   i32.ge_u
+   if
+    local.get $0
+    local.get $7
+    call $~lib/rt/tlsf/removeBlock
+    local.get $1
+    local.get $4
+    i32.const 3
+    i32.and
+    local.get $6
+    i32.or
+    call $~lib/rt/common/BLOCK#set:mmInfo
+    local.get $0
+    local.get $1
+    local.get $3
+    call $~lib/rt/tlsf/prepareBlock
+    i32.const 0
+    drop
+    local.get $1
+    return
+   end
+  end
+  local.get $0
+  local.get $1
+  local.get $2
+  call $~lib/rt/tlsf/moveBlock
+ )
+ (func $~lib/rt/tlsf/__realloc (param $0 i32) (param $1 i32) (result i32)
+  global.get $~lib/rt/tlsf/ROOT
+  i32.eqz
+  if
+   call $~lib/rt/tlsf/initialize
+  end
+  local.get $0
+  global.get $~lib/memory/__heap_base
+  i32.lt_u
+  if (result i32)
+   global.get $~lib/rt/tlsf/ROOT
+   local.get $0
+   call $~lib/rt/tlsf/checkUsedBlock
+   local.get $1
+   call $~lib/rt/tlsf/moveBlock
+  else
+   global.get $~lib/rt/tlsf/ROOT
+   local.get $0
+   call $~lib/rt/tlsf/checkUsedBlock
+   local.get $1
+   call $~lib/rt/tlsf/reallocateBlock
+  end
+  i32.const 4
+  i32.add
+ )
+ (func $~lib/memory/heap.realloc (param $0 i32) (param $1 i32) (result i32)
+  local.get $0
+  local.get $1
+  call $~lib/rt/tlsf/__realloc
+ )
+ (func $assembly/component/IComponentData#dispose (param $0 i32)
+  local.get $0
+  local.get $0
+  call $assembly/component/IComponentData#onDispose@virtual
+  call $~lib/memory/heap.realloc
+  drop
+ )
+ (func $assembly/example/Abc#get:x (param $0 i32) (result i32)
+  local.get $0
+  i32.load
+ )
+ (func $assembly/example/Cde#set:c (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store
+ )
+ (func $assembly/example/Cde#constructor (param $0 i32) (result i32)
+  local.get $0
+  i32.eqz
+  if
+   i32.const 4
+   call $~lib/rt/tlsf/__alloc
+   local.set $0
+  end
+  local.get $0
+  call $assembly/component/IComponentData#constructor
+  local.set $0
+  local.get $0
+  i32.const 0
+  call $assembly/example/Cde#set:c
+  local.get $0
+ )
+ (func $assembly/example/Cde#onDispose (param $0 i32) (result i32)
+  i32.const 4
+ )
+ (func $assembly/example/Cde#get:c (param $0 i32) (result i32)
+  local.get $0
+  i32.load
+ )
+ (func $assembly/world/World#set:destroyEntityIdStack (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store
+  local.get $0
+  local.get $1
+  i32.const 0
+  call $~lib/rt/itcms/__link
+ )
+ (func $~lib/array/Array<i32>#set:buffer (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store
+  local.get $0
+  local.get $1
+  i32.const 0
+  call $~lib/rt/itcms/__link
+ )
+ (func $~lib/array/Array<i32>#set:dataStart (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=4
+ )
+ (func $~lib/array/Array<i32>#set:byteLength (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=8
+ )
+ (func $~lib/array/Array<i32>#set:length_ (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=12
+ )
+ (func $assembly/world/World#set:entityCount (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=4
+ )
+ (func $assembly/world/World#set:entityVersions (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=8
+  local.get $0
+  local.get $1
+  i32.const 0
+  call $~lib/rt/itcms/__link
+ )
+ (func $~lib/array/Array<u32>#set:buffer (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store
+  local.get $0
+  local.get $1
+  i32.const 0
+  call $~lib/rt/itcms/__link
+ )
+ (func $~lib/array/Array<u32>#set:dataStart (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=4
+ )
+ (func $~lib/array/Array<u32>#set:byteLength (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=8
+ )
+ (func $~lib/array/Array<u32>#set:length_ (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=12
+ )
+ (func $assembly/world/World#set:entityMasks (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=12
+  local.get $0
+  local.get $1
+  i32.const 0
+  call $~lib/rt/itcms/__link
+ )
+ (func $assembly/world/World#set:archetypeMasks (param $0 i32) (param $1 i32)
+  local.get $0
+  local.get $1
+  i32.store offset=16
+  local.get $0
+  local.get $1
+  i32.const 0
+  call $~lib/rt/itcms/__link
+ )
  (func $~lib/rt/__newBuffer (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   local.get $0
@@ -4033,11 +4682,11 @@
   i32.const 1
   i32.lt_s
   if
-   i32.const 624
-   i32.const 544
+   i32.const 736
+   i32.const 656
    i32.const 284
    i32.const 18
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -4126,11 +4775,11 @@
    i32.shr_u
    i32.gt_u
    if
-    i32.const 432
     i32.const 544
+    i32.const 656
     i32.const 18
     i32.const 48
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
    local.get $0
@@ -4217,11 +4866,11 @@
   i32.load offset=12
   i32.ge_u
   if
-   i32.const 224
-   i32.const 544
+   i32.const 336
+   i32.const 656
    i32.const 107
    i32.const 42
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -4371,11 +5020,11 @@
   local.get $2
   i32.eqz
   if
-   i32.const 800
-   i32.const 864
+   i32.const 912
+   i32.const 976
    i32.const 105
    i32.const 17
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -4571,11 +5220,11 @@
    i32.const 0
    i32.lt_s
    if
-    i32.const 224
-    i32.const 544
+    i32.const 336
+    i32.const 656
     i32.const 123
     i32.const 22
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
    local.get $0
@@ -4666,11 +5315,11 @@
   local.get $2
   i32.eqz
   if
-   i32.const 800
-   i32.const 864
+   i32.const 912
+   i32.const 976
    i32.const 105
    i32.const 17
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -4705,11 +5354,11 @@
   call $~lib/staticarray/StaticArray<assembly/component/ComponentType>#get:length
   i32.ge_u
   if
-   i32.const 224
-   i32.const 912
+   i32.const 336
+   i32.const 1024
    i32.const 130
    i32.const 41
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -5393,11 +6042,11 @@
   local.get $2
   i32.eqz
   if
-   i32.const 800
-   i32.const 864
+   i32.const 912
+   i32.const 976
    i32.const 105
    i32.const 17
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -5410,11 +6059,11 @@
   i32.load offset=12
   i32.ge_u
   if
-   i32.const 224
-   i32.const 544
+   i32.const 336
+   i32.const 656
    i32.const 107
    i32.const 42
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -5655,61 +6304,6 @@
   call $~lib/array/Array<assembly/chunk/Chunk>#set:length_
   local.get $3
  )
- (func $~lib/util/number/decimalCount32 (param $0 i32) (result i32)
-  local.get $0
-  i32.const 100000
-  i32.lt_u
-  if
-   local.get $0
-   i32.const 100
-   i32.lt_u
-   if
-    i32.const 1
-    local.get $0
-    i32.const 10
-    i32.ge_u
-    i32.add
-    return
-   else
-    i32.const 3
-    local.get $0
-    i32.const 10000
-    i32.ge_u
-    i32.add
-    local.get $0
-    i32.const 1000
-    i32.ge_u
-    i32.add
-    return
-   end
-   unreachable
-  else
-   local.get $0
-   i32.const 10000000
-   i32.lt_u
-   if
-    i32.const 6
-    local.get $0
-    i32.const 1000000
-    i32.ge_u
-    i32.add
-    return
-   else
-    i32.const 8
-    local.get $0
-    i32.const 1000000000
-    i32.ge_u
-    i32.add
-    local.get $0
-    i32.const 100000000
-    i32.ge_u
-    i32.add
-    return
-   end
-   unreachable
-  end
-  unreachable
- )
  (func $~lib/util/number/utoa32_dec_lut (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -5745,14 +6339,14 @@
     i32.const 100
     i32.rem_u
     local.set $7
-    i32.const 1612
+    i32.const 1724
     local.get $6
     i32.const 2
     i32.shl
     i32.add
     i64.load32_u
     local.set $8
-    i32.const 1612
+    i32.const 1724
     local.get $7
     i32.const 2
     i32.shl
@@ -5795,7 +6389,7 @@
    i32.const 2
    i32.sub
    local.set $2
-   i32.const 1612
+   i32.const 1724
    local.get $10
    i32.const 2
    i32.shl
@@ -5818,7 +6412,7 @@
    i32.const 2
    i32.sub
    local.set $2
-   i32.const 1612
+   i32.const 1724
    local.get $1
    i32.const 2
    i32.shl
@@ -5868,7 +6462,7 @@
     i32.const 1
     i32.shl
     i32.add
-    i32.const 2032
+    i32.const 2144
     local.get $1
     i32.wrap_i64
     i32.const 255
@@ -5890,7 +6484,7 @@
   i32.and
   if
    local.get $0
-   i32.const 2032
+   i32.const 2144
    local.get $1
    i32.wrap_i64
    i32.const 6
@@ -6012,7 +6606,7 @@
     i32.const 1
     i32.shl
     i32.add
-    i32.const 3088
+    i32.const 3200
     local.get $1
     local.get $6
     i64.and
@@ -6046,7 +6640,7 @@
     i32.const 1
     i32.shl
     i32.add
-    i32.const 3088
+    i32.const 3200
     local.get $1
     local.get $6
     local.get $4
@@ -6095,14 +6689,6 @@
   i32.const 2
   i32.shr_u
  )
- (func $~lib/string/String#get:length (param $0 i32) (result i32)
-  local.get $0
-  i32.const 20
-  i32.sub
-  i32.load offset=16
-  i32.const 1
-  i32.shr_u
- )
  (func $~lib/staticarray/StaticArray<~lib/string/String>#join (param $0 i32) (param $1 i32) (result i32)
   i32.const 0
   drop
@@ -6145,11 +6731,11 @@
    i32.const 0
    i32.lt_s
    if
-    i32.const 224
-    i32.const 544
+    i32.const 336
+    i32.const 656
     i32.const 123
     i32.const 22
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
    local.get $0
@@ -6190,11 +6776,11 @@
   local.get $2
   i32.eqz
   if
-   i32.const 800
-   i32.const 864
+   i32.const 912
+   i32.const 976
    i32.const 105
    i32.const 17
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -6205,7 +6791,7 @@
   local.get $1
   call $~lib/string/String#concat
  )
- (func $assembly/component/IComponentData#onDispose@virtual (param $0 i32)
+ (func $assembly/component/IComponentData#onDispose@virtual (param $0 i32) (result i32)
   (local $1 i32)
   block $default
    block $case1
@@ -6237,28 +6823,31 @@
  )
  (func $~lib/rt/__visit_globals (param $0 i32)
   (local $1 i32)
-  i32.const 224
+  i32.const 336
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 432
+  i32.const 544
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 624
+  i32.const 736
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 976
+  i32.const 1088
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 800
+  i32.const 912
+  local.get $0
+  call $~lib/rt/itcms/__visit
+  i32.const 144
   local.get $0
   call $~lib/rt/itcms/__visit
   i32.const 32
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 2032
+  i32.const 2144
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 3088
+  i32.const 3200
   local.get $0
   call $~lib/rt/itcms/__visit
   global.get $assembly/component/ComponentType.map
@@ -6825,6 +7414,12 @@
   unreachable
  )
  (func $~start
+  global.get $~started
+  if
+   return
+  end
+  i32.const 1
+  global.set $~started
   call $start:assembly/example
  )
  (func $~stack_check
@@ -6832,11 +7427,11 @@
   global.get $~lib/memory/__data_end
   i32.lt_s
   if
-   i32.const 20176
-   i32.const 20224
+   i32.const 20288
+   i32.const 20336
    i32.const 1
    i32.const 1
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
  )
@@ -7224,9 +7819,19 @@
   i32.store offset=4
   local.get $10
   call $~lib/array/Array<i32>#get:length
-  i32.const 1
-  i32.sub
   local.set $2
+  local.get $2
+  i32.const -1
+  i32.gt_s
+  i32.eqz
+  if
+   i32.const 0
+   i32.const 1248
+   i32.const 46
+   i32.const 9
+   call $~lib/wasi/index/abort
+   unreachable
+  end
   block $assembly/utility/SparseSet<i32>#add|inlined.0
    global.get $~lib/memory/__stack_pointer
    local.get $0
@@ -7383,10 +7988,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 1136
-   i32.const 52
+   i32.const 1248
+   i32.const 54
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $7
@@ -7394,9 +7999,16 @@
   local.get $3
   local.set $5
   local.get $5
-  local.get $6
-  i32.load offset=12
-  i32.lt_s
+  i32.const 0
+  i32.ge_s
+  if (result i32)
+   local.get $5
+   local.get $6
+   i32.load offset=12
+   i32.lt_s
+  else
+   i32.const 0
+  end
   i32.eqz
   if
    global.get $~lib/memory/__stack_pointer
@@ -7412,7 +8024,7 @@
    call $~lib/number/I32#toString
    local.tee $9
    i32.store offset=24
-   i32.const 1360
+   i32.const 1472
    local.set $10
    global.get $~lib/memory/__stack_pointer
    local.get $10
@@ -7421,7 +8033,7 @@
    i32.const 1
    local.get $8
    call $~lib/staticarray/StaticArray<~lib/string/String>#__uset
-   i32.const 1360
+   i32.const 1472
    local.set $10
    global.get $~lib/memory/__stack_pointer
    local.get $10
@@ -7430,23 +8042,23 @@
    i32.const 3
    local.get $9
    call $~lib/staticarray/StaticArray<~lib/string/String>#__uset
-   i32.const 1360
+   i32.const 1472
    local.set $10
    global.get $~lib/memory/__stack_pointer
    local.get $10
    i32.store offset=4
    local.get $10
-   i32.const 3184
+   i32.const 3296
    local.set $10
    global.get $~lib/memory/__stack_pointer
    local.get $10
    i32.store offset=12
    local.get $10
    call $~lib/staticarray/StaticArray<~lib/string/String>#join
-   i32.const 3216
+   i32.const 3328
    i32.const 25
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $6
@@ -7456,8 +8068,6 @@
   i32.load offset=8
   i32.mul
   i32.add
-  local.set $9
-  local.get $9
   local.set $10
   global.get $~lib/memory/__stack_pointer
   i32.const 28
@@ -7724,6 +8334,18 @@
    call $~lib/map/Map<i32,i32>#get
   end
   local.set $5
+  local.get $5
+  i32.const -1
+  i32.gt_s
+  i32.eqz
+  if
+   i32.const 0
+   i32.const 1248
+   i32.const 87
+   i32.const 9
+   call $~lib/wasi/index/abort
+   unreachable
+  end
   local.get $0
   i32.load offset=12
   local.set $18
@@ -7760,9 +8382,16 @@
   local.get $7
   local.set $6
   local.get $6
-  local.get $9
-  i32.load offset=12
-  i32.lt_s
+  i32.const 0
+  i32.ge_s
+  if (result i32)
+   local.get $6
+   local.get $9
+   i32.load offset=12
+   i32.lt_s
+  else
+   i32.const 0
+  end
   i32.eqz
   if
    global.get $~lib/memory/__stack_pointer
@@ -7778,7 +8407,7 @@
    call $~lib/number/I32#toString
    local.tee $11
    i32.store offset=16
-   i32.const 3280
+   i32.const 3392
    local.set $18
    global.get $~lib/memory/__stack_pointer
    local.get $18
@@ -7787,7 +8416,7 @@
    i32.const 1
    local.get $10
    call $~lib/staticarray/StaticArray<~lib/string/String>#__uset
-   i32.const 3280
+   i32.const 3392
    local.set $18
    global.get $~lib/memory/__stack_pointer
    local.get $18
@@ -7796,23 +8425,23 @@
    i32.const 3
    local.get $11
    call $~lib/staticarray/StaticArray<~lib/string/String>#__uset
-   i32.const 3280
+   i32.const 3392
    local.set $18
    global.get $~lib/memory/__stack_pointer
    local.get $18
    i32.store offset=4
    local.get $18
-   i32.const 3184
+   i32.const 3296
    local.set $18
    global.get $~lib/memory/__stack_pointer
    local.get $18
    i32.store offset=20
    local.get $18
    call $~lib/staticarray/StaticArray<~lib/string/String>#join
-   i32.const 3216
+   i32.const 3328
    i32.const 25
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $9
@@ -7822,19 +8451,17 @@
   i32.load offset=8
   i32.mul
   i32.add
-  local.set $11
-  local.get $11
-  local.set $11
+  local.set $9
   global.get $~lib/memory/__stack_pointer
   local.get $1
   i32.load offset=16
-  local.tee $9
-  i32.store offset=8
+  local.tee $6
+  i32.store offset=24
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.load offset=16
-  local.tee $6
-  i32.store offset=24
+  local.tee $11
+  i32.store offset=16
   i32.const 0
   local.set $10
   local.get $1
@@ -7869,25 +8496,25 @@
      local.get $14
      i32.load offset=8
      local.set $15
-     local.get $6
+     local.get $11
      local.get $15
      call $~lib/map/Map<u32,usize>#has
      i32.eqz
      if
       br $for-continue|0
      end
-     local.get $9
+     local.get $6
      local.get $15
      call $~lib/map/Map<u32,usize>#get
      local.set $16
-     local.get $6
+     local.get $11
      local.get $15
      call $~lib/map/Map<u32,usize>#get
      local.set $17
      local.get $2
      local.get $16
      i32.add
-     local.get $11
+     local.get $9
      local.get $17
      i32.add
      local.get $14
@@ -7930,9 +8557,16 @@
    local.get $10
    local.set $14
    local.get $14
-   local.get $15
-   i32.load offset=12
-   i32.lt_s
+   i32.const 0
+   i32.ge_s
+   if (result i32)
+    local.get $14
+    local.get $15
+    i32.load offset=12
+    i32.lt_s
+   else
+    i32.const 0
+   end
    i32.eqz
    if
     global.get $~lib/memory/__stack_pointer
@@ -7948,7 +8582,7 @@
     call $~lib/number/I32#toString
     local.tee $17
     i32.store offset=40
-    i32.const 3328
+    i32.const 3440
     local.set $18
     global.get $~lib/memory/__stack_pointer
     local.get $18
@@ -7957,7 +8591,7 @@
     i32.const 1
     local.get $13
     call $~lib/staticarray/StaticArray<~lib/string/String>#__uset
-    i32.const 3328
+    i32.const 3440
     local.set $18
     global.get $~lib/memory/__stack_pointer
     local.get $18
@@ -7966,23 +8600,23 @@
     i32.const 3
     local.get $17
     call $~lib/staticarray/StaticArray<~lib/string/String>#__uset
-    i32.const 3328
+    i32.const 3440
     local.set $18
     global.get $~lib/memory/__stack_pointer
     local.get $18
     i32.store offset=4
     local.get $18
-    i32.const 3184
+    i32.const 3296
     local.set $18
     global.get $~lib/memory/__stack_pointer
     local.get $18
     i32.store offset=20
     local.get $18
     call $~lib/staticarray/StaticArray<~lib/string/String>#join
-    i32.const 3216
+    i32.const 3328
     i32.const 25
     i32.const 9
-    call $~lib/builtins/abort
+    call $~lib/wasi/index/abort
     unreachable
    end
    local.get $15
@@ -7992,21 +8626,19 @@
    i32.load offset=8
    i32.mul
    i32.add
-   local.set $17
-   local.get $17
-   local.set $17
-   local.get $11
-   local.get $17
+   local.set $15
+   local.get $9
+   local.get $15
    local.get $0
    i32.load offset=4
    call $~lib/memory/memory.copy
-   local.get $17
+   local.get $15
    i32.const 0
    local.get $0
    i32.load offset=4
    call $~lib/memory/memory.fill
   else
-   local.get $11
+   local.get $9
    i32.const 0
    local.get $0
    i32.load offset=4
@@ -8312,11 +8944,11 @@
   i32.ne
   i32.eqz
   if
-   i32.const 672
-   i32.const 736
+   i32.const 784
+   i32.const 848
    i32.const 49
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   global.get $~lib/memory/__stack_pointer
@@ -8450,6 +9082,18 @@
   end
   local.set $4
   local.get $4
+  i32.const -1
+  i32.gt_s
+  i32.eqz
+  if
+   i32.const 0
+   i32.const 1248
+   i32.const 35
+   i32.const 9
+   call $~lib/wasi/index/abort
+   unreachable
+  end
+  local.get $4
   local.get $0
   i32.load offset=24
   i32.div_s
@@ -8473,13 +9117,28 @@
   i32.store offset=8
   local.get $7
   local.set $6
+  local.get $0
+  i32.load offset=16
+  local.set $11
+  global.get $~lib/memory/__stack_pointer
+  local.get $11
+  i32.store offset=4
+  local.get $11
   local.get $2
-  i32.load
+  i32.load offset=8
+  call $~lib/map/Map<u32,usize>#get
   local.set $5
   local.get $6
-  local.get $8
-  i32.load offset=12
-  i32.lt_s
+  i32.const 0
+  i32.ge_s
+  if (result i32)
+   local.get $6
+   local.get $8
+   i32.load offset=12
+   i32.lt_s
+  else
+   i32.const 0
+  end
   i32.eqz
   if
    global.get $~lib/memory/__stack_pointer
@@ -8495,7 +9154,7 @@
    call $~lib/number/I32#toString
    local.tee $10
    i32.store offset=16
-   i32.const 3488
+   i32.const 3600
    local.set $11
    global.get $~lib/memory/__stack_pointer
    local.get $11
@@ -8504,7 +9163,7 @@
    i32.const 1
    local.get $9
    call $~lib/staticarray/StaticArray<~lib/string/String>#__uset
-   i32.const 3488
+   i32.const 3600
    local.set $11
    global.get $~lib/memory/__stack_pointer
    local.get $11
@@ -8513,23 +9172,23 @@
    i32.const 3
    local.get $10
    call $~lib/staticarray/StaticArray<~lib/string/String>#__uset
-   i32.const 3488
+   i32.const 3600
    local.set $11
    global.get $~lib/memory/__stack_pointer
    local.get $11
    i32.store offset=4
    local.get $11
-   i32.const 3184
+   i32.const 3296
    local.set $11
    global.get $~lib/memory/__stack_pointer
    local.get $11
    i32.store offset=20
    local.get $11
    call $~lib/staticarray/StaticArray<~lib/string/String>#join
-   i32.const 3216
+   i32.const 3328
    i32.const 14
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $8
@@ -8628,11 +9287,11 @@
   i32.ne
   i32.eqz
   if
-   i32.const 672
-   i32.const 736
+   i32.const 784
+   i32.const 848
    i32.const 49
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $5
@@ -8657,23 +9316,23 @@
   i32.ne
   i32.eqz
   if
-   i32.const 3376
+   i32.const 3488
    local.set $10
    global.get $~lib/memory/__stack_pointer
    local.get $10
    i32.store
    local.get $10
-   i32.const 3456
+   i32.const 3568
    local.set $10
    global.get $~lib/memory/__stack_pointer
    local.get $10
    i32.store offset=4
    local.get $10
    call $~lib/string/String.__concat
-   i32.const 736
+   i32.const 848
    i32.const 121
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -8856,11 +9515,11 @@
   i32.ne
   i32.eqz
   if
-   i32.const 672
-   i32.const 736
+   i32.const 784
+   i32.const 848
    i32.const 49
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   global.get $~lib/memory/__stack_pointer
@@ -8955,11 +9614,11 @@
   i32.ne
   i32.eqz
   if
-   i32.const 672
-   i32.const 736
+   i32.const 784
+   i32.const 848
    i32.const 49
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $6
@@ -8984,23 +9643,23 @@
   i32.ne
   i32.eqz
   if
-   i32.const 3376
+   i32.const 3488
    local.set $11
    global.get $~lib/memory/__stack_pointer
    local.get $11
    i32.store
    local.get $11
-   i32.const 3456
+   i32.const 3568
    local.set $11
    global.get $~lib/memory/__stack_pointer
    local.get $11
    i32.store offset=4
    local.get $11
    call $~lib/string/String.__concat
-   i32.const 736
+   i32.const 848
    i32.const 121
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -9148,11 +9807,11 @@
   i32.ne
   i32.eqz
   if
-   i32.const 672
-   i32.const 736
+   i32.const 784
+   i32.const 848
    i32.const 49
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $5
@@ -9177,23 +9836,23 @@
   i32.ne
   i32.eqz
   if
-   i32.const 3376
+   i32.const 3488
    local.set $13
    global.get $~lib/memory/__stack_pointer
    local.get $13
    i32.store
    local.get $13
-   i32.const 3600
+   i32.const 3712
    local.set $13
    global.get $~lib/memory/__stack_pointer
    local.get $13
    i32.store offset=4
    local.get $13
    call $~lib/string/String.__concat
-   i32.const 736
+   i32.const 848
    i32.const 121
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -9424,10 +10083,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 3536
-   i32.const 25
+   i32.const 3648
+   i32.const 29
    i32.const 5
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -9489,11 +10148,11 @@
   i32.ne
   i32.eqz
   if
-   i32.const 672
-   i32.const 736
+   i32.const 784
+   i32.const 848
    i32.const 49
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $5
@@ -9519,10 +10178,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 3536
-   i32.const 28
+   i32.const 3648
+   i32.const 32
    i32.const 5
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -9532,10 +10191,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 3536
-   i32.const 30
+   i32.const 3648
+   i32.const 34
    i32.const 5
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $3
@@ -9545,10 +10204,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 3536
-   i32.const 31
+   i32.const 3648
+   i32.const 35
    i32.const 5
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -9566,10 +10225,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 3536
-   i32.const 35
+   i32.const 3648
+   i32.const 39
    i32.const 5
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -9628,11 +10287,11 @@
   i32.ne
   i32.eqz
   if
-   i32.const 672
-   i32.const 736
+   i32.const 784
+   i32.const 848
    i32.const 49
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $9
@@ -9657,10 +10316,10 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 3536
-   i32.const 38
+   i32.const 3648
+   i32.const 42
    i32.const 5
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
@@ -9716,11 +10375,11 @@
   i32.ne
   i32.eqz
   if
-   i32.const 672
-   i32.const 736
+   i32.const 784
+   i32.const 848
    i32.const 49
    i32.const 9
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $10
@@ -9746,16 +10405,37 @@
   i32.eqz
   if
    i32.const 0
-   i32.const 3536
-   i32.const 39
+   i32.const 3648
+   i32.const 43
    i32.const 5
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
   local.get $1
   call $assembly/world/World#getComponent<assembly/example/Abc>
   local.set $8
+  local.get $8
+  i32.load
+  i32.const 123
+  i32.eq
+  i32.eqz
+  if
+   i32.const 0
+   i32.const 3648
+   i32.const 46
+   i32.const 5
+   call $~lib/wasi/index/abort
+   unreachable
+  end
+  local.get $2
+  call $assembly/component/IComponentData#dispose
+  local.get $3
+  call $assembly/component/IComponentData#dispose
+  local.get $7
+  call $assembly/component/IComponentData#dispose
+  local.get $8
+  call $assembly/component/IComponentData#dispose
   local.get $8
   i32.load
   local.set $11
@@ -9780,11 +10460,11 @@
   i32.const 1073741820
   i32.gt_u
   if
-   i32.const 432
-   i32.const 480
+   i32.const 544
+   i32.const 592
    i32.const 49
    i32.const 43
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   global.get $~lib/memory/__stack_pointer
@@ -9903,11 +10583,11 @@
   i32.shr_u
   i32.gt_u
   if
-   i32.const 432
    i32.const 544
+   i32.const 656
    i32.const 65
    i32.const 60
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -9993,11 +10673,11 @@
   i32.shr_u
   i32.gt_u
   if
-   i32.const 432
    i32.const 544
+   i32.const 656
    i32.const 65
    i32.const 60
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -10193,7 +10873,7 @@
   i32.const 0
   i32.const 2
   i32.const 7
-  i32.const 592
+  i32.const 704
   call $~lib/rt/__newArray
   call $assembly/world/World#set:archetypeMasks
   local.get $0
@@ -10424,11 +11104,11 @@
   i32.shr_u
   i32.gt_u
   if
-   i32.const 432
-   i32.const 912
+   i32.const 544
+   i32.const 1024
    i32.const 90
    i32.const 60
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $1
@@ -10469,11 +11149,11 @@
   call $~lib/staticarray/StaticArray<assembly/component/ComponentType>#get:length
   i32.ge_u
   if
-   i32.const 224
-   i32.const 912
+   i32.const 336
+   i32.const 1024
    i32.const 115
    i32.const 41
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   global.get $~lib/memory/__stack_pointer
@@ -10493,11 +11173,11 @@
   local.get $2
   i32.eqz
   if
-   i32.const 976
-   i32.const 912
+   i32.const 1088
+   i32.const 1024
    i32.const 119
    i32.const 40
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -10759,7 +11439,7 @@
   i32.const 0
   i32.const 2
   i32.const 6
-  i32.const 1104
+  i32.const 1216
   call $~lib/rt/__newArray
   call $assembly/utility/SparseSet<i32>#set:payloads
   local.get $0
@@ -11092,11 +11772,11 @@
   i32.load offset=12
   i32.ge_u
   if
-   i32.const 224
-   i32.const 544
+   i32.const 336
+   i32.const 656
    i32.const 107
    i32.const 42
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   global.get $~lib/memory/__stack_pointer
@@ -11117,11 +11797,11 @@
   local.get $2
   i32.eqz
   if
-   i32.const 976
-   i32.const 544
+   i32.const 1088
+   i32.const 656
    i32.const 111
    i32.const 40
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $2
@@ -11159,17 +11839,17 @@
    i32.gt_s
   end
   if
-   i32.const 1408
-   i32.const 1536
+   i32.const 1520
+   i32.const 1648
    i32.const 373
    i32.const 5
-   call $~lib/builtins/abort
+   call $~lib/wasi/index/abort
    unreachable
   end
   local.get $0
   i32.eqz
   if
-   i32.const 1600
+   i32.const 1712
    local.set $8
    global.get $~lib/memory/__stack_pointer
    i32.const 4
@@ -11329,7 +12009,7 @@
   i32.const 0
   i32.lt_s
   if
-   i32.const 3184
+   i32.const 3296
    local.set $12
    global.get $~lib/memory/__stack_pointer
    i32.const 12
@@ -11350,7 +12030,7 @@
    if (result i32)
     local.get $4
    else
-    i32.const 3184
+    i32.const 3296
    end
    local.set $12
    global.get $~lib/memory/__stack_pointer
@@ -11543,7 +12223,7 @@
   i32.const 0
   i32.eq
   if
-   i32.const 3184
+   i32.const 3296
    local.set $6
    global.get $~lib/memory/__stack_pointer
    i32.const 4

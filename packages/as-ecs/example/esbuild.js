@@ -15,6 +15,7 @@ esbuild.serve(
             ".wasm": "file",
             ".wasm.map": "file",
         },
+        platform: "browser",
         outdir: __dirname + "/www",
         bundle: true,
         assetNames: "[name]",

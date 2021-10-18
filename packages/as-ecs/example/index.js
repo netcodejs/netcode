@@ -5,10 +5,9 @@ const wasmMapUrl = require("../build/example.wasm.map");
 console.log(wasmMapUrl);
 
 async function main() {
-    const wasmModule = (
-        await loader.instantiateStreaming(fetch(wasmUrl), imports)
-    ).exports;
-    console.log(wasmModule.ecsTest());
+    const exports = (await loader.instantiateStreaming(fetch(wasmUrl), imports))
+        .exports;
+    console.log(exports.ecsTest());
 }
 
 main();

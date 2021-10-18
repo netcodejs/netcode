@@ -2,12 +2,11 @@ import { familyof } from "./builtins";
 
 @unmanaged
 export abstract class IComponentData {
-    abstract onDispose(): void;
+    abstract onDispose(): usize;
 
     @operator.prefix("~")
     dispose(): void {
-        this.onDispose();
-        heap.free(changetype<usize>(this));
+        heap.realloc(changetype<usize>(this), this.onDispose());
     }
 }
 
@@ -19,7 +18,11 @@ export class ComponentType {
             const ins = ComponentType.map.get(fid);
             return ins;
         }
-        const ins = new ComponentType(offsetof<T>(), offsetof<T>() == 0, fid);
+        const ins = new ComponentType(
+            offsetof<T>() == 0 ? 1 : offsetof<T>(),
+            offsetof<T>() == 0,
+            fid
+        );
         ComponentType.map.set(fid, <ComponentType>ins);
         return ins;
     }
