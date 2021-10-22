@@ -1,13 +1,22 @@
 import { familyof } from "./builtins";
 
+export interface IDispose {
+    onDispose(): void;
+}
+
 @unmanaged
 export abstract class IComponentData {
-    abstract onDispose(): usize;
+    abstract onDispose(): void;
+}
 
-    @operator.prefix("~")
-    dispose(): void {
-        heap.realloc(changetype<usize>(this), this.onDispose());
-    }
+export function release<T extends IDispose>(some: T): void {
+    assert(
+        !isManaged<T>() && isReference<T>(),
+        "This only receive unmanged object!"
+    );
+    console.log(`${nameof<T>()}, ${offsetof<T>()}`);
+    some.onDispose();
+    heap.realloc(changetype<usize>(some), offsetof<T>());
 }
 
 @final

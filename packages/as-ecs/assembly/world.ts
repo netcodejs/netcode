@@ -1,7 +1,9 @@
 import { Archetype } from "./archetype";
 import { familyof } from "./builtins";
-import { ComponentType, IComponentData } from "./component";
+import { ComponentType, IComponentData, release } from "./component";
 import { Entity, EntityId } from "./entity";
+import { ISystem } from "./system";
+import { Tuple2 } from "./tuple";
 import { StructUtil } from "./utility";
 
 export type EntityMask = u32;
@@ -29,7 +31,7 @@ export default class World {
         const mask = this.entityMasks[e.id];
         if (this.mask2archetypeMap.has(mask)) {
             const archetype = this.mask2archetypeMap.get(mask);
-            archetype.removeEntity(e);
+            archetype.removeEntity(e.id);
         }
         this.entityVersions[e.id]++;
     }
@@ -85,7 +87,7 @@ export default class World {
             this.mask2archetypeMap.set(newMask, newArche);
         }
 
-        const ptr = newArche.addEntity(entity);
+        const ptr = newArche.addEntity(entity.id);
         if (oldArche != null) {
             oldArche.transferAndRemoveEntity(newArche, ptr, entity);
         }
@@ -99,7 +101,21 @@ export default class World {
         this._addComponent(entity, componentType);
     }
 
-    addAndGetComponent<T extends IComponentData>(entity: Entity): T {
+    addComponentData<T extends IComponentData>(
+        entity: Entity,
+        data: T,
+        dataToRelease: bool = false
+    ): void {
+        this.valiateOrThrow(entity);
+        const componentType = ComponentType.Get<T>();
+        const ptr = this._addComponent(entity, componentType);
+        memory.copy(ptr, changetype<usize>(data), offsetof<T>());
+        if (dataToRelease) {
+            release(data);
+        }
+    }
+
+    addGetComponent<T extends IComponentData>(entity: Entity): T {
         this.valiateOrThrow(entity);
         const componentType = ComponentType.Get<T>();
         const ptr = this._addComponent(entity, componentType);
@@ -154,7 +170,7 @@ export default class World {
             this.mask2archetypeMap.set(newMask, newArche);
         }
 
-        const ptr = newArche.addEntity(entity);
+        const ptr = newArche.addEntity(entity.id);
         oldArche.transferAndRemoveEntity(newArche, ptr, entity);
     }
 
@@ -163,7 +179,7 @@ export default class World {
         const mask = this.entityMasks[entity.id];
         const arche = this.mask2archetypeMap.get(mask);
         const componentType = ComponentType.Get<T>();
-        const ptr = arche.getDataViewPtr(entity, componentType);
+        const ptr = arche.getDataViewPtr(entity.id, componentType);
         const clonedPtr = heap.alloc(componentType.size);
         memory.copy(clonedPtr, ptr, componentType.size);
         return changetype<T>(clonedPtr);
@@ -175,8 +191,84 @@ export default class World {
         const arche = this.mask2archetypeMap.get(mask);
         const componentType = ComponentType.Get<T>();
         const offset = arche.familyId2offsetMap.get(familyof<T>());
-        const ptr = arche.getDataViewPtr(entity, componentType);
+        const ptr = arche.getDataViewPtr(entity.id, componentType);
         const srcPtr = changetype<usize>(data);
         memory.copy(ptr + offset, srcPtr + offset, componentType.size);
+    }
+
+    // @inline
+    // _forEachMuch() {}
+
+    forEach1<T1 extends IComponentData>(cb: (e: Entity, c1: T1) => void): void {
+        const map = this.mask2archetypeMap;
+        const masks = map.keys();
+
+        const targetMask = 1 << familyof<T1>();
+        const tempPtr = heap.alloc(offsetof<T1>());
+
+        for (let i = 0; i < masks.length; i++) {
+            const mask = masks[i];
+            if ((mask & targetMask) != targetMask) continue;
+            const arche = map.get(mask);
+
+            var entityIds = arche.entityIds.payloads;
+            if (entityIds.length == 0) continue;
+            const offset = arche.getOffset<T1>();
+            for (let chunkId = 0; chunkId < entityIds.length; chunkId++) {
+                const dataPtr = arche.getBasePtrByChunkId(chunkId);
+                memory.copy(tempPtr, dataPtr + offset, offsetof<T1>());
+                const e = new Entity();
+                e.id = entityIds[chunkId];
+                e.version = this.entityVersions[e.id];
+                cb(e, changetype<T1>(tempPtr));
+            }
+        }
+    }
+
+    forEach2<T1 extends IComponentData, T2 extends IComponentData>(
+        cb: (e: Entity, c1: T1, c2: T2) => void
+    ): void {
+        const map = this.mask2archetypeMap;
+        const masks = map.keys();
+
+        const targetMask = (1 << familyof<T1>()) | (1 << familyof<T2>());
+        const tempPtr = heap.alloc(offsetof<Tuple2<T1, T2>>());
+        const temp = changetype<Tuple2<T1, T2>>(tempPtr);
+        for (let i = 0; i < masks.length; i++) {
+            const mask = masks[i];
+            if ((mask & targetMask) != targetMask) continue;
+            const arche = map.get(mask);
+
+            var entityIds = arche.entityIds.payloads;
+            const o1 = arche.getOffset<T1>();
+            const o2 = arche.getOffset<T2>();
+            console.log(
+                `offset: ${nameof<T1>()}(${o1}), ${nameof<T2>()}(${o2})`
+            );
+            for (let chunkId = 0; chunkId < entityIds.length; chunkId++) {
+                const dataPtr = arche.getBasePtrByChunkId(chunkId);
+                memory.copy(
+                    tempPtr + offsetof<Tuple2<T1, T2>>("item1"),
+                    dataPtr + o1,
+                    offsetof<T1>()
+                );
+                memory.copy(
+                    tempPtr + offsetof<Tuple2<T1, T2>>("item2"),
+                    dataPtr + o2,
+                    offsetof<T2>()
+                );
+                const e = new Entity();
+                e.id = entityIds[chunkId];
+                e.version = this.entityVersions[e.id];
+
+                console.log(
+                    `${tempPtr}, ${changetype<usize>(
+                        temp.item1
+                    )}, ${changetype<usize>(temp.item2)}`
+                );
+                cb(e, temp.item1, temp.item2);
+            }
+        }
+        heap.realloc(tempPtr, offsetof<Tuple2<T1, T2>>());
     }
 }

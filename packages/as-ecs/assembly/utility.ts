@@ -52,27 +52,27 @@ export function fastRemove<T>(arr: T[], index: i32): i32 {
 
 export class SparseSet<V> {
     [key: i32]: V;
-    protected payloads: Array<V> = [];
-    protected map: Map<V, i32> = new Map();
+    public payloads: V[] = [];
+    protected _map: Map<V, i32> = new Map();
 
     @inline
     has(val: V): bool {
-        if (!this.map.has(val)) return false;
-        const index = this.map.get(val);
+        if (!this._map.has(val)) return false;
+        const index = this._map.get(val);
         return index < this.payloads.length && this.payloads[index] === val
     }
 
     @inline
     add(val: V): void {
         if (this.has(val)) return;
-        this.map.set(val, this.payloads.length);
+        this._map.set(val, this.payloads.length);
         this.payloads.push(val);
     }
 
     @inline
     getIndex(val: V): i32 {
         if (!this.has(val)) return -1;
-        return this.map.get(val);
+        return this._map.get(val);
     }
 
     @inline
@@ -98,8 +98,8 @@ export class SparseSet<V> {
         if (!this.has(val)) return -1;
         const last = this.payloads.pop();
         if (val !== last) {
-            const index = this.map.get(val);
-            this.map.set(last, index);
+            const index = this._map.get(val);
+            this._map.set(last, index);
             this.payloads[index] = last;
             return index;
         }

@@ -1,5 +1,6 @@
+import { familyof } from "./builtins";
 import { Chunk } from "./chunk";
-import { ComponentType } from "./component";
+import { ComponentType, IComponentData } from "./component";
 import { Entity, EntityId } from "./entity";
 import { fastRemove, SparseSet } from "./utility";
 import { EntityMask } from "./world";
@@ -30,8 +31,14 @@ export class Archetype {
         this.chunks = [new Chunk(size, elementLengthPerChunk)];
     }
 
-    getDataViewPtr(entity: Entity, componentType: ComponentType): usize {
-        const uniqueId = this.entityIds.getIndex(entity.id);
+    @inline
+    getOffset<T extends IComponentData>(): usize {
+        return this.familyId2offsetMap.get(familyof<T>());
+    }
+
+    @inline
+    getDataViewPtr(entityId: EntityId, componentType: ComponentType): usize {
+        const uniqueId = this.entityIds.getIndex(entityId);
         assert(uniqueId > -1);
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
         const idxInChunk = uniqueId % this.elementLengthPerChunk;
@@ -41,10 +48,27 @@ export class Archetype {
         );
     }
 
-    addEntity(e: Entity): usize {
+    @inline
+    getBasePtr(entityId: EntityId): usize {
+        const uniqueId = this.entityIds.getIndex(entityId);
+        assert(uniqueId > -1);
+        const chunkIdx = uniqueId / this.elementLengthPerChunk;
+        const idxInChunk = uniqueId % this.elementLengthPerChunk;
+        return this.chunks[chunkIdx].getBasePtr(idxInChunk);
+    }
+
+    @inline
+    getBasePtrByChunkId(chunkId: i32): usize {
+        assert(chunkId >= 0);
+        const chunkIdx = chunkId / this.elementLengthPerChunk;
+        const idxInChunk = chunkId % this.elementLengthPerChunk;
+        return this.chunks[chunkIdx].getBasePtr(idxInChunk);
+    }
+
+    addEntity(eid: EntityId): usize {
         const uniqueId = this.entityIds.length;
         assert(uniqueId > -1);
-        this.entityIds.add(e.id);
+        this.entityIds.add(eid);
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
         const idxInChunk = uniqueId % this.elementLengthPerChunk;
         if (chunkIdx >= this.chunks.length) {
@@ -55,10 +79,10 @@ export class Archetype {
         return chunk.getBasePtr(idxInChunk);
     }
 
-    removeEntity(e: Entity): void {
-        const uniqueId = this.entityIds.getIndex(e.id);
+    removeEntity(eid: EntityId): void {
+        const uniqueId = this.entityIds.getIndex(eid);
         assert(uniqueId > -1);
-        const replaceUniqueId = this.entityIds.remove(e.id);
+        const replaceUniqueId = this.entityIds.remove(eid);
 
         const chunkIdx = uniqueId / this.elementLengthPerChunk;
         const idxInChunk = uniqueId % this.elementLengthPerChunk;
