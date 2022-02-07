@@ -6,7 +6,7 @@
   "main": "dist/util.cjs.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/netcodejs/netcode",
-  "author": "mooooooi",
+  "author": "littlemoi",
   "license": "GPL-3.0-or-later",
   "scripts": {
     "build:fast": "node esbuild.mjs",

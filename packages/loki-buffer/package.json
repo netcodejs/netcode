@@ -29,6 +29,6 @@
     "trailingComma": "es5"
   },
   "name": "@netcodejs/loki-buffer",
-  "author": "Mr-lax",
+  "author": "littlemoi",
   "module": "dist/loki-buffer.esm.js"
 }
