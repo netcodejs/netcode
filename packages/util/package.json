@@ -1,6 +1,6 @@
 {
   "name": "@netcodejs/util",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The utility for netcodejs",
   "module": "dist/util.esm.js",
   "main": "dist/util.cjs.js",
@@ -11,10 +11,8 @@
   "scripts": {
     "build:fast": "node esbuild.mjs",
     "build": "yarn build:fast && tsc --emitDeclarationOnly --outdir dist",
-    
     "test": "jest",
     "test:coverage": "jest --ci --coverage",
-
     "build:nojit": "cross-env ENSURE_JIT=false yarn build",
     "build:jit": "cross-env ENSURE_JIT=true yarn build"
   },

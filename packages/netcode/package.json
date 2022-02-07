@@ -1,6 +1,6 @@
 {
   "name": "netcodejs",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "description": "A js game framework for state-synchronization.",
   "module": "dist/netcodejs.esm.js",
   "main": "dist/netcodejs.prod.cjs.js",
@@ -11,10 +11,8 @@
   "scripts": {
     "build:fast": "node esbuild.mjs",
     "build": "yarn build:fast && tsc --emitDeclarationOnly --outdir dist",
-
     "test": "jest",
     "test:coverage": "jest --ci --coverage",
-
     "build:nojit": "cross-env ENSURE_JIT=false yarn build",
     "build:jit": "cross-env ENSURE_JIT=true yarn build",
     "build:example": "node ./esbuild.example.js"
@@ -38,6 +36,6 @@
     }
   ],
   "dependencies": {
-    "@netcodejs/util": "^0.0.0"
+    "@netcodejs/util": "^0.1.0"
   }
 }
