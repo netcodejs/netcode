@@ -10,6 +10,7 @@
     "dev": {
       "cache": false
     },
-    "build:example" : {}
+    "build:example" : {},
+    "test:coverage": {}
   }
 }
