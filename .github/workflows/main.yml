@@ -128,7 +128,7 @@ jobs:
         run: my-slack-bot send-notification --message "A new version of ${GITHUB_REPOSITORY} was published!"
       
       - name: Build example
-        run: yarn lerna run build:example --scope=netcodejs
+        run: yarn turbo run build:example --scope=netcodejs
 
       - name: Deploy example 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
