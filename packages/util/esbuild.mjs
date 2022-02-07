@@ -29,7 +29,6 @@ function run() {
         builder.buildSync({
             ...commonOption,
             outfile: "dist/util.esm.js",
-            format: "esm",
             define: {
                 "process.env.NODE_ENV": "production",
             },

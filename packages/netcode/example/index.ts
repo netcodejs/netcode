@@ -1,5 +1,11 @@
-import { StringDomainOption } from "@netcodejs/string-data-buffer";
-import { Domain, Entity, RpcType } from "netcodejs";
+import {
+    Domain,
+    Entity,
+    Rpc,
+    RpcType,
+    StringDataBuffer,
+    StringDomainOption,
+} from "../src";
 import { Net } from "./mock-net";
 import { Controller, Transform, Vector, View } from "./net-comp";
 export * from "./net-comp";

@@ -1,3 +1,5 @@
+import { IDataBufferReader, IDataBufferWriter } from "./serializable";
+
 const tempTypedBuffer = {
     int: new Int32Array(1),
     uint: new Uint32Array(1),
@@ -86,18 +88,6 @@ export class StringDataBuffer
         temp[0] = this.readBuffer[this.readerCursor++];
         return temp[0];
     }
-    readByte(): number {
-        this.check();
-        const temp = tempTypedBuffer.double;
-        temp[0] = this.readBuffer[this.readerCursor++];
-        return temp[0];
-    }
-    readUbyte(): number {
-        this.check();
-        const temp = tempTypedBuffer.double;
-        temp[0] = this.readBuffer[this.readerCursor++];
-        return temp[0];
-    }
     readBoolean(): boolean {
         this.check();
         return Boolean(this.readBuffer[this.readerCursor++]);
@@ -165,18 +155,6 @@ export class StringDataBuffer
     }
     writeBoolean(source: boolean): this {
         this.writeBuffer[this.writerCursor++] = source ? 1 : 0;
-        return this;
-    }
-    writeByte(source: number): this {
-        const temp = tempTypedBuffer.double;
-        temp[0] = source;
-        this.writeBuffer[this.writerCursor++] = source;
-        return this;
-    }
-    writeUbyte(source: number): this {
-        const temp = tempTypedBuffer.double;
-        temp[0] = source;
-        this.writeBuffer[this.writerCursor++] = source;
         return this;
     }
 

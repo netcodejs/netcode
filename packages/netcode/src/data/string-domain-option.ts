@@ -1,9 +1,9 @@
+import { RpcType } from "../comp-schema";
+import { DomainOption } from "../domain";
 import {
-    DomainOption,
-    RpcType,
     MessageManagerBufferInitializer,
     MessageManagerBufferType,
-} from "netcodejs";
+} from "../message-manager";
 import { StringDataBuffer } from "./string-databuffer";
 
 const stringInitializer: MessageManagerBufferInitializer<string> = {

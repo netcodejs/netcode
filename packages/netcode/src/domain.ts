@@ -6,6 +6,7 @@ import {
     Role,
     SCHEME_KEY,
 } from "./comp-schema";
+import { SupportNetDataType } from "./data/serializable";
 import { Entity } from "./entity";
 import { IComp } from "./comp-interface";
 import { NULL_NUM } from "./builtin";
@@ -20,7 +21,7 @@ import { asSerable, assert } from "./misc";
 import { ArrayMap } from "./array-map";
 import { compName2ctr, hash2compName, hash2RpcName } from "./global-record";
 import { deserValue, serValue } from "./comp-fixup";
-import { str2hash as hash } from "@netcodejs/util";
+import { str as hash } from "./lib/crc-32";
 
 class EntityNotValidError extends Error {}
 class EntityRepeatRegisteredError extends Error {}

@@ -1,6 +1,5 @@
-import { Domain, Entity, Role, RpcType } from "../src";
+import { Domain, Entity, Role, RpcType, StringDomainOption } from "../src";
 import { genLoop } from "./util";
-import { StringDomainOption } from "@netcodejs/string-data-buffer";
 
 beforeEach(() => {
     Domain.Clear();

@@ -1,6 +1,11 @@
 import { IComp } from "../comp-interface";
 import { Short } from "../base-dirty-data";
 import { NetSerable, NetVar, Rpc } from "../comp-decorator";
+import {
+    IDataBufferReader,
+    IDataBufferWriter,
+    ISerable,
+} from "../data/serializable";
 import { DataType, Role, RpcType } from "../comp-schema";
 
 @NetSerable("role", false)

@@ -11,8 +11,8 @@ import {
     RpcType,
     RpcVar,
 } from "../src";
+import { StringDomainOption } from "../src/data/string-domain-option";
 import { wait } from "./util";
-import { StringDomainOption } from "@netcodejs/string-data-buffer";
 
 beforeEach(() => {
     Domain.Clear();

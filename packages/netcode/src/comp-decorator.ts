@@ -1,5 +1,5 @@
 import { ProtoOf } from "./misc";
-import { str2hash as hash } from "@netcodejs/util";
+import { str as hash } from "./lib/crc-32";
 import { Config } from "./config";
 import {
     PropSchema,

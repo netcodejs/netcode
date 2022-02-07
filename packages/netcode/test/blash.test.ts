@@ -1,17 +1,22 @@
 import {
+    ARR_CONTAINER,
     composeVersion,
     DataType,
+    DataTypeObect,
     decomposeVersion,
     Domain,
     Entity,
     NetArr,
     NetSerable,
     NetVar,
+    NONE_CONTAINER,
     RpcType,
+    ISchema,
+    getSchemaByPrototype,
     IComp,
     Float,
 } from "../src";
-import { StringDomainOption } from "@netcodejs/string-data-buffer";
+import { StringDomainOption } from "../src/data/string-domain-option";
 
 @NetSerable("view")
 export class ViewComponent extends IComp {
@@ -78,51 +83,51 @@ beforeEach(() => {
 });
 
 describe("SchemaAndClassId", () => {
-    // test("basic", () => {
-    //     let v1 = new ViewComponent() as ISchema & ViewComponent;
-    //     let v2 = new ViewComponent() as ISchema & ViewComponent;
+    test("basic", () => {
+        let v1 = new ViewComponent() as ISchema & ViewComponent;
+        let v2 = new ViewComponent() as ISchema & ViewComponent;
 
-    //     let l1 = new LogicComponent() as ISchema & LogicComponent;
-    //     expect(v1.__schema__).toStrictEqual(v2.__schema__);
-    //     expect((ReverseViewComponent.prototype as any).__schema__.name).toEqual(
-    //         "reverseView"
-    //     );
-    //     // expect(Object.keys(hash2compName).length).toEqual(5);
-    //     // expect(Object.keys(compName2ctr).length).toEqual(5);
-    //     expect(l1.__schema__).toMatchObject({
-    //         count: 3,
-    //         props: {
-    //             0: {
-    //                 type: { dataType: DataType.BOOL },
-    //                 paramIndex: 0,
-    //                 propertyKey: "alive",
-    //             },
-    //             alive: {
-    //                 type: { dataType: DataType.BOOL },
-    //                 paramIndex: 0,
-    //                 propertyKey: "alive",
-    //             },
-    //             1: {
-    //                 type: {
-    //                     dataType: DataTypeObect,
-    //                     refCtr: Vector,
-    //                     container: NONE_CONTAINER,
-    //                 },
-    //                 paramIndex: 1,
-    //                 propertyKey: "pos",
-    //             },
-    //             pos: {
-    //                 type: { refCtr: Vector },
-    //             },
-    //             2: {
-    //                 type: {
-    //                     dataType: DataType.STRING,
-    //                     container: ARR_CONTAINER,
-    //                 },
-    //             },
-    //         },
-    //     });
-    // });
+        let l1 = new LogicComponent() as ISchema & LogicComponent;
+        expect(v1.__schema__).toStrictEqual(v2.__schema__);
+        expect((ReverseViewComponent.prototype as any).__schema__.name).toEqual(
+            "reverseView"
+        );
+        // expect(Object.keys(hash2compName).length).toEqual(5);
+        // expect(Object.keys(compName2ctr).length).toEqual(5);
+        expect(l1.__schema__).toMatchObject({
+            count: 3,
+            props: {
+                0: {
+                    type: { dataType: DataType.BOOL },
+                    paramIndex: 0,
+                    propertyKey: "alive",
+                },
+                alive: {
+                    type: { dataType: DataType.BOOL },
+                    paramIndex: 0,
+                    propertyKey: "alive",
+                },
+                1: {
+                    type: {
+                        dataType: DataTypeObect,
+                        refCtr: Vector,
+                        container: NONE_CONTAINER,
+                    },
+                    paramIndex: 1,
+                    propertyKey: "pos",
+                },
+                pos: {
+                    type: { refCtr: Vector },
+                },
+                2: {
+                    type: {
+                        dataType: DataType.STRING,
+                        container: ARR_CONTAINER,
+                    },
+                },
+            },
+        });
+    });
 
     test("PropertyKeySort", () => {
         const viewProto = ViewComponent.prototype as any;
@@ -400,32 +405,32 @@ describe("Serable", () => {
     });
 });
 
-// describe("inherit", () => {
-//     test("class", () => {
-//         const ArrCompSchema = getSchemaByPrototype(ArrComp.prototype)!!;
-//         expect(ArrCompSchema.name).toEqual("arr");
+describe("inherit", () => {
+    test("class", () => {
+        const ArrCompSchema = getSchemaByPrototype(ArrComp.prototype)!!;
+        expect(ArrCompSchema.name).toEqual("arr");
 
-//         const LenArrCompSchema = getSchemaByPrototype(
-//             LengthArrComp.prototype
-//         )!!;
-//         const DynamicArrCompSchema = getSchemaByPrototype(
-//             DynamicArrComp.prototype
-//         )!!;
-//         expect(LenArrCompSchema.name).toEqual("lenArr");
-//         expect(LenArrCompSchema.raw).toEqual(
-//             expect.arrayContaining(ArrCompSchema.raw)
-//         );
+        const LenArrCompSchema = getSchemaByPrototype(
+            LengthArrComp.prototype
+        )!!;
+        const DynamicArrCompSchema = getSchemaByPrototype(
+            DynamicArrComp.prototype
+        )!!;
+        expect(LenArrCompSchema.name).toEqual("lenArr");
+        expect(LenArrCompSchema.raw).toEqual(
+            expect.arrayContaining(ArrCompSchema.raw)
+        );
 
-//         expect(LenArrCompSchema.count).toEqual(2);
-//         expect(ArrCompSchema.count).toEqual(1);
+        expect(LenArrCompSchema.count).toEqual(2);
+        expect(ArrCompSchema.count).toEqual(1);
 
-//         expect(LenArrCompSchema).not.toStrictEqual(ArrCompSchema);
+        expect(LenArrCompSchema).not.toStrictEqual(ArrCompSchema);
 
-//         expect(DynamicArrCompSchema.raw).toEqual(
-//             expect.arrayContaining(ArrCompSchema.raw)
-//         );
-//         expect(DynamicArrCompSchema.raw).toEqual(
-//             expect.arrayContaining(LenArrCompSchema.raw)
-//         );
-//     });
-// });
+        expect(DynamicArrCompSchema.raw).toEqual(
+            expect.arrayContaining(ArrCompSchema.raw)
+        );
+        expect(DynamicArrCompSchema.raw).toEqual(
+            expect.arrayContaining(LenArrCompSchema.raw)
+        );
+    });
+});
