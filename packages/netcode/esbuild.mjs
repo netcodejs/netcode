@@ -36,7 +36,6 @@ async function run() {
             outfile: "dist/netcodejs.esm.js",
         }),
     ]);
-    console.log(`Build finish! The time used is  ${Date.now() - timeRecord}ms`);
 }
 
 run();

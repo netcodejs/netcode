@@ -56,16 +56,6 @@
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script>
     const Net = netcode.Net
-    const data = {
-        hello: "1111",
-        status: { delay: 0, jitter: 0 },
-        client1Predict: false,
-        client1Interpolation: false,
-        client1Rollback: false,
-        client2Predict: false,
-        client2Interpolation: false,
-        client2Rollback: false
-    };
     const watch = {
         "status.delay": function (val) {
             Net.delay = Number(val) / 2 || 0
@@ -94,9 +84,20 @@
             window.c2.isRollback = Boolean(val)
         },
     }
-    const vm = new Vue({
-        el: "#app", data, watch
-    });
+    const vm = Vue.createApp({
+        data() {
+            return {
+                hello: "1111",
+                status: { delay: 0, jitter: 0 },
+                client1Predict: false,
+                client1Interpolation: false,
+                client1Rollback: false,
+                client2Predict: false,
+                client2Interpolation: false,
+                client2Rollback: false
+            }
+        }, watch
+    }).mount("#app");
 
     const server = new netcode.Server(document.getElementById("server"));
     const client1 = new netcode.Client(
@@ -108,8 +109,8 @@
         document.getElementById("client2")
     );
     vm.hello = "aaaa";
-    data.status.delay = 100;
-    data.status.jitter = 20;
+    vm.status.delay = 100;
+    vm.status.jitter = 20;
 
     window.c1 = Net.client1 = client1;
     window.c2 = Net.client2 = client2;

@@ -20,7 +20,6 @@ async function run() {
       minify: true,
     }),
   ]);
-  console.log(`Build finish! The time used is  ${Date.now() - timeRecord}ms`);
 }
 
 run();
