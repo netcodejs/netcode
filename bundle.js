@@ -1,12 +1,26 @@
 var netcode = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
   var __export = (target, all) => {
-    __markAsModule(target);
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
   };
+  var __reExport = (target, module, copyDefault, desc) => {
+    if (module && typeof module === "object" || typeof module === "function") {
+      for (let key of __getOwnPropNames(module))
+        if (!__hasOwnProp.call(target, key) && (copyDefault || key !== "default"))
+          __defProp(target, key, { get: () => module[key], enumerable: !(desc = __getOwnPropDesc(module, key)) || desc.enumerable });
+    }
+    return target;
+  };
+  var __toCommonJS = /* @__PURE__ */ ((cache) => {
+    return (module, temp) => {
+      return cache && cache.get(module) || (temp = __reExport(__markAsModule({}), module, 1), cache && cache.set(module, temp), temp);
+    };
+  })(typeof WeakMap !== "undefined" ? /* @__PURE__ */ new WeakMap() : 0);
   var __decorateClass = (decorators, target, key, kind) => {
     var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
     for (var i = decorators.length - 1, decorator; i >= 0; i--)
@@ -81,51 +95,18 @@ var netcode = (() => {
   var RPC_MAX_UUID = (1 << 8) - 1;
 
   // src/comp-schema.ts
-  var RpcType;
-  (function(RpcType3) {
-    RpcType3[RpcType3["SERVER"] = 0] = "SERVER";
-    RpcType3[RpcType3["CLIENT"] = 1] = "CLIENT";
-  })(RpcType || (RpcType = {}));
-  var Role;
-  (function(Role3) {
-    Role3[Role3["AUTHORITY"] = 1] = "AUTHORITY";
-    Role3[Role3["SIMULATED_PROXY"] = 2] = "SIMULATED_PROXY";
-    Role3[Role3["AUTONMOUS_PROXY"] = 3] = "AUTONMOUS_PROXY";
-  })(Role || (Role = {}));
-  var DataType;
-  (function(DataType2) {
-    DataType2[DataType2["NONE"] = 0] = "NONE";
-    DataType2[DataType2["I8"] = 1] = "I8";
-    DataType2[DataType2["U8"] = 2] = "U8";
-    DataType2[DataType2["I16"] = 3] = "I16";
-    DataType2[DataType2["U16"] = 4] = "U16";
-    DataType2[DataType2["I32"] = 5] = "I32";
-    DataType2[DataType2["U32"] = 6] = "U32";
-    DataType2[DataType2["F32"] = 7] = "F32";
-    DataType2[DataType2["F64"] = 8] = "F64";
-    DataType2[DataType2["SHORT"] = 9] = "SHORT";
-    DataType2[DataType2["ushort"] = 10] = "ushort";
-    DataType2[DataType2["INT"] = 11] = "INT";
-    DataType2[DataType2["uint"] = 12] = "uint";
-    DataType2[DataType2["LONG"] = 13] = "LONG";
-    DataType2[DataType2["ulong"] = 14] = "ulong";
-    DataType2[DataType2["FLOAT"] = 15] = "FLOAT";
-    DataType2[DataType2["DOUBLE"] = 16] = "DOUBLE";
-    DataType2[DataType2["STRING"] = 17] = "STRING";
-    DataType2[DataType2["BOOL"] = 18] = "BOOL";
-  })(DataType || (DataType = {}));
   var DataTypeObect = 99;
   var DataTypeVoid = 98;
-  function genSchema(o = Object.create(null)) {
+  function genSchema(o = /* @__PURE__ */ Object.create(null)) {
     o.hash = NULL_NUM;
     o.name = NULL_STR;
     o.count = 0;
-    o.props = Object.create(null);
-    o.methods = Object.create(null);
+    o.props = /* @__PURE__ */ Object.create(null);
+    o.methods = /* @__PURE__ */ Object.create(null);
     o.raw = [];
     return o;
   }
-  function genMethodSchema(o = Object.create(null)) {
+  function genMethodSchema(o = /* @__PURE__ */ Object.create(null)) {
     o.hash = NULL_NUM;
     o.name = NULL_STR;
     o.paramCount = 0;
@@ -152,7 +133,7 @@ var netcode = (() => {
   // src/array-map.ts
   var ArrayMap = class {
     constructor(source) {
-      this._name2indexRecord = Object.create(null);
+      this._name2indexRecord = /* @__PURE__ */ Object.create(null);
       this._values = [];
       if (source != null) {
         this._values.length = source.length;
@@ -201,7 +182,7 @@ var netcode = (() => {
       return deleted;
     }
     clear() {
-      this._name2indexRecord = Object.create(null);
+      this._name2indexRecord = /* @__PURE__ */ Object.create(null);
       this._values.length = 0;
     }
     get values() {
@@ -281,26 +262,26 @@ var netcode = (() => {
   };
 
   // src/global-record.ts
-  var hash2compName = Object.create(null);
-  var compName2ctr = Object.create(null);
+  var hash2compName = /* @__PURE__ */ Object.create(null);
+  var compName2ctr = /* @__PURE__ */ Object.create(null);
   var hash2RpcName = {};
 
   // src/comp-fixup.ts
   function serValue(type, value, buffer) {
     switch (type) {
-      case DataType.INT:
-      case DataType.I32:
+      case 11 /* INT */:
+      case 5 /* I32 */:
         buffer.writeInt(value);
         break;
-      case DataType.FLOAT:
-      case DataType.F32:
+      case 15 /* FLOAT */:
+      case 7 /* F32 */:
         buffer.writeFloat(value);
         break;
-      case DataType.DOUBLE:
-      case DataType.F64:
+      case 16 /* DOUBLE */:
+      case 8 /* F64 */:
         buffer.writeDouble(value);
         break;
-      case DataType.BOOL:
+      case 18 /* BOOL */:
         buffer.writeBoolean(value);
         break;
       case DataTypeObect:
@@ -310,16 +291,16 @@ var netcode = (() => {
   }
   function genSerValueJit(type, valueStr, bufferStr) {
     switch (type) {
-      case DataType.INT:
-      case DataType.I32:
+      case 11 /* INT */:
+      case 5 /* I32 */:
         return `${bufferStr}.writeInt(${valueStr});`;
-      case DataType.FLOAT:
-      case DataType.F32:
+      case 15 /* FLOAT */:
+      case 7 /* F32 */:
         return `${bufferStr}.writeFloat(${valueStr});`;
-      case DataType.DOUBLE:
-      case DataType.F64:
+      case 16 /* DOUBLE */:
+      case 8 /* F64 */:
         return `${bufferStr}.writeDouble(${valueStr});`;
-      case DataType.BOOL:
+      case 18 /* BOOL */:
         return `${bufferStr}.writeBoolean(${valueStr});`;
       case DataTypeObect:
         return `${valueStr}.ser(${bufferStr});`;
@@ -336,16 +317,16 @@ var netcode = (() => {
   }
   function deserValue(type, buffer, ref, refCtr) {
     switch (type) {
-      case DataType.INT:
-      case DataType.I32:
+      case 11 /* INT */:
+      case 5 /* I32 */:
         return buffer.readInt();
-      case DataType.FLOAT:
-      case DataType.F32:
+      case 15 /* FLOAT */:
+      case 7 /* F32 */:
         return buffer.readFloat();
-      case DataType.DOUBLE:
-      case DataType.F64:
+      case 16 /* DOUBLE */:
+      case 8 /* F64 */:
         return buffer.readDouble();
-      case DataType.BOOL:
+      case 18 /* BOOL */:
         return buffer.readBoolean();
       case DataTypeObect:
         if (!ref)
@@ -363,16 +344,16 @@ var netcode = (() => {
   }
   function genDeserValueJit(type, bufferStr, recevierStr) {
     switch (type) {
-      case DataType.INT:
-      case DataType.I32:
+      case 11 /* INT */:
+      case 5 /* I32 */:
         return `${recevierStr} = ${bufferStr}.readInt();`;
-      case DataType.FLOAT:
-      case DataType.F32:
+      case 15 /* FLOAT */:
+      case 7 /* F32 */:
         return `${recevierStr} = ${bufferStr}.readFloat();`;
-      case DataType.DOUBLE:
-      case DataType.F64:
+      case 16 /* DOUBLE */:
+      case 8 /* F64 */:
         return `${recevierStr} = ${bufferStr}.readDouble();`;
-      case DataType.BOOL:
+      case 18 /* BOOL */:
         return `${recevierStr} = ${bufferStr}.readBoolean();`;
       case DataTypeObect:
         return `
@@ -478,19 +459,19 @@ ${recevierStr}.deser(${bufferStr})
       const key = prop.propertyKey;
       if (type.container === NONE_CONTAINER) {
         switch (type.dataType) {
-          case DataType.INT:
-          case DataType.I32:
+          case 11 /* INT */:
+          case 5 /* I32 */:
             serJitStr += `buffer.writeInt(this.${key});`;
             break;
-          case DataType.FLOAT:
-          case DataType.F32:
+          case 15 /* FLOAT */:
+          case 7 /* F32 */:
             serJitStr += `buffer.writeFloat(this.${key});`;
             break;
-          case DataType.DOUBLE:
-          case DataType.F64:
+          case 16 /* DOUBLE */:
+          case 8 /* F64 */:
             serJitStr += `buffer.writeDouble(this.${key});`;
             break;
-          case DataType.BOOL:
+          case 18 /* BOOL */:
             serJitStr += `buffer.writeBoolean(this.${key});`;
             break;
           case DataTypeObect:
@@ -501,19 +482,19 @@ ${recevierStr}.deser(${bufferStr})
         serJitStr += `buffer.writeInt(this.${key}.length);`;
         let itemSerFuncStr = "";
         switch (type.dataType) {
-          case DataType.INT:
-          case DataType.I32:
+          case 11 /* INT */:
+          case 5 /* I32 */:
             itemSerFuncStr = `buffer.writeInt(arr[i]);`;
             break;
-          case DataType.FLOAT:
-          case DataType.F32:
+          case 15 /* FLOAT */:
+          case 7 /* F32 */:
             itemSerFuncStr = `buffer.writeFloat(arr[i]);`;
             break;
-          case DataType.DOUBLE:
-          case DataType.F64:
+          case 16 /* DOUBLE */:
+          case 8 /* F64 */:
             itemSerFuncStr = `buffer.writeDouble(arr[i]);`;
             break;
-          case DataType.BOOL:
+          case 18 /* BOOL */:
             serJitStr += `buffer.writeBoolean(this.${key});`;
             break;
           case DataTypeObect:
@@ -536,19 +517,19 @@ ${recevierStr}.deser(${bufferStr})
       const key = prop.propertyKey;
       if (type.container === NONE_CONTAINER) {
         switch (type.dataType) {
-          case DataType.INT:
-          case DataType.I32:
+          case 11 /* INT */:
+          case 5 /* I32 */:
             deserJitStr += `this.${key}=buffer.readInt();`;
             break;
-          case DataType.FLOAT:
-          case DataType.F32:
+          case 15 /* FLOAT */:
+          case 7 /* F32 */:
             deserJitStr += `this.${key}=buffer.readFloat();`;
             break;
-          case DataType.DOUBLE:
-          case DataType.F64:
+          case 16 /* DOUBLE */:
+          case 8 /* F64 */:
             deserJitStr += `this.${key}=buffer.readDouble();`;
             break;
-          case DataType.BOOL:
+          case 18 /* BOOL */:
             deserJitStr += `this.${key}=buffer.readBoolean();`;
             break;
           case DataTypeObect:
@@ -562,19 +543,19 @@ ${recevierStr}.deser(${bufferStr})
             arr.length=buffer.readInt();`;
         let itemSerFuncStr = "";
         switch (type.dataType) {
-          case DataType.INT:
-          case DataType.I32:
+          case 11 /* INT */:
+          case 5 /* I32 */:
             itemSerFuncStr = `arr[i]=buffer.readInt();`;
             break;
-          case DataType.FLOAT:
-          case DataType.F32:
+          case 15 /* FLOAT */:
+          case 7 /* F32 */:
             itemSerFuncStr = `arr[i]=buffer.readFloat();`;
             break;
-          case DataType.DOUBLE:
-          case DataType.F64:
+          case 16 /* DOUBLE */:
+          case 8 /* F64 */:
             itemSerFuncStr = `arr[i]=buffer.readDouble();`;
             break;
-          case DataType.BOOL:
+          case 18 /* BOOL */:
             deserJitStr += `arr[i]=buffer.readBoolean();`;
             break;
           case DataTypeObect:
@@ -709,7 +690,7 @@ if (this.entity.role.local == ${ms.type}) {
       for (let i = 0, len = ms.paramCount; i < len; i++) {
         if (!ms.paramTypes[i]) {
           console.warn(`[Netcode]Rpc function ${propertyKey} at paramIndex(${i}) set the default type DataType.double`);
-          ms.paramTypes[i] = DataType.DOUBLE;
+          ms.paramTypes[i] = 16 /* DOUBLE */;
         }
       }
     };
@@ -764,10 +745,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.BOOL)
+    NetVar(18 /* BOOL */)
   ], Int.prototype, "dirty", 2);
   __decorateClass([
-    NetVar(DataType.INT)
+    NetVar(11 /* INT */)
   ], Int.prototype, "value", 1);
   Int = __decorateClass([
     NetSerable("Int", false)
@@ -803,10 +784,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.BOOL)
+    NetVar(18 /* BOOL */)
   ], Float.prototype, "dirty", 2);
   __decorateClass([
-    NetVar(DataType.FLOAT)
+    NetVar(15 /* FLOAT */)
   ], Float.prototype, "value", 1);
   Float = __decorateClass([
     NetSerable("Float", false)
@@ -842,10 +823,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.BOOL)
+    NetVar(18 /* BOOL */)
   ], Long.prototype, "dirty", 2);
   __decorateClass([
-    NetVar(DataType.LONG)
+    NetVar(13 /* LONG */)
   ], Long.prototype, "value", 1);
   Long = __decorateClass([
     NetSerable("Long", false)
@@ -881,10 +862,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.BOOL)
+    NetVar(18 /* BOOL */)
   ], Uint.prototype, "dirty", 2);
   __decorateClass([
-    NetVar(DataType.uint)
+    NetVar(12 /* uint */)
   ], Uint.prototype, "value", 1);
   Uint = __decorateClass([
     NetSerable("Uint", false)
@@ -920,10 +901,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.BOOL)
+    NetVar(18 /* BOOL */)
   ], Double.prototype, "dirty", 2);
   __decorateClass([
-    NetVar(DataType.DOUBLE)
+    NetVar(16 /* DOUBLE */)
   ], Double.prototype, "value", 1);
   Double = __decorateClass([
     NetSerable("Double", false)
@@ -959,10 +940,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.BOOL)
+    NetVar(18 /* BOOL */)
   ], Ulong.prototype, "dirty", 2);
   __decorateClass([
-    NetVar(DataType.ulong)
+    NetVar(14 /* ulong */)
   ], Ulong.prototype, "value", 1);
   Ulong = __decorateClass([
     NetSerable("Ulong", false)
@@ -998,10 +979,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.BOOL)
+    NetVar(18 /* BOOL */)
   ], Short.prototype, "dirty", 2);
   __decorateClass([
-    NetVar(DataType.SHORT)
+    NetVar(9 /* SHORT */)
   ], Short.prototype, "value", 1);
   Short = __decorateClass([
     NetSerable("Short", false)
@@ -1037,10 +1018,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.BOOL)
+    NetVar(18 /* BOOL */)
   ], Ushort.prototype, "dirty", 2);
   __decorateClass([
-    NetVar(DataType.ushort)
+    NetVar(10 /* ushort */)
   ], Ushort.prototype, "value", 1);
   Ushort = __decorateClass([
     NetSerable("Ulong", false)
@@ -1064,7 +1045,7 @@ if (this.entity.role.local == ${ms.type}) {
     NetVar(Float)
   ], LogicTimeComp.prototype, "$delta", 2);
   __decorateClass([
-    NetVar(DataType.DOUBLE)
+    NetVar(16 /* DOUBLE */)
   ], LogicTimeComp.prototype, "duration", 2);
   LogicTimeComp = __decorateClass([
     NetSerable("logic_time")
@@ -1084,8 +1065,8 @@ if (this.entity.role.local == ${ms.type}) {
   var RoleComp = class extends IComp {
     constructor() {
       super(...arguments);
-      this.$local = new Short(Role.AUTHORITY);
-      this.$remote = new Short(Role.SIMULATED_PROXY);
+      this.$local = new Short(1 /* AUTHORITY */);
+      this.$remote = new Short(2 /* SIMULATED_PROXY */);
     }
     get local() {
       return this.$local.value;
@@ -1106,8 +1087,8 @@ if (this.entity.role.local == ${ms.type}) {
     }
     upgrade() {
       return __async(this, null, function* () {
-        if (this.local == Role.AUTHORITY && this.remote != Role.AUTONMOUS_PROXY) {
-          this.remote = Role.AUTONMOUS_PROXY;
+        if (this.local == 1 /* AUTHORITY */ && this.remote != 3 /* AUTONMOUS_PROXY */) {
+          this.remote = 3 /* AUTONMOUS_PROXY */;
           return true;
         }
         return false;
@@ -1115,8 +1096,8 @@ if (this.entity.role.local == ${ms.type}) {
     }
     downgrade() {
       return __async(this, null, function* () {
-        if (this.local == Role.AUTHORITY && this.remote != Role.SIMULATED_PROXY) {
-          this.remote = Role.SIMULATED_PROXY;
+        if (this.local == 1 /* AUTHORITY */ && this.remote != 2 /* SIMULATED_PROXY */) {
+          this.remote = 2 /* SIMULATED_PROXY */;
           return true;
         }
         return false;
@@ -1124,8 +1105,8 @@ if (this.entity.role.local == ${ms.type}) {
     }
     init() {
       const type = this.domain.option.type;
-      this.$local.value = type === RpcType.SERVER ? Role.AUTHORITY : Role.SIMULATED_PROXY;
-      this.$remote.value = type === RpcType.SERVER ? Role.SIMULATED_PROXY : Role.AUTHORITY;
+      this.$local.value = type === 0 /* SERVER */ ? 1 /* AUTHORITY */ : 2 /* SIMULATED_PROXY */;
+      this.$remote.value = type === 0 /* SERVER */ ? 2 /* SIMULATED_PROXY */ : 1 /* AUTHORITY */;
     }
   };
   __decorateClass([
@@ -1135,10 +1116,10 @@ if (this.entity.role.local == ${ms.type}) {
     NetVar(Short)
   ], RoleComp.prototype, "$remote", 2);
   __decorateClass([
-    Rpc(Role.AUTHORITY, DataType.BOOL)
+    Rpc(1 /* AUTHORITY */, 18 /* BOOL */)
   ], RoleComp.prototype, "upgrade", 1);
   __decorateClass([
-    Rpc(Role.AUTHORITY, DataType.BOOL)
+    Rpc(1 /* AUTHORITY */, 18 /* BOOL */)
   ], RoleComp.prototype, "downgrade", 1);
   RoleComp = __decorateClass([
     NetSerable("role", false)
@@ -1156,7 +1137,7 @@ if (this.entity.role.local == ${ms.type}) {
       });
       this._id = NULL_NUM;
       this._version = NULL_NUM;
-      this._compMap = new Map();
+      this._compMap = /* @__PURE__ */ new Map();
       this.role = new RoleComp();
       this._comps = [this.role, ..._comps];
       for (let i = 0, len = this._comps.length; i < len; i++) {
@@ -1184,7 +1165,7 @@ if (this.entity.role.local == ${ms.type}) {
           return target.get(compName2ctr[String(p)]);
         }
       });
-      ent._compMap = new Map();
+      ent._compMap = /* @__PURE__ */ new Map();
       ent.role = _comps[0];
       ent._comps = _comps;
       for (let i = 0, len = ent._comps.length; i < len; i++) {
@@ -1282,138 +1263,72 @@ if (this.entity.role.local == ${ms.type}) {
   };
 
   // ../util/dist/util.esm.js
-  (() => {
-    var r = class {
-      get value() {
-        return this._value;
+  var Deferred = class {
+    promise;
+    fate;
+    state;
+    _resolve;
+    _reject;
+    _value;
+    get value() {
+      return this._value;
+    }
+    constructor() {
+      this.state = "pending";
+      this.fate = "unresolved";
+      this.promise = new Promise((resolve, reject) => {
+        this._resolve = resolve;
+        this._reject = reject;
+      });
+      this.promise.then((res) => {
+        this.state = "fulfilled";
+        this._value = res;
+      }, () => this.state = "rejected");
+    }
+    resolve(value) {
+      if (this.fate === "resolved") {
+        throw "Deferred cannot be resolved twice";
       }
-      constructor() {
-        this.state = "pending", this.fate = "unresolved", this.promise = new Promise((t, e) => {
-          this._resolve = t, this._reject = e;
-        }), this.promise.then((t) => {
-          this.state = "fulfilled", this._value = t;
-        }, () => this.state = "rejected");
+      this.fate = "resolved";
+      this._resolve(value);
+    }
+    reject(reason) {
+      if (this.fate === "resolved") {
+        throw "Deferred cannot be resolved twice";
       }
-      resolve(t) {
-        if (this.fate === "resolved")
-          throw "Deferred cannot be resolved twice";
-        this.fate = "resolved", this._resolve(t);
-      }
-      reject(t) {
-        if (this.fate === "resolved")
-          throw "Deferred cannot be resolved twice";
-        this.fate = "resolved", this._reject(t);
-      }
-      isResolved() {
-        return this.fate === "resolved";
-      }
-      isPending() {
-        return this.state === "pending";
-      }
-      isFulfilled() {
-        return this.state === "fulfilled";
-      }
-      isRejected() {
-        return this.state === "rejected";
-      }
-    };
-    var n = class {
-      constructor(t) {
-        this.capacity = t;
-        this._start = 0;
-        this._end = 0;
-        this._container = new Array(this._capacityPlusOne);
-      }
-      get _capacityPlusOne() {
-        return this.capacity + 1;
-      }
-      get length() {
-        return (this._end - this._start + this._capacityPlusOne) % this._capacityPlusOne;
-      }
-      get isEmpty() {
-        return this._start == this._end;
-      }
-      get isFull() {
-        return (this._end + 1) % this._capacityPlusOne == this._start;
-      }
-      get head() {
-        var t;
-        return (t = this._container[this._start]) != null ? t : null;
-      }
-      get tail() {
-        var t;
-        return this.isEmpty ? null : (t = this._container[(this._end - 1 + this._capacityPlusOne) % this._capacityPlusOne]) != null ? t : null;
-      }
-      get container() {
-        return this._container;
-      }
-      get(t) {
-        var s;
-        let e = this._getRealIndex(t);
-        return e == -1 ? null : (s = this._container[e]) != null ? s : null;
-      }
-      set(t, e) {
-        let s = this._getRealIndex(t);
-        this._container[s] = e;
-      }
-      push(t) {
-        if (this.isFull)
-          return -1;
-        let e = this._end++;
-        return this._end %= this._capacityPlusOne, this._container[e] = t, this._end - this._start + 1;
-      }
-      pop() {
-        var t;
-        return this.isEmpty ? null : (this._end--, this._end += this._capacityPlusOne, this._end %= this._capacityPlusOne, (t = this._container[this._end]) != null ? t : null);
-      }
-      unshift(t) {
-        if (this.isEmpty)
-          return null;
-        this._start--, this._start += this._capacityPlusOne, this._start %= this._capacityPlusOne;
-        let e = this._start;
-        return this._container[e] = t, this._end - this._start + 1;
-      }
-      shift() {
-        var e;
-        if (this.isEmpty)
-          return null;
-        let t = this._start++;
-        return this._start %= this._capacityPlusOne, (e = this._container[t]) != null ? e : null;
-      }
-      _getRealIndex(t) {
-        return t < 0 || t >= this.capacity ? -1 : (this._start + t) % this._capacityPlusOne;
-      }
-    };
-  })();
+      this.fate = "resolved";
+      this._reject(reason);
+    }
+    isResolved() {
+      return this.fate === "resolved";
+    }
+    isPending() {
+      return this.state === "pending";
+    }
+    isFulfilled() {
+      return this.state === "fulfilled";
+    }
+    isRejected() {
+      return this.state === "rejected";
+    }
+  };
 
   // src/message-manager.ts
-  var MessageType;
-  (function(MessageType2) {
-    MessageType2[MessageType2["UPDATE_COMPONENT"] = 0] = "UPDATE_COMPONENT";
-    MessageType2[MessageType2["RPC"] = 1] = "RPC";
-  })(MessageType || (MessageType = {}));
   var RpcCallbackUuidOutOfRange = class extends Error {
   };
-  var MessageManagerBufferType;
-  (function(MessageManagerBufferType2) {
-    MessageManagerBufferType2[MessageManagerBufferType2["IN_OR_OUT"] = 0] = "IN_OR_OUT";
-    MessageManagerBufferType2[MessageManagerBufferType2["STATE"] = 1] = "STATE";
-    MessageManagerBufferType2[MessageManagerBufferType2["RPC"] = 2] = "RPC";
-    MessageManagerBufferType2[MessageManagerBufferType2["RPC_CALLBACK"] = 3] = "RPC_CALLBACK";
-  })(MessageManagerBufferType || (MessageManagerBufferType = {}));
   var MessageManager = class {
     constructor(initializer) {
       this._rpcCalls = [];
-      this._rpcDeferred = new Map();
+      this._rpcDeferred = /* @__PURE__ */ new Map();
       this._uuid = 0;
-      this.inbufferReader = initializer.newBufferReader(0);
-      this.statebufferReader = initializer.newBufferReader(1);
-      this.rpcbufferReader = initializer.newBufferReader(2);
-      this.rpcCallbackBufferReader = initializer.newBufferReader(3);
-      this.outbufferWriter = initializer.newBufferWriter(0);
-      this.statebufferWriter = initializer.newBufferWriter(1);
-      this.rpcbufferWriter = initializer.newBufferWriter(2);
-      this.rpcCallbackBufferWriter = initializer.newBufferWriter(3);
+      this.inbufferReader = initializer.newBufferReader(0 /* IN_OR_OUT */);
+      this.statebufferReader = initializer.newBufferReader(1 /* STATE */);
+      this.rpcbufferReader = initializer.newBufferReader(2 /* RPC */);
+      this.rpcCallbackBufferReader = initializer.newBufferReader(3 /* RPC_CALLBACK */);
+      this.outbufferWriter = initializer.newBufferWriter(0 /* IN_OR_OUT */);
+      this.statebufferWriter = initializer.newBufferWriter(1 /* STATE */);
+      this.rpcbufferWriter = initializer.newBufferWriter(2 /* RPC */);
+      this.rpcCallbackBufferWriter = initializer.newBufferWriter(3 /* RPC_CALLBACK */);
     }
     _getUuid() {
       if (this._uuid >= RPC_MAX_UUID) {
@@ -1494,7 +1409,7 @@ if (this.entity.role.local == ${ms.type}) {
       if (ms.returnType == DataTypeVoid) {
         return;
       } else {
-        const deferred = new (void 0)();
+        const deferred = new Deferred();
         this._rpcDeferred.set(`${entity.id}|${compIdx}|${ms.hash}|${uuid}`, {
           deferred,
           timestamp
@@ -1672,7 +1587,7 @@ if (this.entity.role.local == ${ms.type}) {
       return entity.id != NULL_NUM && entity.version != NULL_NUM && entity.version == this._entityVersion[entity.id];
     }
     asData() {
-      const isServer = this._option.type == RpcType.SERVER;
+      const isServer = this._option.type == 0 /* SERVER */;
       const outBuf = this._internalMsgMng.outbufferWriter;
       const stateBuf = this._internalMsgMng.statebufferWriter;
       const rpcBuf = this._internalMsgMng.rpcbufferWriter;
@@ -1759,7 +1674,7 @@ if (this.entity.role.local == ${ms.type}) {
           const ent = this._entities[i];
           if (!ent)
             continue;
-          if (ent.role.local === Role.AUTHORITY || ent.role.local === Role.AUTONMOUS_PROXY) {
+          if (ent.role.local === 1 /* AUTHORITY */ || ent.role.local === 3 /* AUTONMOUS_PROXY */) {
             ent["_logicUpdate"]();
           }
         }
@@ -2112,17 +2027,17 @@ if (this.entity.role.local == ${ms.type}) {
     static send(obj) {
       return {
         server: () => {
-          const defer = new (void 0)();
+          const defer = new Deferred();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._serverTcp.send(defer);
         },
         c1: () => {
-          const defer = new (void 0)();
+          const defer = new Deferred();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._client1Tcp.send(defer);
         },
         c2: () => {
-          const defer = new (void 0)();
+          const defer = new Deferred();
           setTimeout(() => defer.resolve(this.clone(obj)), this.delay + Math.random() * this.jitter);
           this._client2Tcp.send(defer);
         }
@@ -2149,10 +2064,10 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.INT)
+    NetVar(11 /* INT */)
   ], Vector.prototype, "x", 2);
   __decorateClass([
-    NetVar(DataType.INT)
+    NetVar(11 /* INT */)
   ], Vector.prototype, "y", 2);
   Vector = __decorateClass([
     NetSerable("vec")
@@ -2174,9 +2089,9 @@ if (this.entity.role.local == ${ms.type}) {
     NetVar(Vector)
   ], Transform.prototype, "pos", 2);
   __decorateClass([
-    Rpc(Role.AUTHORITY),
-    __decorateParam(0, RpcVar(DataType.FLOAT)),
-    __decorateParam(1, RpcVar(DataType.FLOAT))
+    Rpc(1 /* AUTHORITY */),
+    __decorateParam(0, RpcVar(15 /* FLOAT */)),
+    __decorateParam(1, RpcVar(15 /* FLOAT */))
   ], Transform.prototype, "serverMove", 1);
   Transform = __decorateClass([
     NetSerable("trans")
@@ -2207,11 +2122,11 @@ if (this.entity.role.local == ${ms.type}) {
     }
   };
   __decorateClass([
-    NetVar(DataType.INT)
+    NetVar(11 /* INT */)
   ], View.prototype, "color", 2);
   __decorateClass([
-    Rpc(Role.AUTHORITY),
-    __decorateParam(0, RpcVar(DataType.INT))
+    Rpc(1 /* AUTHORITY */),
+    __decorateParam(0, RpcVar(11 /* INT */))
   ], View.prototype, "changeColor", 1);
   View = __decorateClass([
     NetSerable("view")
@@ -2334,7 +2249,7 @@ if (this.entity.role.local == ${ms.type}) {
   };
   var Server = class extends Base {
     constructor(canvas) {
-      super("server", canvas, RpcType.SERVER);
+      super("server", canvas, 0 /* SERVER */);
       this.canvas = canvas;
       this.sendAccumulator = 0;
     }
@@ -2351,7 +2266,7 @@ if (this.entity.role.local == ${ms.type}) {
   };
   var Client = class extends Base {
     constructor(index, canvas) {
-      super("client" + index, canvas, RpcType.CLIENT);
+      super("client" + index, canvas, 1 /* CLIENT */);
       this.index = index;
       this.canvas = canvas;
       var _a;
@@ -2363,6 +2278,6 @@ if (this.entity.role.local == ${ms.type}) {
       Net.send(outData).server();
     }
   };
-  return example_exports;
+  return __toCommonJS(example_exports);
 })();
 //# sourceMappingURL=bundle.js.map
