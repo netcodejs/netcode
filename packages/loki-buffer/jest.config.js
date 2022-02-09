@@ -165,7 +165,7 @@ module.exports = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    '^.+\\.tsx?$': [
+    '\\.[jt]sx?$': [
       'esbuild-jest',
       {
         sourcemap: true,
