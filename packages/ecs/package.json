@@ -1,0 +1,41 @@
+{
+  "name": "ecs",
+  "version": "0.1.0",
+  "description": "A js game framework for state-synchronization.",
+  "module": "dist/netcodejs.esm.js",
+  "main": "dist/netcodejs.prod.cjs.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/netcodejs/netcode",
+  "author": "littlemoi",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "build:fast": "node esbuild.mjs",
+    "build": "yarn build:fast && tsc --emitDeclarationOnly --outdir dist",
+    "test": "jest",
+    "test:coverage": "jest --ci --coverage",
+    "build:nojit": "cross-env ENSURE_JIT=false yarn build",
+    "build:jit": "cross-env ENSURE_JIT=true yarn build",
+    "build:example": "node ./esbuild.example.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "size-limit": [
+    {
+      "path": "dist/netcodejs.dev.cjs.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/netcodejs.prod.cjs.js",
+      "limit": "8 KB"
+    },
+    {
+      "path": "dist/netcodejs.esm.js",
+      "limit": "10 KB"
+    }
+  ],
+  "dependencies": {
+    "@netcodejs/util": "^0.1.0"
+  }
+}
